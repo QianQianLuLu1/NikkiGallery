@@ -40,3 +40,56 @@
 Nikki Gallery 为完全免费的开源项目，所有代码与版本均托管于 GitHub，欢迎所有玩家下载使用、提交反馈与参与贡献。
 项目开源地址：https://github.com/QianQianLuLu1/NikkiGallery
 软件安装包可在仓库右侧「Releases」页面下载，后续版本更新也将在该页面同步发布。
+
+Nikki Gallery 2.1 has been officially released: a game image management tool specially designed for infinite Nuan Nuan
+
+Still rummaging through the nested game directories for screenshots, travel diaries and check-in photos? Still manually categorizing and renaming a vast amount of game images one by one? Nikki Gallery (Nikki Gallery) 2.1, a dedicated desktop image library management tool specially designed for "Infinite Nikki", has been officially released. With just one click, you can categorize, organize, and manage game photos in batches, allowing you to focus on recording and matching without worrying about finding pictures.
+
+Precise adaptation: Fully compatible with both servers, ready to use out of the box
+
+As an exclusive tool for "Infinite Nikki", Nikki Gallery 2.1 natively supports both the Chinese server and the international server versions. It can automatically recognize the game installation paths from multiple channels such as Steam, Epic, and the official launcher. There is no need to manually specify folders. Just open the software and scan with one click to import all in-game images.
+
+This version only provides the standard installation package form. After following the guide to complete the installation, it can be used. It is compatible with Windows 10 20H2 and above, as well as the entire series of 64-bit Windows 11 systems.
+
+Core capabilities: Intelligent classification + batch management, doubling the efficiency of organization
+
+1. Automatically archive by game scene, say goodbye to disordered folders
+
+The software is equipped with an intelligent path matching engine. During scanning, it automatically identifies the source of the image based on the directory where the file is located and precisely classifies it into five major categories of game content:
+
+- Game ScreenShot
+- Low-definition thumbnail (NikkiPhotos_LowQuality)
+- Travel Journal (MagazinePhotos
+- World Tour Check-in Photo (ClockInPhoto)
+- Original image of Fun Pin Poster (Collage_CollagePhoto)
+
+All classifications are completed automatically without the need for manual labeling. Supports single-category viewing, multi-category combination filtering, and sorting by file name, date, and resolution. The desired photos can be located in one second.
+
+2. Full-function batch operation, one-step management
+
+To meet the demand for organizing a large number of game images, the software offers complete batch processing capabilities:
+
+Batch deletion, copy, and move, and one-click cleaning of redundant materials
+Batch renaming, format conversion, and image quality compression are available to meet different needs for sharing and archiving
+All operations support automatic backup and undo, so you don't have to worry about accidental deletion or modification
+
+3. Three sets of high-appearance-level themes, catering to different aesthetic tastes
+
+In addition to practical functions, Nikki Gallery 2.1 also has three complete visual themes built-in, which can be switched with one click in the Settings:
+
+- Default simplicity: A refreshing light-colored interface that is compatible with the native style of the system
+- Future Technology: Deep space dark color + neon cyan blue accents, brimming with a strong sense of technology
+- Soft Pink Light Luxury: Milk white base + low-saturation smoke powder material, in line with the soft and elegant tone of the game
+
+All themes are made of high-quality frosted glass and feature smooth transition animations, balancing texture and performance without consuming additional system resources.
+
+Lightweight and stable: Low occupancy, zero lag
+
+The fully asynchronous multi-threaded architecture ensures that the software interface is unobstructed throughout its operation, and it will not lag even when scanning thousands of photos. The full-link exception fault tolerance mechanism ensures that the software will not crash due to restricted permission directories, damaged files, or special file names.
+When the background is idle, the memory usage is extremely low. Staying in the background does not affect the game's operation. You can organize while playing without any pressure.
+
+Open source and free, with continuous iteration
+
+Nikki Gallery is a completely free and open-source project. All codes and versions are hosted on GitHub. All players are welcome to download and use it, submit feedback and participate in contributions.
+Project open source address: https://github.com/QianQianLuLu1/NikkiGallery
+The software installation package can be downloaded from the "Releases" page on the right side of the repository. Subsequent version updates will also be released simultaneously on this page.
