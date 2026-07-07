@@ -1,6 +1,6 @@
 # Nikki Gallery 正式发布：专为无限暖暖打造的游戏影像管理工具
 
-还在层层嵌套的游戏目录里翻找截图、旅行手账和打卡照片？还在为整理海量游戏影像手动分类、逐个重命名？专为《无限暖暖》打造的专属桌面图库管理工具 **Nikki Gallery（暖暖图库）2.1 版本** 现已正式发布，一键搞定游戏照片的分类、整理、批量管理，让你专注记录搭配，不用再为找图烦恼。
+还在层层嵌套的游戏目录里翻找截图、旅行手账和打卡照片？还在为整理海量游戏影像手动分类、逐个重命名？专为《无限暖暖》打造的专属桌面图库管理工具 **Nikki Gallery（暖暖图库）2.2.5版本** 现已正式发布，一键搞定游戏照片的分类、整理、批量管理，让你专注记录搭配，不用再为找图烦恼。
 
 ## 精准适配：双服全兼容，开箱即用
 作为《无限暖暖》专属工具，Nikki Gallery 原生支持**国服与国际服双版本**，可自动识别 Steam、Epic、官方启动器等多种渠道的游戏安装路径，无需手动指定文件夹，打开软件一键扫描即可导入所有游戏内影像。
@@ -40,13 +40,13 @@ Nikki Gallery 为完全免费的开源项目，所有代码与版本均托管于
 项目开源地址：https://github.com/QianQianLuLu1/NikkiGallery
 软件安装包可在仓库右侧「Releases」页面下载，后续版本更新也将在该页面同步发布。
 
-Nikki Gallery 2.1 has been officially released: a game image management tool specially designed for infinite Nuan Nuan
+Nikki Gallery has been officially released: a game image management tool specially designed for infinite Nuan Nuan
 
-Still rummaging through the nested game directories for screenshots, travel diaries and check-in photos? Still manually categorizing and renaming a vast amount of game images one by one? Nikki Gallery (Nikki Gallery) 2.1, a dedicated desktop image library management tool specially designed for "Infinite Nikki", has been officially released. With just one click, you can categorize, organize, and manage game photos in batches, allowing you to focus on recording and matching without worrying about finding pictures.
+Still rummaging through the nested game directories for screenshots, travel diaries and check-in photos? Still manually categorizing and renaming a vast amount of game images one by one? Nikki Gallery (Nikki Gallery) 2.2.5, a dedicated desktop image library management tool specially designed for "Infinite Nikki", has been officially released. With just one click, you can categorize, organize, and manage game photos in batches, allowing you to focus on recording and matching without worrying about finding pictures.
 
 Precise adaptation: Fully compatible with both servers, ready to use out of the box
 
-As an exclusive tool for "Infinite Nikki", Nikki Gallery 2.1 natively supports both the Chinese server and the international server versions. It can automatically recognize the game installation paths from multiple channels such as Steam, Epic, and the official launcher. There is no need to manually specify folders. Just open the software and scan with one click to import all in-game images.
+As an exclusive tool for "Infinite Nikki", Nikki Gallery natively supports both the Chinese server and the international server versions. It can automatically recognize the game installation paths from multiple channels such as Steam, Epic, and the official launcher. There is no need to manually specify folders. Just open the software and scan with one click to import all in-game images.
 
 This version only provides the standard installation package form. After following the guide to complete the installation, it can be used. It is compatible with Windows 10 20H2 and above, as well as the entire series of 64-bit Windows 11 systems.
 
@@ -72,12 +72,11 @@ Batch deletion, copy, and move, and one-click cleaning of redundant materials
 Batch renaming, format conversion, and image quality compression are available to meet different needs for sharing and archiving
 All operations support automatic backup and undo, so you don't have to worry about accidental deletion or modification
 
-3. Three sets of high-appearance-level themes, catering to different aesthetic tastes
+3. Two sets of high-appearance-level themes, catering to different aesthetic tastes
 
-In addition to practical functions, Nikki Gallery 2.1 also has three complete visual themes built-in, which can be switched with one click in the Settings:
+In addition to practical functions, Nikki Gallery also has three complete visual themes built-in, which can be switched with one click in the Settings:
 
 - Default simplicity: A refreshing light-colored interface that is compatible with the native style of the system
-- Future Technology: Deep space dark color + neon cyan blue accents, brimming with a strong sense of technology
 - Soft Pink Light Luxury: Milk white base + low-saturation smoke powder material, in line with the soft and elegant tone of the game
 
 All themes are made of high-quality frosted glass and feature smooth transition animations, balancing texture and performance without consuming additional system resources.
