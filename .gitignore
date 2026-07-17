@@ -1,0 +1,64 @@
+# ===== Markdown 文件（保留远程已有，本地不上传）=====
+*.md
+
+# ===== 依赖 =====
+node_modules/
+
+# ===== 构建产物 =====
+dist/
+release/
+out/
+build/
+
+# ===== 缓存与临时 =====
+.npm-cache/
+.cache/
+*.tmp
+*.bak
+*.swp
+*~
+
+# ===== 日志 =====
+*.log
+logs/
+
+# ===== 运行时数据 =====
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# ===== 打包/分享产物 =====
+.trae-html-share-packages/
+*.zip
+
+# ===== Node 运行时打包 =====
+node20/
+node20.zip
+
+# ===== 测试与调试产物 =====
+test_*.png
+test_*.py
+test-*.txt
+test-*.js
+poc-*.js
+test_screenshot.png
+test_preview.png
+test_preview.py
+test_run*.png
+test_debug.py
+
+# ===== IDE 配置 =====
+.idea/
+.vscode/
+*.code-workspace
+
+# ===== 操作系统 =====
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# ===== 环境变量 =====
+.env
+.env.local
+.env.*.local
