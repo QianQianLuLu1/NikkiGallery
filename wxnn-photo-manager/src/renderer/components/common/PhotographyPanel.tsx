@@ -22,7 +22,10 @@ function photographyToRows(p: PhotographyInfo | undefined | null): InfoRow[] {
     const details: string[] = []
     if (p.edit.hasSticker) details.push('贴纸')
     if (p.edit.hasText) details.push('文字')
-    rows.push({ label: '是否编辑', value: details.length > 0 ? `已编辑（${details.join('、')}）` : '已编辑' })
+    rows.push({
+      label: '是否编辑',
+      value: details.length > 0 ? `已编辑（${details.join('、')}）` : '已编辑'
+    })
   } else {
     rows.push({ label: '是否编辑', value: '未编辑' })
   }
@@ -45,7 +48,10 @@ function photographyToRows(p: PhotographyInfo | undefined | null): InfoRow[] {
     } else {
       const { x, y, z } = p.location.pos
       const mappedName = getLocationName(x, y, z)
-      rows.push({ label: '拍摄地点', value: mappedName ?? `(${x.toFixed(1)}, ${y.toFixed(1)}, ${z.toFixed(1)})` })
+      rows.push({
+        label: '拍摄地点',
+        value: mappedName ?? `(${x.toFixed(1)}, ${y.toFixed(1)}, ${z.toFixed(1)})`
+      })
     }
   }
 
@@ -64,18 +70,20 @@ function photographyToRows(p: PhotographyInfo | undefined | null): InfoRow[] {
 
   // 拍摄任务
   if (p.tasks.length > 0) {
-    const taskNames = p.tasks.map(t => {
+    const taskNames = p.tasks.map((t) => {
       switch (t.type) {
         case 'puzzle': {
           const puzzleName = getPuzzleName(t.tag)
           return puzzleName ?? `错位摄影(#${t.tag})`
         }
-        case 'risk': return '惊险拍摄'
+        case 'risk':
+          return '惊险拍摄'
         case 'interactive': {
           const interactiveName = getInteractiveName(t.tag)
           return interactiveName ?? `拍摄任务(#${t.tag})`
         }
-        default: return t.type
+        default:
+          return t.type
       }
     })
     rows.push({ label: '拍摄任务', value: taskNames.join('、') })
@@ -97,7 +105,11 @@ export function formatPhotographyForCopy(p: PhotographyInfo | null | undefined):
   return lines.join('\n')
 }
 
-export const PhotographyPanel: React.FC<PhotographyPanelProps> = ({ file, variant = 'light', showTitle = true }) => {
+export const PhotographyPanel: React.FC<PhotographyPanelProps> = ({
+  file,
+  variant = 'light',
+  showTitle = true
+}) => {
   const enabled = file.file_type === 'image' && !!file.album_type
   const { data, loading, error } = useGameParams(
     file.file_path,

@@ -47,11 +47,13 @@ interface MockCategoryApi {
   list: ReturnType<typeof vi.fn>
 }
 
-function setMockApi(overrides: {
-  media?: Partial<MockMediaApi>
-  mediaAction?: Partial<MockMediaActionApi>
-  category?: Partial<MockCategoryApi>
-} = {}): void {
+function setMockApi(
+  overrides: {
+    media?: Partial<MockMediaApi>
+    mediaAction?: Partial<MockMediaActionApi>
+    category?: Partial<MockCategoryApi>
+  } = {}
+): void {
   const media: MockMediaApi = {
     list: vi.fn().mockResolvedValue({ success: true, files: [], total: 0, hasMore: false }),
     findDuplicates: vi.fn(),
@@ -141,10 +143,7 @@ describe('mediaStore', () => {
   describe('updateMediaFile', () => {
     it('按 id 更新指定文件的字段', () => {
       const { setMediaFiles, updateMediaFile } = useMediaStore.getState()
-      setMediaFiles([
-        makeFile({ id: '1', rating: 0 }),
-        makeFile({ id: '2', rating: 0 })
-      ])
+      setMediaFiles([makeFile({ id: '1', rating: 0 }), makeFile({ id: '2', rating: 0 })])
       updateMediaFile('1', { rating: 5 })
       const state = useMediaStore.getState().mediaFiles
       expect(state[0].rating).toBe(5)
@@ -172,11 +171,7 @@ describe('mediaStore', () => {
   describe('deleteMediaFiles', () => {
     it('按 id 数组移除文件', () => {
       const { setMediaFiles, deleteMediaFiles } = useMediaStore.getState()
-      setMediaFiles([
-        makeFile({ id: '1' }),
-        makeFile({ id: '2' }),
-        makeFile({ id: '3' })
-      ])
+      setMediaFiles([makeFile({ id: '1' }), makeFile({ id: '2' }), makeFile({ id: '3' })])
       deleteMediaFiles(['1', '3'])
       expect(useMediaStore.getState().mediaFiles.map((f) => f.id)).toEqual(['2'])
     })
@@ -193,9 +188,7 @@ describe('mediaStore', () => {
   describe('setCategories', () => {
     it('替换分类列表', () => {
       const { setCategories } = useMediaStore.getState()
-      const cats = [
-        { id: 1, name: 'cat1', icon: '', color: '', sort_order: 0, is_system: false }
-      ]
+      const cats = [{ id: 1, name: 'cat1', icon: '', color: '', sort_order: 0, is_system: false }]
       setCategories(cats)
       expect(useMediaStore.getState().categories).toEqual(cats)
     })
@@ -287,7 +280,9 @@ describe('mediaStore', () => {
       })
       useMediaStore.getState().setMediaFiles([makeFile({ id: '1', tags: [] })])
       await updateMediaFileAndPersist('1', { tags: ['a', 'b'] })
-      const mockFn = (globalThis as { window?: { electronAPI?: { mediaAction?: MockMediaActionApi } } }).window!.electronAPI!.mediaAction!.updateTags
+      const mockFn = (
+        globalThis as { window?: { electronAPI?: { mediaAction?: MockMediaActionApi } } }
+      ).window!.electronAPI!.mediaAction!.updateTags
       expect(mockFn).toHaveBeenCalledWith(1, ['a', 'b'])
       expect(useMediaStore.getState().mediaFiles[0].tags).toEqual(['a', 'b'])
     })
@@ -300,7 +295,9 @@ describe('mediaStore', () => {
       })
       useMediaStore.getState().setMediaFiles([makeFile({ id: '5', rating: 0 })])
       await updateMediaFileAndPersist('5', { rating: 4 })
-      const mockFn = (globalThis as { window?: { electronAPI?: { mediaAction?: MockMediaActionApi } } }).window!.electronAPI!.mediaAction!.updateRating
+      const mockFn = (
+        globalThis as { window?: { electronAPI?: { mediaAction?: MockMediaActionApi } } }
+      ).window!.electronAPI!.mediaAction!.updateRating
       expect(mockFn).toHaveBeenCalledWith(5, 4)
     })
 
@@ -312,7 +309,9 @@ describe('mediaStore', () => {
       })
       useMediaStore.getState().setMediaFiles([makeFile({ id: '1', is_favorite: false })])
       await updateMediaFileAndPersist('1', { is_favorite: true })
-      const mockFn = (globalThis as { window?: { electronAPI?: { mediaAction?: MockMediaActionApi } } }).window!.electronAPI!.mediaAction!.updateFavorite
+      const mockFn = (
+        globalThis as { window?: { electronAPI?: { mediaAction?: MockMediaActionApi } } }
+      ).window!.electronAPI!.mediaAction!.updateFavorite
       expect(mockFn).toHaveBeenCalledWith(1, true)
     })
 
@@ -324,7 +323,9 @@ describe('mediaStore', () => {
       })
       useMediaStore.getState().setMediaFiles([makeFile({ id: '1' })])
       await updateMediaFileAndPersist('1', { outfit: '星海' })
-      const mockFn = (globalThis as { window?: { electronAPI?: { mediaAction?: MockMediaActionApi } } }).window!.electronAPI!.mediaAction!.updateOutfit
+      const mockFn = (
+        globalThis as { window?: { electronAPI?: { mediaAction?: MockMediaActionApi } } }
+      ).window!.electronAPI!.mediaAction!.updateOutfit
       expect(mockFn).toHaveBeenCalledWith(1, '星海')
     })
 
@@ -336,7 +337,9 @@ describe('mediaStore', () => {
       })
       useMediaStore.getState().setMediaFiles([makeFile({ id: '1' })])
       await updateMediaFileAndPersist('1', { category_id: undefined })
-      const mockFn = (globalThis as { window?: { electronAPI?: { mediaAction?: MockMediaActionApi } } }).window!.electronAPI!.mediaAction!.updateCategory
+      const mockFn = (
+        globalThis as { window?: { electronAPI?: { mediaAction?: MockMediaActionApi } } }
+      ).window!.electronAPI!.mediaAction!.updateCategory
       expect(mockFn).toHaveBeenCalledWith(1, null)
     })
 
@@ -354,7 +357,9 @@ describe('mediaStore', () => {
         notes: 'test',
         is_favorite: true
       })
-      const api = (globalThis as { window?: { electronAPI?: { mediaAction?: MockMediaActionApi } } }).window!.electronAPI!.mediaAction!
+      const api = (
+        globalThis as { window?: { electronAPI?: { mediaAction?: MockMediaActionApi } } }
+      ).window!.electronAPI!.mediaAction!
       expect(api.updateRating).toHaveBeenCalledWith(1, 5)
       expect(api.updateNotes).toHaveBeenCalledWith(1, 'test')
       expect(api.updateFavorite).toHaveBeenCalledWith(1, true)
@@ -435,7 +440,8 @@ describe('mediaStore', () => {
     it('首次加载使用 page=0, pageSize=500', async () => {
       setMockApi()
       await loadMediaFromDatabase()
-      const mockFn = (globalThis as { window?: { electronAPI?: { media?: MockMediaApi } } }).window!.electronAPI!.media!.list
+      const mockFn = (globalThis as { window?: { electronAPI?: { media?: MockMediaApi } } }).window!
+        .electronAPI!.media!.list
       // 过滤参数（accountUid/hideDuplicates/mediaSource）由 store 状态派生，此处只验证分页
       expect(mockFn).toHaveBeenCalledWith(expect.objectContaining({ page: 0, pageSize: 500 }))
     })
@@ -453,7 +459,8 @@ describe('mediaStore', () => {
         }
       })
       const result = await loadMoreMedia(2)
-      const mockFn = (globalThis as { window?: { electronAPI?: { media?: MockMediaApi } } }).window!.electronAPI!.media!.list
+      const mockFn = (globalThis as { window?: { electronAPI?: { media?: MockMediaApi } } }).window!
+        .electronAPI!.media!.list
       // 过滤参数（accountUid/hideDuplicates/mediaSource）由 store 状态派生，此处只验证分页
       expect(mockFn).toHaveBeenCalledWith(expect.objectContaining({ page: 2, pageSize: 500 }))
       expect(result!.files.length).toBe(1)
@@ -491,7 +498,8 @@ describe('mediaStore', () => {
     it('调用 list 时传 deletedOnly: true', async () => {
       setMockApi()
       await loadRecycleBin()
-      const mockFn = (globalThis as { window?: { electronAPI?: { media?: MockMediaApi } } }).window!.electronAPI!.media!.list
+      const mockFn = (globalThis as { window?: { electronAPI?: { media?: MockMediaApi } } }).window!
+        .electronAPI!.media!.list
       expect(mockFn).toHaveBeenCalledWith({ deletedOnly: true })
     })
 

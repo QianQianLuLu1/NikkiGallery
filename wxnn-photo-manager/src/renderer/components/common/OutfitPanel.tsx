@@ -2,7 +2,12 @@ import React, { useMemo } from 'react'
 import type { MediaFile } from '../../stores/mediaStore'
 import { useGameParams } from '../../hooks/useGameParams'
 import type { DressingParams } from '../../types/decryption'
-import { getClothTypeName, getClothStateName, getEurekaAttachmentPointName, getEurekaColorName } from '../../utils/enum-mappings'
+import {
+  getClothTypeName,
+  getClothStateName,
+  getEurekaAttachmentPointName,
+  getEurekaColorName
+} from '../../utils/enum-mappings'
 import { getClothName, getOutfitName } from '../../utils/cloth-name-lookup'
 import { IconOutfit } from '../../icons'
 import { InfoRowPanel, type InfoRow } from './InfoRowPanel'
@@ -24,7 +29,7 @@ function dressingToRows(d: DressingParams | undefined | null): InfoRow[] {
       const clothName = getClothName(c.id) ?? c.clothTypeName
       // state 非"无"时追加状态标记（焕新/进化）
       const stateName = getClothStateName(c.state)
-      const statePart = (stateName && stateName !== '无') ? ` [${stateName}]` : ''
+      const statePart = stateName && stateName !== '无' ? ` [${stateName}]` : ''
       // 有名称时显示"名称 #ID"，无名称时仅显示"#ID"
       const value = clothName ? `${clothName} #${c.id}${statePart}` : `#${c.id}${statePart}`
       rows.push({ label: typeName, value })
@@ -33,15 +38,17 @@ function dressingToRows(d: DressingParams | undefined | null): InfoRow[] {
 
   // 祝福闪光（含套装名、颜色和挂载点）
   if (d.eureka.length > 0) {
-    const eurekaStr = d.eureka.map(e => {
-      const pointName = getEurekaAttachmentPointName(e.attachmentPoint)
-      const pointPart = (pointName && e.attachmentPoint !== 0) ? `[${pointName}]` : ''
-      const colorName = getEurekaColorName(e.color)
-      const colorPart = (colorName && e.color !== 0) ? `[${colorName}]` : ''
-      const outfitName = getOutfitName(e.outfit)
-      const namePart = outfitName ? `${outfitName} ` : ''
-      return `${namePart}#${e.id}${colorPart}${pointPart} (Lv.${e.level})`
-    }).join('、')
+    const eurekaStr = d.eureka
+      .map((e) => {
+        const pointName = getEurekaAttachmentPointName(e.attachmentPoint)
+        const pointPart = pointName && e.attachmentPoint !== 0 ? `[${pointName}]` : ''
+        const colorName = getEurekaColorName(e.color)
+        const colorPart = colorName && e.color !== 0 ? `[${colorName}]` : ''
+        const outfitName = getOutfitName(e.outfit)
+        const namePart = outfitName ? `${outfitName} ` : ''
+        return `${namePart}#${e.id}${colorPart}${pointPart} (Lv.${e.level})`
+      })
+      .join('、')
     rows.push({ label: '祝福闪光', value: eurekaStr })
   }
 
@@ -59,7 +66,11 @@ export function formatOutfitForCopy(d: DressingParams | null | undefined): strin
   return lines.join('\n')
 }
 
-export const OutfitPanel: React.FC<OutfitPanelProps> = ({ file, variant = 'light', showTitle = true }) => {
+export const OutfitPanel: React.FC<OutfitPanelProps> = ({
+  file,
+  variant = 'light',
+  showTitle = true
+}) => {
   const enabled = file.file_type === 'image' && !!file.album_type
   const { data, loading, error } = useGameParams(
     file.file_path,

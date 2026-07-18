@@ -212,7 +212,9 @@ class WifiShareService {
     // P0-C：除 /auth 外所有路径需校验 token
     if (!this.isAuthorized(req)) {
       res.writeHead(401, { 'Content-Type': 'text/html; charset=utf-8' })
-      res.end(`<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>需要认证</title><style>body{font-family:-apple-system,sans-serif;background:#f5f5f7;color:#1d1d1f;padding:24px;}h1{font-size:20px;margin-bottom:12px;}.card{background:#fff;border-radius:12px;padding:20px;max-width:360px;margin:0 auto;}input{width:100%;padding:12px;font-size:18px;text-align:center;letter-spacing:8px;border:1px solid #d2d2d7;border-radius:8px;box-sizing:border-box;margin:8px 0;}button{width:100%;padding:12px;background:#007aff;color:#fff;border:none;border-radius:8px;font-size:16px;cursor:pointer;}button:active{background:#0051d5;}.err{color:#ff3b30;font-size:13px;margin-top:8px;}</style></head><body><div class="card"><h1>请输入 PIN 码</h1><p style="color:#6e6e73;font-size:13px;margin-bottom:8px;">请向分享者询问 6 位数字 PIN 码</p><form onsubmit="fetch('/auth?pin='+document.getElementById('pin').value).then(r=>r.ok?location.reload():r.text().then(t=>document.getElementById('err').textContent=t)).catch(()=>document.getElementById('err').textContent='网络错误');return false;"><input id="pin" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="6 位数字" autofocus><button type="submit">验证</button><div class="err" id="err"></div></form></div></body></html>`)
+      res.end(
+        `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>需要认证</title><style>body{font-family:-apple-system,sans-serif;background:#f5f5f7;color:#1d1d1f;padding:24px;}h1{font-size:20px;margin-bottom:12px;}.card{background:#fff;border-radius:12px;padding:20px;max-width:360px;margin:0 auto;}input{width:100%;padding:12px;font-size:18px;text-align:center;letter-spacing:8px;border:1px solid #d2d2d7;border-radius:8px;box-sizing:border-box;margin:8px 0;}button{width:100%;padding:12px;background:#007aff;color:#fff;border:none;border-radius:8px;font-size:16px;cursor:pointer;}button:active{background:#0051d5;}.err{color:#ff3b30;font-size:13px;margin-top:8px;}</style></head><body><div class="card"><h1>请输入 PIN 码</h1><p style="color:#6e6e73;font-size:13px;margin-bottom:8px;">请向分享者询问 6 位数字 PIN 码</p><form onsubmit="fetch('/auth?pin='+document.getElementById('pin').value).then(r=>r.ok?location.reload():r.text().then(t=>document.getElementById('err').textContent=t)).catch(()=>document.getElementById('err').textContent='网络错误');return false;"><input id="pin" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="6 位数字" autofocus><button type="submit">验证</button><div class="err" id="err"></div></form></div></body></html>`
+      )
       return
     }
 
@@ -276,7 +278,9 @@ class WifiShareService {
       if (this.failedAttempts >= MAX_FAILED_ATTEMPTS) {
         this.lockUntil = now + LOCK_DURATION_MS
         this.failedAttempts = 0
-        logger.warn(`[WifiShare] PIN 失败 ${MAX_FAILED_ATTEMPTS} 次，锁定 ${LOCK_DURATION_MS / 60000} 分钟`)
+        logger.warn(
+          `[WifiShare] PIN 失败 ${MAX_FAILED_ATTEMPTS} 次，锁定 ${LOCK_DURATION_MS / 60000} 分钟`
+        )
         res.writeHead(429, { 'Content-Type': 'text/plain; charset=utf-8' })
         res.end(`PIN 错误次数过多，已锁定 ${LOCK_DURATION_MS / 60000} 分钟`)
       } else {
@@ -294,7 +298,10 @@ class WifiShareService {
     const token = crypto.randomBytes(32).toString('hex')
     this.authTokens.add(token)
     // 设置 Cookie（HttpOnly 防 XSS 读取，SameSite=Lax 允许导航跳转携带，Path=/ 覆盖所有路径）
-    res.setHeader('Set-Cookie', `auth_token=${token}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${Math.floor(this.session.timeoutMs / 1000)}`)
+    res.setHeader(
+      'Set-Cookie',
+      `auth_token=${token}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${Math.floor(this.session.timeoutMs / 1000)}`
+    )
     res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' })
     res.end('认证成功')
     logger.info(`[WifiShare] PIN 认证成功，颁发 token：${token.slice(0, 8)}...`)
@@ -388,7 +395,10 @@ class WifiShareService {
 
       res.setHeader('Content-Type', asThumb ? 'image/jpeg' : file.type)
       res.setHeader('Accept-Ranges', 'bytes')
-      res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(file.name)}`)
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename*=UTF-8''${encodeURIComponent(file.name)}`
+      )
 
       if (range) {
         // Range 请求：解析 bytes=start-end

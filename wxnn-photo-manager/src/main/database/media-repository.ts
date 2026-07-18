@@ -302,12 +302,16 @@ export class MediaRepository {
 
   /** media:updateFavorite */
   updateFavorite(mediaId: number, isFavorite: boolean): void {
-    this.db.prepare('UPDATE media_files SET is_favorite = ? WHERE id = ?').run(isFavorite ? 1 : 0, mediaId)
+    this.db
+      .prepare('UPDATE media_files SET is_favorite = ? WHERE id = ?')
+      .run(isFavorite ? 1 : 0, mediaId)
   }
 
   /** media:updateTags */
   updateTags(mediaId: number, tags: string[]): void {
-    this.db.prepare('UPDATE media_files SET tags = ? WHERE id = ?').run(JSON.stringify(tags), mediaId)
+    this.db
+      .prepare('UPDATE media_files SET tags = ? WHERE id = ?')
+      .run(JSON.stringify(tags), mediaId)
   }
 
   /** media:updateNotes */
@@ -343,18 +347,22 @@ export class MediaRepository {
   softDeleteBatch(mediaIds: number[]): void {
     if (mediaIds.length === 0) return
     const placeholders = this.placeholders(mediaIds.length)
-    this.db.prepare(
-      `UPDATE media_files SET is_deleted = 1, deleted_at = datetime('now') WHERE id IN (${placeholders}) AND is_deleted = 0`
-    ).run(...mediaIds)
+    this.db
+      .prepare(
+        `UPDATE media_files SET is_deleted = 1, deleted_at = datetime('now') WHERE id IN (${placeholders}) AND is_deleted = 0`
+      )
+      .run(...mediaIds)
   }
 
   /** media:restore — 批量恢复（清除软删除标记） */
   restoreBatch(mediaIds: number[]): void {
     if (mediaIds.length === 0) return
     const placeholders = this.placeholders(mediaIds.length)
-    this.db.prepare(
-      `UPDATE media_files SET is_deleted = 0, deleted_at = NULL WHERE id IN (${placeholders}) AND is_deleted = 1`
-    ).run(...mediaIds)
+    this.db
+      .prepare(
+        `UPDATE media_files SET is_deleted = 0, deleted_at = NULL WHERE id IN (${placeholders}) AND is_deleted = 1`
+      )
+      .run(...mediaIds)
   }
 
   /**
@@ -394,7 +402,9 @@ export class MediaRepository {
 
   /** media:removeMissing — 删除单条 missing 记录，返回是否删除成功 */
   removeMissingRecord(mediaId: number): boolean {
-    const result = this.db.prepare('DELETE FROM media_files WHERE id = ? AND is_missing = 1').run(mediaId)
+    const result = this.db
+      .prepare('DELETE FROM media_files WHERE id = ? AND is_missing = 1')
+      .run(mediaId)
     return result.changes > 0
   }
 
@@ -425,22 +435,27 @@ export class MediaRepository {
       rating: 'rating'
     }
     const deletedOnly = options.deletedOnly === true
-    const sortColumn = options.sortBy && VALID_SORT_COLUMNS[options.sortBy]
-      ? VALID_SORT_COLUMNS[options.sortBy]
-      : (deletedOnly ? 'deleted_at' : 'created_at')
+    const sortColumn =
+      options.sortBy && VALID_SORT_COLUMNS[options.sortBy]
+        ? VALID_SORT_COLUMNS[options.sortBy]
+        : deletedOnly
+          ? 'deleted_at'
+          : 'created_at'
     const sortDirection = options.sortOrder === 'asc' ? 'ASC' : 'DESC'
     const orderBy = `ORDER BY ${sortColumn} ${sortDirection}`
 
     let rawRows: Array<Omit<MediaRow, 'tags'> & { tags: unknown }>
     if (usePagination) {
       const offset = page! * pageSize!
-      rawRows = this.db.prepare(
-        `SELECT ${selectColumns} FROM media_files ${whereClause} ${orderBy} LIMIT ? OFFSET ?`
-      ).all(...whereParams, pageSize, offset) as Array<Omit<MediaRow, 'tags'> & { tags: unknown }>
+      rawRows = this.db
+        .prepare(
+          `SELECT ${selectColumns} FROM media_files ${whereClause} ${orderBy} LIMIT ? OFFSET ?`
+        )
+        .all(...whereParams, pageSize, offset) as Array<Omit<MediaRow, 'tags'> & { tags: unknown }>
     } else {
-      rawRows = this.db.prepare(
-        `SELECT ${selectColumns} FROM media_files ${whereClause} ${orderBy}`
-      ).all(...whereParams) as Array<Omit<MediaRow, 'tags'> & { tags: unknown }>
+      rawRows = this.db
+        .prepare(`SELECT ${selectColumns} FROM media_files ${whereClause} ${orderBy}`)
+        .all(...whereParams) as Array<Omit<MediaRow, 'tags'> & { tags: unknown }>
     }
 
     // 解析 tags JSON 字段
@@ -479,17 +494,17 @@ export class MediaRepository {
 
   /** COUNT 查询（使用与 listMedia 相同的 WHERE 子句） */
   private countMedia(whereClause: string, whereParams: unknown[]): number {
-    const row = this.db.prepare(
-      `SELECT COUNT(*) as count FROM media_files ${whereClause}`
-    ).get(...whereParams) as { count: number }
+    const row = this.db
+      .prepare(`SELECT COUNT(*) as count FROM media_files ${whereClause}`)
+      .get(...whereParams) as { count: number }
     return row.count
   }
 
   /** 读取 media_count 缓存（app_settings.media_count），未缓存返回 null */
   private getMediaCountCache(): number | null {
-    const row = this.db.prepare('SELECT value FROM app_settings WHERE key = ?').get('media_count') as
-      | { value: string }
-      | undefined
+    const row = this.db
+      .prepare('SELECT value FROM app_settings WHERE key = ?')
+      .get('media_count') as { value: string } | undefined
     if (!row) return null
     try {
       const parsed = JSON.parse(row.value)
@@ -503,10 +518,9 @@ export class MediaRepository {
 
   /** 写入 media_count 缓存（与 Application.notifyMediaUpdated 共享同一 app_settings 行） */
   setMediaCountCache(count: number): void {
-    this.db.prepare('INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)').run(
-      'media_count',
-      JSON.stringify(count)
-    )
+    this.db
+      .prepare('INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)')
+      .run('media_count', JSON.stringify(count))
   }
 
   /**
@@ -514,9 +528,9 @@ export class MediaRepository {
    * 统一收口 media_count 的写入逻辑，消除 Application.notifyMediaUpdated 的直接 SQL 双写路径
    */
   refreshMediaCountCache(): void {
-    const row = this.db.prepare('SELECT COUNT(*) as count FROM media_files WHERE is_deleted = 0').get() as
-      | { count: number }
-      | undefined
+    const row = this.db
+      .prepare('SELECT COUNT(*) as count FROM media_files WHERE is_deleted = 0')
+      .get() as { count: number } | undefined
     if (row) {
       this.setMediaCountCache(row.count)
     }
@@ -526,64 +540,76 @@ export class MediaRepository {
   getMediaForSceneAnalysis(mediaIds?: number[]): IdPathRow[] {
     if (mediaIds && mediaIds.length > 0) {
       const placeholders = this.placeholders(mediaIds.length)
-      return this.db.prepare(
-        `SELECT id, file_path FROM media_files WHERE id IN (${placeholders}) AND file_type = ?`
-      ).all(...mediaIds, 'image') as IdPathRow[]
+      return this.db
+        .prepare(
+          `SELECT id, file_path FROM media_files WHERE id IN (${placeholders}) AND file_type = ?`
+        )
+        .all(...mediaIds, 'image') as IdPathRow[]
     }
-    return this.db.prepare(
-      "SELECT id, file_path FROM media_files WHERE scene_time = 'unknown' AND file_type = 'image' AND is_deleted = 0"
-    ).all() as IdPathRow[]
+    return this.db
+      .prepare(
+        "SELECT id, file_path FROM media_files WHERE scene_time = 'unknown' AND file_type = 'image' AND is_deleted = 0"
+      )
+      .all() as IdPathRow[]
   }
 
   /** media:permanentDelete / media:emptyRecycleBin — 查询文件路径 */
   getMediaPathsByIds(mediaIds: number[]): IdPathRow[] {
     if (mediaIds.length === 0) return []
     const placeholders = this.placeholders(mediaIds.length)
-    return this.db.prepare(
-      `SELECT id, file_path FROM media_files WHERE id IN (${placeholders})`
-    ).all(...mediaIds) as IdPathRow[]
+    return this.db
+      .prepare(`SELECT id, file_path FROM media_files WHERE id IN (${placeholders})`)
+      .all(...mediaIds) as IdPathRow[]
   }
 
   /** media:emptyRecycleBin — 查询所有软删除记录 */
   getSoftDeletedMediaPaths(): IdPathRow[] {
-    return this.db.prepare(
-      'SELECT id, file_path FROM media_files WHERE is_deleted = 1'
-    ).all() as IdPathRow[]
+    return this.db
+      .prepare('SELECT id, file_path FROM media_files WHERE is_deleted = 1')
+      .all() as IdPathRow[]
   }
 
   /** media:getOutfitStats — 聚合查询每个套装的张数 / 最新拍摄时间 */
   getOutfitAggStats(): OutfitAggRow[] {
-    return this.db.prepare(
-      `SELECT outfit, COUNT(*) as count, MAX(created_at) as latest_created, MAX(modified_at) as latest_modified
+    return this.db
+      .prepare(
+        `SELECT outfit, COUNT(*) as count, MAX(created_at) as latest_created, MAX(modified_at) as latest_modified
        FROM media_files
        WHERE is_deleted = 0 AND outfit IS NOT NULL AND outfit != ''
        GROUP BY outfit
        ORDER BY count DESC, latest_created DESC`
-    ).all() as OutfitAggRow[]
+      )
+      .all() as OutfitAggRow[]
   }
 
   /** media:getOutfitStats — 取每个套装最新一张作为封面 */
   getLatestOutfitMedia(outfit: string): OutfitLatestRow | undefined {
-    return this.db.prepare(
-      'SELECT file_path, thumbnail FROM media_files WHERE outfit = ? AND is_deleted = 0 ORDER BY created_at DESC LIMIT 1'
-    ).get(outfit) as OutfitLatestRow | undefined
+    return this.db
+      .prepare(
+        'SELECT file_path, thumbnail FROM media_files WHERE outfit = ? AND is_deleted = 0 ORDER BY created_at DESC LIMIT 1'
+      )
+      .get(outfit) as OutfitLatestRow | undefined
   }
 
   /** media:findDuplicates — 查询所有未软删除文件的元数据（用于 size+hash 分组） */
   getDuplicateCandidates(): DuplicateCandidateRow[] {
-    return this.db.prepare(
-      `SELECT id, file_path, file_name, file_type, file_size, modified_at, width, height, is_favorite, rating
+    return this.db
+      .prepare(
+        `SELECT id, file_path, file_name, file_type, file_size, modified_at, width, height, is_favorite, rating
        FROM media_files WHERE is_deleted = 0`
-    ).all() as DuplicateCandidateRow[]
+      )
+      .all() as DuplicateCandidateRow[]
   }
 
   /** media:findSimilar — 查询所有已计算 pHash 的未软删除图片 */
   getPhashRows(): PhashRow[] {
-    return this.db.prepare(
-      `SELECT id, file_path, file_name, file_type, file_size, modified_at, width, height, is_favorite, rating, phash
+    return this.db
+      .prepare(
+        `SELECT id, file_path, file_name, file_type, file_size, modified_at, width, height, is_favorite, rating, phash
        FROM media_files
        WHERE is_deleted = 0 AND phash IS NOT NULL AND phash != ''`
-    ).all() as PhashRow[]
+      )
+      .all() as PhashRow[]
   }
 
   /** media:getGroupCounts — 按维度统计分组数量 */
@@ -608,9 +634,11 @@ export class MediaRepository {
     }
     const whereFilter = conditions.join(' AND ')
 
-    const rows = this.db.prepare(
-      `SELECT ${dimension} as key, COUNT(*) as cnt FROM media_files WHERE ${whereFilter} GROUP BY ${dimension} ORDER BY cnt DESC`
-    ).all(...params) as Array<{ key: string; cnt: number }>
+    const rows = this.db
+      .prepare(
+        `SELECT ${dimension} as key, COUNT(*) as cnt FROM media_files WHERE ${whereFilter} GROUP BY ${dimension} ORDER BY cnt DESC`
+      )
+      .all(...params) as Array<{ key: string; cnt: number }>
 
     return rows.map((r) => ({ key: r.key, count: r.cnt }))
   }
@@ -621,22 +649,26 @@ export class MediaRepository {
 
   /** duplicate:listGroups — 查询所有 is_duplicate=1 的文件 */
   getDuplicateGroupRows(): DuplicateGroupRow[] {
-    return this.db.prepare(
-      `SELECT id, file_path, file_name, file_type, file_size, modified_at, width, height, is_favorite, rating, original_id
+    return this.db
+      .prepare(
+        `SELECT id, file_path, file_name, file_type, file_size, modified_at, width, height, is_favorite, rating, original_id
        FROM media_files
        WHERE is_duplicate = 1 AND is_deleted = 0 AND original_id IS NOT NULL
        ORDER BY original_id, modified_at DESC`
-    ).all() as DuplicateGroupRow[]
+      )
+      .all() as DuplicateGroupRow[]
   }
 
   /** duplicate:listGroups — 查询每组 original_id 对应的推荐保留文件 */
   getOriginalsByIds(originalIds: number[]): OriginalRow[] {
     if (originalIds.length === 0) return []
     const placeholders = this.placeholders(originalIds.length)
-    return this.db.prepare(
-      `SELECT id, file_path, file_name, file_type, file_size, modified_at, width, height, is_favorite, rating
+    return this.db
+      .prepare(
+        `SELECT id, file_path, file_name, file_type, file_size, modified_at, width, height, is_favorite, rating
        FROM media_files WHERE id IN (${placeholders})`
-    ).all(...originalIds) as OriginalRow[]
+      )
+      .all(...originalIds) as OriginalRow[]
   }
 
   // ==========================================================================
@@ -645,13 +677,15 @@ export class MediaRepository {
 
   /** category:create — 返回新分类 id */
   createCategory(name: string, icon: string, color: string, parentId: number | null): number {
-    const maxOrderRow = this.db.prepare('SELECT MAX(sort_order) as maxOrder FROM categories').get() as
-      | { maxOrder: number | null }
-      | undefined
+    const maxOrderRow = this.db
+      .prepare('SELECT MAX(sort_order) as maxOrder FROM categories')
+      .get() as { maxOrder: number | null } | undefined
     const maxOrder = maxOrderRow?.maxOrder || 0
-    const result = this.db.prepare(
-      'INSERT INTO categories (name, icon, color, sort_order, parent_id, is_system, created_at) VALUES (?, ?, ?, ?, ?, 0, datetime("now"))'
-    ).run(name, icon, color, maxOrder + 1, parentId)
+    const result = this.db
+      .prepare(
+        'INSERT INTO categories (name, icon, color, sort_order, parent_id, is_system, created_at) VALUES (?, ?, ?, ?, ?, 0, datetime("now"))'
+      )
+      .run(name, icon, color, maxOrder + 1, parentId)
     return Number(result.lastInsertRowid)
   }
 
@@ -684,9 +718,11 @@ export class MediaRepository {
 
   /** category:list — 查询全部分类（按 sort_order 排序） */
   listCategories(): CategoryRow[] {
-    return this.db.prepare(
-      'SELECT id, name, icon, color, sort_order, parent_id, is_system FROM categories ORDER BY sort_order'
-    ).all() as CategoryRow[]
+    return this.db
+      .prepare(
+        'SELECT id, name, icon, color, sort_order, parent_id, is_system FROM categories ORDER BY sort_order'
+      )
+      .all() as CategoryRow[]
   }
 
   // ==========================================================================
@@ -695,16 +731,20 @@ export class MediaRepository {
 
   /** profile:list — 查询全角色档案（按 created_at 升序） */
   listProfiles(): ProfileRow[] {
-    return this.db.prepare(
-      'SELECT uid, nickname, avatar, created_at, last_active_at FROM character_profiles ORDER BY created_at ASC'
-    ).all() as ProfileRow[]
+    return this.db
+      .prepare(
+        'SELECT uid, nickname, avatar, created_at, last_active_at FROM character_profiles ORDER BY created_at ASC'
+      )
+      .all() as ProfileRow[]
   }
 
   /** profile:add — 新增角色档案 */
   addProfile(uid: string, nickname: string, avatar: string | null): void {
-    this.db.prepare(
-      "INSERT INTO character_profiles (uid, nickname, avatar, created_at) VALUES (?, ?, ?, datetime('now'))"
-    ).run(uid, nickname, avatar)
+    this.db
+      .prepare(
+        "INSERT INTO character_profiles (uid, nickname, avatar, created_at) VALUES (?, ?, ?, datetime('now'))"
+      )
+      .run(uid, nickname, avatar)
   }
 
   /** profile:update — 动态字段更新（sets 与 params 由 handler 构建白名单后传入） */
@@ -717,7 +757,9 @@ export class MediaRepository {
   /** profile:delete — 删除档案前将该档案下的文件迁移到默认档案（事务） */
   deleteProfileAndReassign(uid: string): void {
     const tx = this.db.transaction(() => {
-      this.db.prepare("UPDATE media_files SET account_uid = 'default' WHERE account_uid = ?").run(uid)
+      this.db
+        .prepare("UPDATE media_files SET account_uid = 'default' WHERE account_uid = ?")
+        .run(uid)
       this.db.prepare('DELETE FROM character_profiles WHERE uid = ?').run(uid)
     })
     tx()
@@ -725,14 +767,15 @@ export class MediaRepository {
 
   /** profile:setCurrent — 更新 last_active_at */
   touchProfileActive(uid: string): void {
-    this.db.prepare("UPDATE character_profiles SET last_active_at = datetime('now') WHERE uid = ?").run(uid)
+    this.db
+      .prepare("UPDATE character_profiles SET last_active_at = datetime('now') WHERE uid = ?")
+      .run(uid)
   }
 
   /** profile:transferFiles — 校验目标档案存在 */
   getProfileByUid(uid: string): { uid: string } | undefined {
     return this.db.prepare('SELECT uid FROM character_profiles WHERE uid = ?').get(uid) as
-      | { uid: string }
-      | undefined
+      { uid: string } | undefined
   }
 
   /** profile:transferFiles — 批量更新 media_files.account_uid（事务） */
@@ -740,17 +783,18 @@ export class MediaRepository {
     if (mediaIds.length === 0) return
     const placeholders = this.placeholders(mediaIds.length)
     const tx = this.db.transaction(() => {
-      this.db.prepare(
-        `UPDATE media_files SET account_uid = ? WHERE id IN (${placeholders})`
-      ).run(targetUid, ...mediaIds)
+      this.db
+        .prepare(`UPDATE media_files SET account_uid = ? WHERE id IN (${placeholders})`)
+        .run(targetUid, ...mediaIds)
     })
     tx()
   }
 
   /** profile:getStats — 基础统计（总数 / 图片数 / 视频数 / 总大小 / 最早最晚时间） */
   getProfileBaseStats(uid: string): ProfileBaseStats {
-    const row = this.db.prepare(
-      `SELECT
+    const row = this.db
+      .prepare(
+        `SELECT
         COUNT(*) as total_count,
         SUM(CASE WHEN file_type = 'image' THEN 1 ELSE 0 END) as image_count,
         SUM(CASE WHEN file_type = 'video' THEN 1 ELSE 0 END) as video_count,
@@ -759,42 +803,49 @@ export class MediaRepository {
         MAX(created_at) as latest_time
       FROM media_files
       WHERE account_uid = ? AND is_deleted = 0`
-    ).get(uid) as ProfileBaseStats
+      )
+      .get(uid) as ProfileBaseStats
     return row
   }
 
   /** profile:getStats — Top 5 套装偏好 */
   getProfileTopOutfits(uid: string, limit = 5): ProfileTopStatRow[] {
-    return this.db.prepare(
-      `SELECT outfit as key, COUNT(*) as cnt
+    return this.db
+      .prepare(
+        `SELECT outfit as key, COUNT(*) as cnt
       FROM media_files
       WHERE account_uid = ? AND is_deleted = 0 AND outfit IS NOT NULL AND outfit != ''
       GROUP BY outfit
       ORDER BY cnt DESC
       LIMIT ?`
-    ).all(uid, limit) as ProfileTopStatRow[]
+      )
+      .all(uid, limit) as ProfileTopStatRow[]
   }
 
   /** profile:getStats — Top 5 场景偏好 */
   getProfileTopScenes(uid: string, limit = 5): ProfileTopStatRow[] {
-    return this.db.prepare(
-      `SELECT scene_category as key, COUNT(*) as cnt
+    return this.db
+      .prepare(
+        `SELECT scene_category as key, COUNT(*) as cnt
       FROM media_files
       WHERE account_uid = ? AND is_deleted = 0 AND scene_category IS NOT NULL
       GROUP BY scene_category
       ORDER BY cnt DESC
       LIMIT ?`
-    ).all(uid, limit) as ProfileTopStatRow[]
+      )
+      .all(uid, limit) as ProfileTopStatRow[]
   }
 
   /** profile:getStats — 时段偏好分布（日间/黄昏/夜间占比） */
   getProfileTimeDistribution(uid: string): ProfileTopStatRow[] {
-    return this.db.prepare(
-      `SELECT scene_time as key, COUNT(*) as cnt
+    return this.db
+      .prepare(
+        `SELECT scene_time as key, COUNT(*) as cnt
       FROM media_files
       WHERE account_uid = ? AND is_deleted = 0
       GROUP BY scene_time`
-    ).all(uid) as ProfileTopStatRow[]
+      )
+      .all(uid) as ProfileTopStatRow[]
   }
 
   // ==========================================================================

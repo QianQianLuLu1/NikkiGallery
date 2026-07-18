@@ -42,9 +42,21 @@ const SETTINGS_GROUPS: GroupDef[] = [
     id: 'general',
     nameKey: 'settings.groups.general',
     sections: [
-      { id: 'general-startup', nameKey: 'settings.sections.startup', component: GeneralStartupSection },
-      { id: 'general-fileops', nameKey: 'settings.sections.fileops', component: GeneralFileOpsSection },
-      { id: 'general-export', nameKey: 'settings.sections.exportWorkflow', component: GeneralExportSection },
+      {
+        id: 'general-startup',
+        nameKey: 'settings.sections.startup',
+        component: GeneralStartupSection
+      },
+      {
+        id: 'general-fileops',
+        nameKey: 'settings.sections.fileops',
+        component: GeneralFileOpsSection
+      },
+      {
+        id: 'general-export',
+        nameKey: 'settings.sections.exportWorkflow',
+        component: GeneralExportSection
+      },
       // P2-01：新增语言设置区块，归类到"通用"分组下
       { id: 'general-language', nameKey: 'settings.sections.language', component: LanguageSection }
     ]
@@ -53,22 +65,38 @@ const SETTINGS_GROUPS: GroupDef[] = [
     id: 'appearance',
     nameKey: 'settings.groups.appearance',
     sections: [
-      { id: 'appearance-theme', nameKey: 'settings.sections.theme', component: AppearanceThemeSection },
-      { id: 'appearance-display', nameKey: 'settings.sections.display', component: AppearanceDisplaySection }
+      {
+        id: 'appearance-theme',
+        nameKey: 'settings.sections.theme',
+        component: AppearanceThemeSection
+      },
+      {
+        id: 'appearance-display',
+        nameKey: 'settings.sections.display',
+        component: AppearanceDisplaySection
+      }
     ]
   },
   {
     id: 'scan',
     nameKey: 'settings.groups.scan',
     sections: [
-      { id: 'scan-options', nameKey: 'settings.sections.scanOptions', component: ScanOptionsSection }
+      {
+        id: 'scan-options',
+        nameKey: 'settings.sections.scanOptions',
+        component: ScanOptionsSection
+      }
     ]
   },
   {
     id: 'profile',
     nameKey: 'settings.groups.profile',
     sections: [
-      { id: 'profile-manage', nameKey: 'settings.sections.profileManage', component: ProfileManageSection }
+      {
+        id: 'profile-manage',
+        nameKey: 'settings.sections.profileManage',
+        component: ProfileManageSection
+      }
     ]
   },
   {
@@ -84,8 +112,16 @@ const SETTINGS_GROUPS: GroupDef[] = [
     id: 'diagnostics',
     nameKey: 'settings.groups.diagnostics',
     sections: [
-      { id: 'diagnostics-logs', nameKey: 'settings.sections.diagnosticsLogs', component: DiagnosticsLogsSection },
-      { id: 'diagnostics-crash', nameKey: 'settings.sections.diagnosticsCrash', component: DiagnosticsCrashSection }
+      {
+        id: 'diagnostics-logs',
+        nameKey: 'settings.sections.diagnosticsLogs',
+        component: DiagnosticsLogsSection
+      },
+      {
+        id: 'diagnostics-crash',
+        nameKey: 'settings.sections.diagnosticsCrash',
+        component: DiagnosticsCrashSection
+      }
     ]
   },
   {
@@ -93,15 +129,27 @@ const SETTINGS_GROUPS: GroupDef[] = [
     nameKey: 'settings.groups.about',
     sections: [
       { id: 'about-info', nameKey: 'settings.sections.aboutInfo', component: AboutInfoSection },
-      { id: 'about-contact', nameKey: 'settings.sections.aboutContact', component: AboutContactSection },
-      { id: 'about-license', nameKey: 'settings.sections.aboutLicense', component: AboutLicenseSection }
+      {
+        id: 'about-contact',
+        nameKey: 'settings.sections.aboutContact',
+        component: AboutContactSection
+      },
+      {
+        id: 'about-license',
+        nameKey: 'settings.sections.aboutLicense',
+        component: AboutLicenseSection
+      }
     ]
   },
   {
     id: 'tools',
     nameKey: 'settings.groups.tools',
     sections: [
-      { id: 'tools-sharecode', nameKey: 'settings.sections.shareCode', component: ToolsShareCodeSection }
+      {
+        id: 'tools-sharecode',
+        nameKey: 'settings.sections.shareCode',
+        component: ToolsShareCodeSection
+      }
     ]
   }
 ]
@@ -134,45 +182,50 @@ export const SettingsPage: React.FC = () => {
   return (
     // P0-3：GlobalToastProvider 已提升到 App.tsx 根节点，此处不再需要包裹
     <div className="h-full flex flex-col">
-      <h2 className="text-2xl font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>{t('settings.title')}</h2>
+      <h2 className="text-2xl font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>
+        {t('settings.title')}
+      </h2>
       <div className="flex gap-6 flex-1 min-h-0">
-          {/* 左侧导航：二级分类 + 三级页面列表 */}
-          <nav className="w-48 flex-shrink-0 overflow-y-auto" aria-label="设置导航">
-            <div className="space-y-4">
-              {SETTINGS_GROUPS.map((group) => (
-                <div key={group.id}>
-                  <div className="text-xs font-medium mb-2 px-2" style={{ color: 'var(--text-tertiary)' }}>
-                    {t(group.nameKey)}
-                  </div>
-                  <div className="space-y-1">
-                    {group.sections.map((section) => {
-                      const isActive = section.id === activeSection
-                      return (
-                        <button
-                          key={section.id}
-                          className="w-full text-left px-3 py-2 text-sm rounded-lg transition-all"
-                          style={{
-                            background: isActive ? 'var(--bg-tertiary)' : 'transparent',
-                            color: isActive ? 'var(--accent)' : 'var(--text-primary)',
-                            fontWeight: isActive ? 500 : 400
-                          }}
-                          onClick={() => setActiveSection(section.id)}
-                        >
-                          {t(section.nameKey)}
-                        </button>
-                      )
-                    })}
-                  </div>
+        {/* 左侧导航：二级分类 + 三级页面列表 */}
+        <nav className="w-48 flex-shrink-0 overflow-y-auto" aria-label="设置导航">
+          <div className="space-y-4">
+            {SETTINGS_GROUPS.map((group) => (
+              <div key={group.id}>
+                <div
+                  className="text-xs font-medium mb-2 px-2"
+                  style={{ color: 'var(--text-tertiary)' }}
+                >
+                  {t(group.nameKey)}
                 </div>
-              ))}
-            </div>
-          </nav>
-
-          {/* 右侧内容区：当前选中的三级页面 */}
-          <div className="flex-1 min-w-0 overflow-y-auto max-w-2xl">
-            <CurrentComponent />
+                <div className="space-y-1">
+                  {group.sections.map((section) => {
+                    const isActive = section.id === activeSection
+                    return (
+                      <button
+                        key={section.id}
+                        className="w-full text-left px-3 py-2 text-sm rounded-lg transition-all"
+                        style={{
+                          background: isActive ? 'var(--bg-tertiary)' : 'transparent',
+                          color: isActive ? 'var(--accent)' : 'var(--text-primary)',
+                          fontWeight: isActive ? 500 : 400
+                        }}
+                        onClick={() => setActiveSection(section.id)}
+                      >
+                        {t(section.nameKey)}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
+        </nav>
+
+        {/* 右侧内容区：当前选中的三级页面 */}
+        <div className="flex-1 min-w-0 overflow-y-auto max-w-2xl">
+          <CurrentComponent />
         </div>
+      </div>
     </div>
   )
 }

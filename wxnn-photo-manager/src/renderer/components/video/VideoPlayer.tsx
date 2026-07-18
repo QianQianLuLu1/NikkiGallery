@@ -54,7 +54,10 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     if (!videoRef.current || !src) return
     try {
       // U-G8：保存进度时附带时间戳，用于过期清理
-      localStorage.setItem(getVideoStorageKey(src), JSON.stringify({ currentTime: videoRef.current.currentTime, savedAt: Date.now() }))
+      localStorage.setItem(
+        getVideoStorageKey(src),
+        JSON.stringify({ currentTime: videoRef.current.currentTime, savedAt: Date.now() })
+      )
     } catch {
       // ignore
     }
@@ -94,7 +97,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           let time: number
           try {
             const parsed = JSON.parse(saved)
-            time = typeof parsed === 'object' && parsed !== null ? parsed.currentTime : parseFloat(saved)
+            time =
+              typeof parsed === 'object' && parsed !== null ? parsed.currentTime : parseFloat(saved)
           } catch {
             time = parseFloat(saved)
           }
@@ -174,27 +178,31 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         </div>
       )}
       <div className="absolute top-4 right-4 flex gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
+        <button
+          onClick={toggleFullscreen}
+          className="px-3 py-1.5 rounded-lg text-xs font-medium"
+          style={{
+            background: 'var(--bg-secondary)',
+            color: 'var(--text-primary)',
+            border: '1px solid var(--divider)'
+          }}
+          title={isFullscreen ? '退出全屏' : '全屏播放'}
+          aria-label={isFullscreen ? '退出全屏' : '全屏播放'}
+        >
+          {isFullscreen ? '退出全屏' : '全屏'}
+        </button>
+        {onCaptureFrame && (
           <button
-            onClick={toggleFullscreen}
+            onClick={handleCapture}
             className="px-3 py-1.5 rounded-lg text-xs font-medium"
-            style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--divider)' }}
-            title={isFullscreen ? '退出全屏' : '全屏播放'}
-            aria-label={isFullscreen ? '退出全屏' : '全屏播放'}
+            style={{ background: 'var(--accent)', color: 'var(--text-on-accent)' }}
+            title="截取当前帧"
+            aria-label="截取当前帧"
           >
-            {isFullscreen ? '退出全屏' : '全屏'}
+            截图
           </button>
-          {onCaptureFrame && (
-            <button
-              onClick={handleCapture}
-              className="px-3 py-1.5 rounded-lg text-xs font-medium"
-              style={{ background: 'var(--accent)', color: 'var(--text-on-accent)' }}
-              title="截取当前帧"
-              aria-label="截取当前帧"
-            >
-              截图
-            </button>
-          )}
-        </div>
+        )}
+      </div>
     </div>
   )
 }

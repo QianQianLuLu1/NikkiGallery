@@ -20,10 +20,7 @@ import { pickBestId } from '../../utils/duplicate-scoring'
 // 并发控制
 import { runWithConcurrency } from '../../utils/concurrency'
 // P1-A1：4 组函数抽取到共享服务模块，启动路径与 IPC 路径共用同一份实现
-import {
-  generatePhashForUnprocessed,
-  markDuplicates
-} from '../../services/thumbnail-phash-service'
+import { generatePhashForUnprocessed, markDuplicates } from '../../services/thumbnail-phash-service'
 // Slice 6：SQL 访问层抽离到 MediaRepository
 import { MediaRepository } from '../../database/media-repository'
 // Slice 6：GroupDimension / MediaSourceFilter 类型收窄白名单
@@ -75,7 +72,8 @@ export function registerMediaHandlers(ctx: HandlerContext): void {
       // A-S9：参数校验
       const vId = validateMediaId(mediaId)
       if (!vId.valid) return { success: false, message: vId.message }
-      if (typeof isFavorite !== 'boolean') return { success: false, message: 'isFavorite 必须是布尔值' }
+      if (typeof isFavorite !== 'boolean')
+        return { success: false, message: 'isFavorite 必须是布尔值' }
 
       getRepo().updateFavorite(mediaId, isFavorite)
       ctx.notifyMediaUpdated()
@@ -291,9 +289,10 @@ export function registerMediaHandlers(ctx: HandlerContext): void {
       repo.hardDeleteBatch(idsToDelete)
 
       ctx.notifyMediaUpdated()
-      const msg = failedPaths.length > 0
-        ? `已彻底删除 ${idsToDelete.length} 项（${failedPaths.length} 项移至回收站失败，已保留记录供手动处理）`
-        : `已彻底删除 ${idsToDelete.length} 项`
+      const msg =
+        failedPaths.length > 0
+          ? `已彻底删除 ${idsToDelete.length} 项（${failedPaths.length} 项移至回收站失败，已保留记录供手动处理）`
+          : `已彻底删除 ${idsToDelete.length} 项`
       return { success: true, message: msg }
     } catch (error) {
       return { success: false, message: String(error) }
@@ -509,11 +508,28 @@ export function registerMediaHandlers(ctx: HandlerContext): void {
 
       const threshold = options?.threshold ?? 5
       if (threshold < 0 || threshold > 64) {
-        return { success: false, message: '阈值必须在 0-64 之间', duplicates: [], totalGroups: 0, totalFiles: 0, wastedBytes: 0, scannedFiles: 0 }
+        return {
+          success: false,
+          message: '阈值必须在 0-64 之间',
+          duplicates: [],
+          totalGroups: 0,
+          totalFiles: 0,
+          wastedBytes: 0,
+          scannedFiles: 0
+        }
       }
 
       if (rows.length < 2) {
-        return { success: true, duplicates: [], totalGroups: 0, totalFiles: 0, wastedBytes: 0, scannedFiles: rows.length, threshold, hashedFiles: rows.length }
+        return {
+          success: true,
+          duplicates: [],
+          totalGroups: 0,
+          totalFiles: 0,
+          wastedBytes: 0,
+          scannedFiles: rows.length,
+          threshold,
+          hashedFiles: rows.length
+        }
       }
 
       // 聚类：相似度图连通分量（Union-Find）
@@ -560,7 +576,9 @@ export function registerMediaHandlers(ctx: HandlerContext): void {
         if (indices.length < 2) continue
         const groupRows = indices.map((i) => rows[i])
         // 组内按 modified_at 降序（最新在前）
-        groupRows.sort((a, b) => new Date(b.modified_at).getTime() - new Date(a.modified_at).getTime())
+        groupRows.sort(
+          (a, b) => new Date(b.modified_at).getTime() - new Date(a.modified_at).getTime()
+        )
         similarGroups.push(groupRows)
         totalFiles += groupRows.length
         // 可释放空间 = 组内最小文件大小 × (n-1)（保留一张）
@@ -594,7 +612,9 @@ export function registerMediaHandlers(ctx: HandlerContext): void {
         return { items, bestItemId: bestId }
       })
 
-      console.log(`[pHash] 相似检测：扫描 ${rows.length} 张，比较 ${comparedPairs} 对相似，分 ${similarGroups.length} 组`)
+      console.log(
+        `[pHash] 相似检测：扫描 ${rows.length} 张，比较 ${comparedPairs} 对相似，分 ${similarGroups.length} 组`
+      )
 
       return {
         success: true,
@@ -674,79 +694,93 @@ export function registerMediaHandlers(ctx: HandlerContext): void {
   // 维度可选值：album_type | scene_category | scene_time | outfit | file_type
   // 返回 [{ key, count }, ...]，按 count 降序排列
   // accountUid 可选过滤条件（'all' 或不传表示全部档案）
-  ipcMain.handle('media:getGroupCounts', async (_, dimension: string, accountUid?: string, mediaSource?: MediaSourceFilter) => {
-    try {
-      // 白名单防止 SQL 注入（Repository 方法签名已收窄为 GroupDimension，此处再做运行时校验）
-      const VALID_DIMENSIONS: Record<string, GroupDimension> = {
-        album_type: 'album_type',
-        scene_category: 'scene_category',
-        scene_time: 'scene_time',
-        outfit: 'outfit',
-        file_type: 'file_type'
-      }
-      const dim = VALID_DIMENSIONS[dimension]
-      if (!dim) {
-        return { success: false, message: `无效的分组维度: ${dimension}`, groups: [] }
-      }
+  ipcMain.handle(
+    'media:getGroupCounts',
+    async (_, dimension: string, accountUid?: string, mediaSource?: MediaSourceFilter) => {
+      try {
+        // 白名单防止 SQL 注入（Repository 方法签名已收窄为 GroupDimension，此处再做运行时校验）
+        const VALID_DIMENSIONS: Record<string, GroupDimension> = {
+          album_type: 'album_type',
+          scene_category: 'scene_category',
+          scene_time: 'scene_time',
+          outfit: 'outfit',
+          file_type: 'file_type'
+        }
+        const dim = VALID_DIMENSIONS[dimension]
+        if (!dim) {
+          return { success: false, message: `无效的分组维度: ${dimension}`, groups: [] }
+        }
 
-      const groups = getRepo().getGroupCounts(dim, accountUid, mediaSource)
-      return { success: true, groups }
-    } catch (error) {
-      return { success: false, message: String(error), groups: [] }
+        const groups = getRepo().getGroupCounts(dim, accountUid, mediaSource)
+        return { success: true, groups }
+      } catch (error) {
+        return { success: false, message: String(error), groups: [] }
+      }
     }
-  })
+  )
 
   // ============ 分类持久化 ============
-  ipcMain.handle('category:create', async (_, name: string, options?: { icon?: string; color?: string; parentId?: number }) => {
-    try {
-      // A-S9：参数校验
-      const vName = validateStringLength(name, 64, 'name')
-      if (!vName.valid) return { success: false, message: vName.message }
-      if (options?.parentId !== undefined && options.parentId !== null) {
-        const vParent = validateIntRange(options.parentId, 1, Number.MAX_SAFE_INTEGER, 'parentId')
-        if (!vParent.valid) return { success: false, message: vParent.message }
-      }
-
-      const id = getRepo().createCategory(
-        name,
-        options?.icon || 'folder',
-        options?.color || '#888888',
-        options?.parentId || null
-      )
-      return { success: true, id }
-    } catch (error) {
-      return { success: false, message: String(error) }
-    }
-  })
-
-  ipcMain.handle('category:update', async (_, id: number, updates: { name?: string; icon?: string; color?: string; parent_id?: number | null }) => {
-    try {
-      // A-S9：参数校验
-      const vId = validateIntRange(id, 1, Number.MAX_SAFE_INTEGER, 'id')
-      if (!vId.valid) return { success: false, message: vId.message }
-      if (!updates || typeof updates !== 'object') return { success: false, message: 'updates 必须是对象' }
-
-      const allowedFields = ['name', 'icon', 'color', 'parent_id']
-      const fields: string[] = []
-      const values: unknown[] = []
-      for (const [key, value] of Object.entries(updates)) {
-        if (!allowedFields.includes(key)) continue
-        if (key === 'name' && typeof value === 'string') {
-          const v = validateStringLength(value, 64, 'name')
-          if (!v.valid) return { success: false, message: v.message }
+  ipcMain.handle(
+    'category:create',
+    async (_, name: string, options?: { icon?: string; color?: string; parentId?: number }) => {
+      try {
+        // A-S9：参数校验
+        const vName = validateStringLength(name, 64, 'name')
+        if (!vName.valid) return { success: false, message: vName.message }
+        if (options?.parentId !== undefined && options.parentId !== null) {
+          const vParent = validateIntRange(options.parentId, 1, Number.MAX_SAFE_INTEGER, 'parentId')
+          if (!vParent.valid) return { success: false, message: vParent.message }
         }
-        fields.push(`${key} = ?`)
-        values.push(value)
+
+        const id = getRepo().createCategory(
+          name,
+          options?.icon || 'folder',
+          options?.color || '#888888',
+          options?.parentId || null
+        )
+        return { success: true, id }
+      } catch (error) {
+        return { success: false, message: String(error) }
       }
-      if (fields.length === 0) {
-        return { success: false, message: '没有可更新的字段' }
-      }
-      getRepo().updateCategoryFields(id, fields, values)
-      return { success: true }
-    } catch (error) {
-      return { success: false, message: String(error) }
     }
-  })
+  )
+
+  ipcMain.handle(
+    'category:update',
+    async (
+      _,
+      id: number,
+      updates: { name?: string; icon?: string; color?: string; parent_id?: number | null }
+    ) => {
+      try {
+        // A-S9：参数校验
+        const vId = validateIntRange(id, 1, Number.MAX_SAFE_INTEGER, 'id')
+        if (!vId.valid) return { success: false, message: vId.message }
+        if (!updates || typeof updates !== 'object')
+          return { success: false, message: 'updates 必须是对象' }
+
+        const allowedFields = ['name', 'icon', 'color', 'parent_id']
+        const fields: string[] = []
+        const values: unknown[] = []
+        for (const [key, value] of Object.entries(updates)) {
+          if (!allowedFields.includes(key)) continue
+          if (key === 'name' && typeof value === 'string') {
+            const v = validateStringLength(value, 64, 'name')
+            if (!v.valid) return { success: false, message: v.message }
+          }
+          fields.push(`${key} = ?`)
+          values.push(value)
+        }
+        if (fields.length === 0) {
+          return { success: false, message: '没有可更新的字段' }
+        }
+        getRepo().updateCategoryFields(id, fields, values)
+        return { success: true }
+      } catch (error) {
+        return { success: false, message: String(error) }
+      }
+    }
+  )
 
   ipcMain.handle('category:delete', async (_, id: number) => {
     try {
@@ -763,25 +797,28 @@ export function registerMediaHandlers(ctx: HandlerContext): void {
     }
   })
 
-  ipcMain.handle('category:reorder', async (_, orders: Array<{ id: number; sort_order: number; parent_id?: number }>) => {
-    try {
-      // A-S9：参数校验
-      if (!Array.isArray(orders)) return { success: false, message: 'orders 必须是数组' }
-      if (orders.length === 0) return { success: false, message: 'orders 不能为空' }
-      if (orders.length > 500) return { success: false, message: 'orders 数量超过上限 500' }
-      for (const o of orders) {
-        const vId = validateIntRange(o.id, 1, Number.MAX_SAFE_INTEGER, 'id')
-        if (!vId.valid) return { success: false, message: vId.message }
-        const vOrder = validateIntRange(o.sort_order, 0, Number.MAX_SAFE_INTEGER, 'sort_order')
-        if (!vOrder.valid) return { success: false, message: vOrder.message }
-      }
+  ipcMain.handle(
+    'category:reorder',
+    async (_, orders: Array<{ id: number; sort_order: number; parent_id?: number }>) => {
+      try {
+        // A-S9：参数校验
+        if (!Array.isArray(orders)) return { success: false, message: 'orders 必须是数组' }
+        if (orders.length === 0) return { success: false, message: 'orders 不能为空' }
+        if (orders.length > 500) return { success: false, message: 'orders 数量超过上限 500' }
+        for (const o of orders) {
+          const vId = validateIntRange(o.id, 1, Number.MAX_SAFE_INTEGER, 'id')
+          if (!vId.valid) return { success: false, message: vId.message }
+          const vOrder = validateIntRange(o.sort_order, 0, Number.MAX_SAFE_INTEGER, 'sort_order')
+          if (!vOrder.valid) return { success: false, message: vOrder.message }
+        }
 
-      getRepo().reorderCategories(orders)
-      return { success: true }
-    } catch (error) {
-      return { success: false, message: String(error) }
+        getRepo().reorderCategories(orders)
+        return { success: true }
+      } catch (error) {
+        return { success: false, message: String(error) }
+      }
     }
-  })
+  )
 
   ipcMain.handle('category:list', async () => {
     try {
@@ -956,7 +993,7 @@ export function registerMediaHandlers(ctx: HandlerContext): void {
       const originalRows = repo.getOriginalsByIds(originalIds)
       const originalMap = new Map(originalRows.map((r) => [r.id, r]))
 
-      const toDupItem = (r: typeof originalRows[number] | typeof dupRows[number]) => ({
+      const toDupItem = (r: (typeof originalRows)[number] | (typeof dupRows)[number]) => ({
         id: r.id,
         file_path: r.file_path,
         file_name: r.file_name,

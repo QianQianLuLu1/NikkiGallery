@@ -32,10 +32,20 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       ariaLabelledby="confirm-title"
       initialFocusRef={confirmBtnRef}
     >
-      <h3 id="confirm-title" className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>{title}</h3>
-      <p className="text-sm whitespace-pre-line" style={{ color: 'var(--text-secondary)' }}>{message}</p>
+      <h3
+        id="confirm-title"
+        className="text-lg font-semibold"
+        style={{ color: 'var(--text-primary)' }}
+      >
+        {title}
+      </h3>
+      <p className="text-sm whitespace-pre-line" style={{ color: 'var(--text-secondary)' }}>
+        {message}
+      </p>
       <div className="flex justify-end gap-3 pt-2">
-        <button className="btn-secondary" onClick={onCancel}>{cancelText}</button>
+        <button className="btn-secondary" onClick={onCancel}>
+          {cancelText}
+        </button>
         <button
           ref={confirmBtnRef}
           className={confirmVariant === 'danger' ? 'btn-danger' : 'btn-primary'}

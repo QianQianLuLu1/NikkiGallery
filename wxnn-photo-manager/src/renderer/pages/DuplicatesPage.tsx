@@ -63,10 +63,22 @@ const STRATEGY_LABEL_KEY: Record<CleanStrategy, string> = {
 // T05：相似检测阈值档位（汉明距离越小越严格）
 // P1-U15：label/hint 改为 i18n key 引用
 const SIMILAR_THRESHOLD_PRESETS = [
-  { value: 2, labelKey: 'duplicates.threshold.veryStrict', hintKey: 'duplicates.threshold.veryStrictHint' },
-  { value: 5, labelKey: 'duplicates.threshold.default', hintKey: 'duplicates.threshold.defaultHint' },
+  {
+    value: 2,
+    labelKey: 'duplicates.threshold.veryStrict',
+    hintKey: 'duplicates.threshold.veryStrictHint'
+  },
+  {
+    value: 5,
+    labelKey: 'duplicates.threshold.default',
+    hintKey: 'duplicates.threshold.defaultHint'
+  },
   { value: 10, labelKey: 'duplicates.threshold.loose', hintKey: 'duplicates.threshold.looseHint' },
-  { value: 15, labelKey: 'duplicates.threshold.veryLoose', hintKey: 'duplicates.threshold.veryLooseHint' }
+  {
+    value: 15,
+    labelKey: 'duplicates.threshold.veryLoose',
+    hintKey: 'duplicates.threshold.veryLooseHint'
+  }
 ]
 
 export const DuplicatesPage: React.FC = () => {
@@ -84,7 +96,11 @@ export const DuplicatesPage: React.FC = () => {
   const [selectedToDelete, setSelectedToDelete] = useState<Set<number>>(new Set())
   // 折叠的分组索引集合
   const [collapsedGroups, setCollapsedGroups] = useState<Set<number>>(new Set())
-  const [confirm, setConfirm] = useState<{ open: boolean; ids: number[]; strategy: CleanStrategy | 'manual' | null }>({
+  const [confirm, setConfirm] = useState<{
+    open: boolean
+    ids: number[]
+    strategy: CleanStrategy | 'manual' | null
+  }>({
     open: false,
     ids: [],
     strategy: null
@@ -97,59 +113,80 @@ export const DuplicatesPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const runScan = useCallback(async (scanMode: ScanMode, thresh?: number) => {
-    const api = window.electronAPI?.media
-    if (!api) {
-      showMessage(t('duplicates.unsupported'), 'error')
-      return
-    }
-    if (scanMode === 'exact' && !api.findDuplicates) {
-      showMessage(t('duplicates.unsupportedExact'), 'error')
-      return
-    }
-    if (scanMode === 'similar' && !api.findSimilar) {
-      showMessage(t('duplicates.unsupportedSimilar'), 'error')
-      return
-    }
-    setScanning(true)
-    setSelectedToDelete(new Set())
-    setCollapsedGroups(new Set())
-    try {
-      const res = scanMode === 'exact'
-        ? (await api.findDuplicates()) as ScanResult
-        : (await api.findSimilar({ threshold: thresh ?? threshold })) as ScanResult
-      setResult(res)
-      if (res.success) {
-        if (res.totalGroups === 0) {
-          showMessage(scanMode === 'exact' ? t('duplicates.noDuplicates') : t('duplicates.noSimilar'), 'success')
-        } else {
-          const typeLabel = scanMode === 'exact' ? t('duplicates.typeExact') : t('duplicates.typeSimilar')
-          showMessage(t('duplicates.foundGroups', { groups: res.totalGroups, type: typeLabel, files: res.totalFiles }), 'info')
-        }
-      } else {
-        showMessage(res.message || t('duplicates.scanFailed'), 'error')
+  const runScan = useCallback(
+    async (scanMode: ScanMode, thresh?: number) => {
+      const api = window.electronAPI?.media
+      if (!api) {
+        showMessage(t('duplicates.unsupported'), 'error')
+        return
       }
-    } catch (err) {
-      showMessage(err instanceof Error ? err.message : t('duplicates.scanFailed'), 'error')
-    } finally {
-      setScanning(false)
-    }
-  }, [showMessage, t, threshold])
+      if (scanMode === 'exact' && !api.findDuplicates) {
+        showMessage(t('duplicates.unsupportedExact'), 'error')
+        return
+      }
+      if (scanMode === 'similar' && !api.findSimilar) {
+        showMessage(t('duplicates.unsupportedSimilar'), 'error')
+        return
+      }
+      setScanning(true)
+      setSelectedToDelete(new Set())
+      setCollapsedGroups(new Set())
+      try {
+        const res =
+          scanMode === 'exact'
+            ? ((await api.findDuplicates()) as ScanResult)
+            : ((await api.findSimilar({ threshold: thresh ?? threshold })) as ScanResult)
+        setResult(res)
+        if (res.success) {
+          if (res.totalGroups === 0) {
+            showMessage(
+              scanMode === 'exact' ? t('duplicates.noDuplicates') : t('duplicates.noSimilar'),
+              'success'
+            )
+          } else {
+            const typeLabel =
+              scanMode === 'exact' ? t('duplicates.typeExact') : t('duplicates.typeSimilar')
+            showMessage(
+              t('duplicates.foundGroups', {
+                groups: res.totalGroups,
+                type: typeLabel,
+                files: res.totalFiles
+              }),
+              'info'
+            )
+          }
+        } else {
+          showMessage(res.message || t('duplicates.scanFailed'), 'error')
+        }
+      } catch (err) {
+        showMessage(err instanceof Error ? err.message : t('duplicates.scanFailed'), 'error')
+      } finally {
+        setScanning(false)
+      }
+    },
+    [showMessage, t, threshold]
+  )
 
   // T05：切换模式时重新扫描
-  const handleModeChange = useCallback((nextMode: ScanMode) => {
-    if (nextMode === mode || scanning) return
-    setMode(nextMode)
-    setResult(null)
-    void runScan(nextMode)
-  }, [mode, scanning, runScan])
+  const handleModeChange = useCallback(
+    (nextMode: ScanMode) => {
+      if (nextMode === mode || scanning) return
+      setMode(nextMode)
+      setResult(null)
+      void runScan(nextMode)
+    },
+    [mode, scanning, runScan]
+  )
 
   // T05：切换阈值档位时重新扫描（仅相似模式）
-  const handleThresholdChange = useCallback((next: number) => {
-    if (scanning) return
-    setThreshold(next)
-    void runScan('similar', next)
-  }, [scanning, runScan])
+  const handleThresholdChange = useCallback(
+    (next: number) => {
+      if (scanning) return
+      setThreshold(next)
+      void runScan('similar', next)
+    },
+    [scanning, runScan]
+  )
 
   // T05：手动触发 pHash 补算
   const handleGeneratePhash = useCallback(async () => {
@@ -161,9 +198,10 @@ export const DuplicatesPage: React.FC = () => {
     try {
       const res = await window.electronAPI.media.generatePhash()
       if (res.success) {
-        const msg = res.total && res.total > 0
-          ? t('duplicates.phashCompleted', { processed: res.processed, total: res.total })
-          : t('duplicates.phashAllDone')
+        const msg =
+          res.total && res.total > 0
+            ? t('duplicates.phashCompleted', { processed: res.processed, total: res.total })
+            : t('duplicates.phashAllDone')
         showMessage(msg, 'success')
         // 补算完成后重新扫描
         await runScan('similar')
@@ -188,9 +226,13 @@ export const DuplicatesPage: React.FC = () => {
     try {
       const res = await window.electronAPI.media.markDuplicates()
       if (res.success) {
-        const msg = res.totalGroups > 0
-          ? t('duplicates.markCompleted', { groups: res.totalGroups, marked: res.markedDuplicates })
-          : t('duplicates.markNoGroups')
+        const msg =
+          res.totalGroups > 0
+            ? t('duplicates.markCompleted', {
+                groups: res.totalGroups,
+                marked: res.markedDuplicates
+              })
+            : t('duplicates.markNoGroups')
         showMessage(msg, res.totalGroups > 0 ? 'success' : 'info')
         // 标记完成后刷新图库数据
         await loadMediaFromDatabase()
@@ -237,10 +279,16 @@ export const DuplicatesPage: React.FC = () => {
           keepIdx = 0 // 最新的保留
           break
         case 'largest':
-          keepIdx = sorted.reduce((maxI, f, i, arr) => (f.file_size > arr[maxI].file_size ? i : maxI), 0)
+          keepIdx = sorted.reduce(
+            (maxI, f, i, arr) => (f.file_size > arr[maxI].file_size ? i : maxI),
+            0
+          )
           break
         case 'smallest':
-          keepIdx = sorted.reduce((minI, f, i, arr) => (f.file_size < arr[minI].file_size ? i : minI), 0)
+          keepIdx = sorted.reduce(
+            (minI, f, i, arr) => (f.file_size < arr[minI].file_size ? i : minI),
+            0
+          )
           break
         case 'favorited': {
           // 优先保留收藏的；若多个收藏，保留其中最新；若无收藏，保留最新
@@ -266,7 +314,10 @@ export const DuplicatesPage: React.FC = () => {
             }
           }
           // 兜底：保留最大（文件大小近似画质）
-          keepIdx = sorted.reduce((maxI, f, i, arr) => (f.file_size > arr[maxI].file_size ? i : maxI), 0)
+          keepIdx = sorted.reduce(
+            (maxI, f, i, arr) => (f.file_size > arr[maxI].file_size ? i : maxI),
+            0
+          )
           break
         }
       }
@@ -301,7 +352,13 @@ export const DuplicatesPage: React.FC = () => {
         allIds.push(...pickByStrategy(group, strategy, gIdx))
       })
       setSelectedToDelete(new Set(allIds))
-      showMessage(t('duplicates.strategyApplied', { strategy: t(STRATEGY_LABEL_KEY[strategy]), count: allIds.length }), 'info')
+      showMessage(
+        t('duplicates.strategyApplied', {
+          strategy: t(STRATEGY_LABEL_KEY[strategy]),
+          count: allIds.length
+        }),
+        'info'
+      )
     },
     [result, pickByStrategy, showMessage, t]
   )
@@ -357,7 +414,7 @@ export const DuplicatesPage: React.FC = () => {
   }, [selectedToDelete, showMessage, t])
 
   // P1-I：formatDate 已统一到 utils/date.ts，调用 formatDateTime 处理 null/空值
-  const formatDate = (dateStr?: string | null) => dateStr ? formatDateTime(dateStr) : '—'
+  const formatDate = (dateStr?: string | null) => (dateStr ? formatDateTime(dateStr) : '—')
 
   // 统计
   const stats = useMemo(() => {
@@ -381,23 +438,30 @@ export const DuplicatesPage: React.FC = () => {
 
   const subtitle = useMemo(() => {
     if (scanning) {
-      return mode === 'exact' ? t('duplicates.subtitleScanningExact') : t('duplicates.subtitleScanningSimilar')
+      return mode === 'exact'
+        ? t('duplicates.subtitleScanningExact')
+        : t('duplicates.subtitleScanningSimilar')
     }
     if (!result) {
-      return mode === 'exact'
-        ? t('duplicates.subtitleExact')
-        : t('duplicates.subtitleSimilar')
+      return mode === 'exact' ? t('duplicates.subtitleExact') : t('duplicates.subtitleSimilar')
     }
     if (!result.success) return t('duplicates.subtitleFailed')
     const typeLabel = mode === 'exact' ? t('duplicates.typeExact') : t('duplicates.typeSimilar')
-    const parts = [t('duplicates.subtitleMeta', {
-      scanned: stats.scanned,
-      groups: stats.groups,
-      type: typeLabel,
-      size: formatFileSize(stats.wasted)
-    })]
+    const parts = [
+      t('duplicates.subtitleMeta', {
+        scanned: stats.scanned,
+        groups: stats.groups,
+        type: typeLabel,
+        size: formatFileSize(stats.wasted)
+      })
+    ]
     if (mode === 'similar' && similarMeta) {
-      parts.push(t('duplicates.subtitleSimilarMeta', { threshold: similarMeta.threshold, hashed: similarMeta.hashedFiles }))
+      parts.push(
+        t('duplicates.subtitleSimilarMeta', {
+          threshold: similarMeta.threshold,
+          hashed: similarMeta.hashedFiles
+        })
+      )
     }
     return parts.join(' · ')
   }, [scanning, result, mode, stats, similarMeta, t])
@@ -526,8 +590,14 @@ export const DuplicatesPage: React.FC = () => {
         </div>
 
         {mode === 'similar' && (
-          <div className="flex items-center gap-2" role="radiogroup" aria-label={t('duplicates.thresholdGroupLabel')}>
-            <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{t('duplicates.thresholdLabel')}：</span>
+          <div
+            className="flex items-center gap-2"
+            role="radiogroup"
+            aria-label={t('duplicates.thresholdGroupLabel')}
+          >
+            <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+              {t('duplicates.thresholdLabel')}：
+            </span>
             {SIMILAR_THRESHOLD_PRESETS.map((p) => {
               const active = threshold === p.value
               return (
@@ -556,9 +626,7 @@ export const DuplicatesPage: React.FC = () => {
 
         <div className="flex-1" />
         <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
-          {mode === 'exact'
-            ? t('duplicates.exactDesc')
-            : t('duplicates.similarDesc')}
+          {mode === 'exact' ? t('duplicates.exactDesc') : t('duplicates.similarDesc')}
         </span>
       </div>
 
@@ -566,7 +634,10 @@ export const DuplicatesPage: React.FC = () => {
       <div className="flex-1 overflow-auto p-6">
         {/* 加载中 */}
         {scanning && (
-          <div className="flex flex-col items-center justify-center h-full" style={{ color: 'var(--text-tertiary)' }}>
+          <div
+            className="flex flex-col items-center justify-center h-full"
+            style={{ color: 'var(--text-tertiary)' }}
+          >
             <div
               className="w-10 h-10 border-2 border-current border-t-transparent rounded-full animate-spin mb-4"
               style={{ color: 'var(--accent)' }}
@@ -575,14 +646,19 @@ export const DuplicatesPage: React.FC = () => {
               {mode === 'exact' ? t('duplicates.loadingExact') : t('duplicates.loadingSimilar')}
             </p>
             <p className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>
-              {mode === 'exact' ? t('duplicates.loadingHintExact') : t('duplicates.loadingHintSimilar')}
+              {mode === 'exact'
+                ? t('duplicates.loadingHintExact')
+                : t('duplicates.loadingHintSimilar')}
             </p>
           </div>
         )}
 
         {/* 未扫描 / 空结果 */}
         {!scanning && result && result.success && result.totalGroups === 0 && (
-          <div className="flex flex-col items-center justify-center h-full" style={{ color: 'var(--text-tertiary)' }}>
+          <div
+            className="flex flex-col items-center justify-center h-full"
+            style={{ color: 'var(--text-tertiary)' }}
+          >
             {mode === 'exact' ? <IconDuplicate size={64} /> : <IconCompare size={64} />}
             <p className="mt-4 text-base">
               {mode === 'exact' ? t('duplicates.noDuplicates') : t('duplicates.noSimilar')}
@@ -600,10 +676,12 @@ export const DuplicatesPage: React.FC = () => {
                 onClick={() => void handleGeneratePhash()}
                 disabled={generatingPhash}
               >
-                {generatingPhash ? t('duplicates.phashCalculating') : t('duplicates.phashRecalcNow')}
+                {generatingPhash
+                  ? t('duplicates.phashCalculating')
+                  : t('duplicates.phashRecalcNow')}
               </button>
             )}
-            {(!(mode === 'similar' && similarMeta && similarMeta.hashedFiles === 0)) && (
+            {!(mode === 'similar' && similarMeta && similarMeta.hashedFiles === 0) && (
               <button className="btn-primary mt-4" onClick={() => navigateTo('gallery')}>
                 {t('duplicates.backToGallery')}
               </button>
@@ -613,7 +691,10 @@ export const DuplicatesPage: React.FC = () => {
 
         {/* 扫描失败 */}
         {!scanning && result && !result.success && (
-          <div className="flex flex-col items-center justify-center h-full" style={{ color: 'var(--text-tertiary)' }}>
+          <div
+            className="flex flex-col items-center justify-center h-full"
+            style={{ color: 'var(--text-tertiary)' }}
+          >
             <IconClose size={48} />
             <p className="mt-4 text-base" style={{ color: 'var(--danger)' }}>
               {t('duplicates.subtitleFailed')}
@@ -666,13 +747,19 @@ export const DuplicatesPage: React.FC = () => {
                             : t('duplicates.groupSimilar', { count: group.length })}
                         </p>
                         <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
-                          {t('duplicates.groupSingleSize', { size: formatFileSize(group[0].file_size) })}
+                          {t('duplicates.groupSingleSize', {
+                            size: formatFileSize(group[0].file_size)
+                          })}
                           {group[0].width && group[0].height
                             ? ` · ${group[0].width}×${group[0].height}`
                             : ''}
-                          {group[0].file_type === 'video' ? ` · ${t('duplicates.groupVideoTag')}` : ` · ${t('duplicates.groupImageTag')}`}
+                          {group[0].file_type === 'video'
+                            ? ` · ${t('duplicates.groupVideoTag')}`
+                            : ` · ${t('duplicates.groupImageTag')}`}
                           {` · ${t('duplicates.groupReleasable')} `}
-                          <span style={{ color: 'var(--accent)' }}>{formatFileSize(wastedInGroup)}</span>
+                          <span style={{ color: 'var(--accent)' }}>
+                            {formatFileSize(wastedInGroup)}
+                          </span>
                         </p>
                       </div>
                     </div>
@@ -716,8 +803,14 @@ export const DuplicatesPage: React.FC = () => {
                       <button
                         className="icon-btn"
                         onClick={() => toggleGroupCollapse(gIdx)}
-                        aria-label={collapsed ? t('duplicates.ariaExpand') : t('duplicates.ariaCollapse')}
-                        title={collapsed ? t('duplicates.ariaExpandBtn') : t('duplicates.ariaCollapseBtn')}
+                        aria-label={
+                          collapsed ? t('duplicates.ariaExpand') : t('duplicates.ariaCollapse')
+                        }
+                        title={
+                          collapsed
+                            ? t('duplicates.ariaExpandBtn')
+                            : t('duplicates.ariaCollapseBtn')
+                        }
                       >
                         <IconChevronDown
                           size={14}
@@ -792,7 +885,9 @@ export const DuplicatesPage: React.FC = () => {
                               <div
                                 className="absolute top-2 left-2 w-6 h-6 rounded-full flex items-center justify-center transition-all"
                                 style={{
-                                  background: isSelected ? 'var(--danger)' : 'rgba(255,255,255,0.85)',
+                                  background: isSelected
+                                    ? 'var(--danger)'
+                                    : 'rgba(255,255,255,0.85)',
                                   border: isSelected ? 'none' : '2px solid var(--divider)'
                                 }}
                               >
@@ -805,7 +900,11 @@ export const DuplicatesPage: React.FC = () => {
                                 <div
                                   className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full flex items-center gap-1 text-xs"
                                   style={{ background: 'rgba(255,184,0,0.92)', color: '#fff' }}
-                                  title={file.is_favorite ? t('duplicates.favoriteTooltip') : t('duplicates.ratingTooltip', { rating: file.rating })}
+                                  title={
+                                    file.is_favorite
+                                      ? t('duplicates.favoriteTooltip')
+                                      : t('duplicates.ratingTooltip', { rating: file.rating })
+                                  }
                                 >
                                   <IconStar size={10} filled />
                                   {file.rating > 0 && <span>{file.rating}</span>}
@@ -886,7 +985,12 @@ export const DuplicatesPage: React.FC = () => {
             {t('duplicates.moveToTrash')}
           </button>
           <div className="w-px h-5 mx-1" style={{ background: 'var(--divider)' }} />
-          <button className="icon-btn" onClick={clearSelection} aria-label={t('common.clear')} title={t('common.clear')}>
+          <button
+            className="icon-btn"
+            onClick={clearSelection}
+            aria-label={t('common.clear')}
+            title={t('common.clear')}
+          >
             <IconClose size={14} />
           </button>
         </div>
@@ -895,7 +999,10 @@ export const DuplicatesPage: React.FC = () => {
       <ConfirmDialog
         open={confirm.open}
         title={t('duplicates.confirmTitle')}
-        message={t('duplicates.confirmMessage', { count: confirm.ids.length, type: mode === 'exact' ? t('duplicates.typeExact') : t('duplicates.typeSimilar') })}
+        message={t('duplicates.confirmMessage', {
+          count: confirm.ids.length,
+          type: mode === 'exact' ? t('duplicates.typeExact') : t('duplicates.typeSimilar')
+        })}
         confirmText={t('duplicates.moveToTrash')}
         confirmVariant="danger"
         onConfirm={handleDeleteConfirm}

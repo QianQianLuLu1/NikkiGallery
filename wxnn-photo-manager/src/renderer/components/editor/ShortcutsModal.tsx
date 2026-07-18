@@ -26,16 +26,27 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ onClose }) => {
     >
       <div className="glass-card p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-medium" style={{ color: 'var(--text-primary)' }}>编辑器快捷键</h3>
+          <h3 className="text-lg font-medium" style={{ color: 'var(--text-primary)' }}>
+            编辑器快捷键
+          </h3>
           <button className="icon-btn" onClick={onClose} aria-label="关闭">
             <IconClose size={18} />
           </button>
         </div>
         <div className="space-y-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
           {shortcuts.map(([key, desc]) => (
-            <div key={key} className="flex justify-between items-center py-1.5 border-b" style={{ borderColor: 'var(--divider)' }}>
+            <div
+              key={key}
+              className="flex justify-between items-center py-1.5 border-b"
+              style={{ borderColor: 'var(--divider)' }}
+            >
               <span>{desc}</span>
-              <kbd className="px-2 py-0.5 rounded text-xs font-mono" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-primary)' }}>{key}</kbd>
+              <kbd
+                className="px-2 py-0.5 rounded text-xs font-mono"
+                style={{ background: 'var(--bg-tertiary)', color: 'var(--text-primary)' }}
+              >
+                {key}
+              </kbd>
             </div>
           ))}
         </div>

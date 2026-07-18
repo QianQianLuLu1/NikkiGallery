@@ -39,7 +39,13 @@ export const WatermarkDialog: React.FC<WatermarkDialogProps> = ({
       closeOnOverlayClick={!processing}
     >
       <div className="flex items-center justify-between">
-        <h3 id="watermark-dialog-title" className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>批量添加水印</h3>
+        <h3
+          id="watermark-dialog-title"
+          className="text-lg font-semibold"
+          style={{ color: 'var(--text-primary)' }}
+        >
+          批量添加水印
+        </h3>
         <button className="icon-btn" onClick={onCancel} disabled={processing} aria-label="关闭">
           <IconClose size={16} />
         </button>
@@ -49,9 +55,14 @@ export const WatermarkDialog: React.FC<WatermarkDialogProps> = ({
         <div className="space-y-1">
           <div className="flex justify-between text-xs" style={{ color: 'var(--text-secondary)' }}>
             <span>处理进度</span>
-            <span>{progress.current} / {progress.total}</span>
+            <span>
+              {progress.current} / {progress.total}
+            </span>
           </div>
-          <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--bg-tertiary)' }}>
+          <div
+            className="h-2 rounded-full overflow-hidden"
+            style={{ background: 'var(--bg-tertiary)' }}
+          >
             <div
               className="h-full rounded-full transition-all"
               style={{
@@ -63,7 +74,9 @@ export const WatermarkDialog: React.FC<WatermarkDialogProps> = ({
         </div>
       )}
       <div className="flex justify-end gap-2 pt-2">
-        <button className="btn-secondary" onClick={onCancel} disabled={processing}>取消</button>
+        <button className="btn-secondary" onClick={onCancel} disabled={processing}>
+          取消
+        </button>
         <button className="btn-primary" onClick={onConfirm} disabled={processing || !config}>
           {processing ? '处理中...' : '开始添加'}
         </button>

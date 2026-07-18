@@ -4,7 +4,19 @@ import { motion } from 'motion/react'
 import { useUIStore, type ViewLevel } from '../../stores/uiStore'
 import { useMediaStore, loadMediaFromDatabase, loadProfiles } from '../../stores/mediaStore'
 import { formatFileSize } from '../../utils/format'
-import { IconGallery, IconList, IconSettings, IconDoubleChevronLeft, IconDoubleChevronRight, IconTrash, IconStar, IconDuplicate, IconChevronLeft, IconChevronDown, IconImage } from '../../icons'
+import {
+  IconGallery,
+  IconList,
+  IconSettings,
+  IconDoubleChevronLeft,
+  IconDoubleChevronRight,
+  IconTrash,
+  IconStar,
+  IconDuplicate,
+  IconChevronLeft,
+  IconChevronDown,
+  IconImage
+} from '../../icons'
 // P1-4：侧边栏动画预设
 import { springSoft } from '../../utils/motionPresets'
 // P2-U6：维度选项统一来自 shared/dimension，消除与 SmartGroupPanel 的重复定义
@@ -26,8 +38,24 @@ const navItems: { id: ViewLevel; labelKey: string; icon: React.ReactNode }[] = [
 
 export const Sidebar: React.FC = () => {
   const { t } = useTranslation()
-  const { currentView, sidebarCollapsed, navigateTo, toggleSidebar, goBack, viewStack, groupDimension, setGroupDimension } = useUIStore()
-  const { mediaFiles, categories, currentProfileUid, profiles, setMediaFiles, setCurrentProfileUid } = useMediaStore()
+  const {
+    currentView,
+    sidebarCollapsed,
+    navigateTo,
+    toggleSidebar,
+    goBack,
+    viewStack,
+    groupDimension,
+    setGroupDimension
+  } = useUIStore()
+  const {
+    mediaFiles,
+    categories,
+    currentProfileUid,
+    profiles,
+    setMediaFiles,
+    setCurrentProfileUid
+  } = useMediaStore()
   // P0-02：角色档案切换器状态
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
   const profileMenuRef = useRef<HTMLDivElement>(null)
@@ -84,9 +112,10 @@ export const Sidebar: React.FC = () => {
 
   // P0-02：当前档案显示名
   // P2-01：'全部档案' 改为 i18n key
-  const currentProfileLabel = currentProfileUid === 'all'
-    ? t('nav.allProfiles')
-    : (profiles.find((p) => p.uid === currentProfileUid)?.nickname || currentProfileUid)
+  const currentProfileLabel =
+    currentProfileUid === 'all'
+      ? t('nav.allProfiles')
+      : profiles.find((p) => p.uid === currentProfileUid)?.nickname || currentProfileUid
 
   return (
     <motion.aside
@@ -115,7 +144,11 @@ export const Sidebar: React.FC = () => {
           whileTap={{ scale: 0.9 }}
           transition={springSoft}
         >
-          {sidebarCollapsed ? <IconDoubleChevronRight size={16} /> : <IconDoubleChevronLeft size={16} />}
+          {sidebarCollapsed ? (
+            <IconDoubleChevronRight size={16} />
+          ) : (
+            <IconDoubleChevronLeft size={16} />
+          )}
         </motion.button>
       </div>
 
@@ -150,7 +183,9 @@ export const Sidebar: React.FC = () => {
               <button
                 role="menuitem"
                 className="w-full text-left px-3 py-2 text-sm transition-colors hover:bg-[var(--hover-bg)]"
-                style={{ color: currentProfileUid === 'all' ? 'var(--accent)' : 'var(--text-primary)' }}
+                style={{
+                  color: currentProfileUid === 'all' ? 'var(--accent)' : 'var(--text-primary)'
+                }}
                 onClick={() => handleProfileSwitch('all')}
               >
                 {t('nav.allProfiles')}
@@ -160,12 +195,16 @@ export const Sidebar: React.FC = () => {
                   key={p.uid}
                   role="menuitem"
                   className="w-full text-left px-3 py-2 text-sm transition-colors hover:bg-[var(--hover-bg)]"
-                  style={{ color: currentProfileUid === p.uid ? 'var(--accent)' : 'var(--text-primary)' }}
+                  style={{
+                    color: currentProfileUid === p.uid ? 'var(--accent)' : 'var(--text-primary)'
+                  }}
                   onClick={() => handleProfileSwitch(p.uid)}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="truncate">{p.nickname || p.uid}</span>
-                    <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{p.uid}</span>
+                    <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                      {p.uid}
+                    </span>
                   </div>
                 </button>
               ))}
@@ -239,7 +278,8 @@ export const Sidebar: React.FC = () => {
                     key={opt.value}
                     className="w-full text-left px-2 py-1 text-xs rounded transition-colors hover:bg-[var(--hover-bg)]"
                     style={{
-                      color: groupDimension === opt.value ? 'var(--accent)' : 'var(--text-secondary)',
+                      color:
+                        groupDimension === opt.value ? 'var(--accent)' : 'var(--text-secondary)',
                       fontWeight: groupDimension === opt.value ? 600 : 400
                     }}
                     onClick={() => setGroupDimension(opt.value)}
@@ -248,7 +288,10 @@ export const Sidebar: React.FC = () => {
                     {t(opt.labelKey)}
                   </button>
                 ))}
-                <div className="pt-1 mt-1 text-xs" style={{ color: 'var(--text-tertiary)', borderTop: '1px solid var(--divider)' }}>
+                <div
+                  className="pt-1 mt-1 text-xs"
+                  style={{ color: 'var(--text-tertiary)', borderTop: '1px solid var(--divider)' }}
+                >
                   {t('group.title')}
                 </div>
               </div>
@@ -258,22 +301,33 @@ export const Sidebar: React.FC = () => {
       </nav>
 
       {!sidebarCollapsed && (
-        <div className="p-4 space-y-3 text-xs" style={{ color: 'var(--text-secondary)', borderTop: '1px solid var(--divider)' }}>
+        <div
+          className="p-4 space-y-3 text-xs"
+          style={{ color: 'var(--text-secondary)', borderTop: '1px solid var(--divider)' }}
+        >
           <div className="flex justify-between">
             <span>{t('nav.images')}</span>
-            <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{imageCount}</span>
+            <span className="font-medium" style={{ color: 'var(--text-primary)' }}>
+              {imageCount}
+            </span>
           </div>
           <div className="flex justify-between">
             <span>{t('nav.videos')}</span>
-            <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{videoCount}</span>
+            <span className="font-medium" style={{ color: 'var(--text-primary)' }}>
+              {videoCount}
+            </span>
           </div>
           <div className="flex justify-between">
             <span>{t('nav.categories')}</span>
-            <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{categories.length}</span>
+            <span className="font-medium" style={{ color: 'var(--text-primary)' }}>
+              {categories.length}
+            </span>
           </div>
           <div className="flex justify-between">
             <span>{t('nav.storage')}</span>
-            <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{formatFileSize(totalSize)}</span>
+            <span className="font-medium" style={{ color: 'var(--text-primary)' }}>
+              {formatFileSize(totalSize)}
+            </span>
           </div>
         </div>
       )}

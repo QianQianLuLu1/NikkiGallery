@@ -9,35 +9,35 @@ type LogLevel = 'info' | 'warn' | 'error' | 'debug'
 
 // 故障类型
 export type FaultType =
-  | 'uncaughtException'    // 主进程未捕获异常
-  | 'unhandledRejection'   // 未处理的 Promise 拒绝
-  | 'rendererCrash'        // 渲染进程崩溃
-  | 'rendererError'        // 渲染层 console.error
-  | 'ipcError'             // IPC 处理错误
-  | 'manual'               // 手动记录
-  | 'rendererComponent'    // ErrorBoundary 捕获的组件渲染异常
-  | 'rendererPromise'      // 渲染层未处理 Promise 拒绝
-  | 'rendererResource'     // 渲染层资源加载失败（window.onerror）
-  | 'exitDiagnosis'        // 进程退出诊断信息
+  | 'uncaughtException' // 主进程未捕获异常
+  | 'unhandledRejection' // 未处理的 Promise 拒绝
+  | 'rendererCrash' // 渲染进程崩溃
+  | 'rendererError' // 渲染层 console.error
+  | 'ipcError' // IPC 处理错误
+  | 'manual' // 手动记录
+  | 'rendererComponent' // ErrorBoundary 捕获的组件渲染异常
+  | 'rendererPromise' // 渲染层未处理 Promise 拒绝
+  | 'rendererResource' // 渲染层资源加载失败（window.onerror）
+  | 'exitDiagnosis' // 进程退出诊断信息
 
 // 故障记录（用于 UI 展示）
 // P0-1 改进：扩展字段，每条故障都包含完整的环境信息，便于开发者定位问题
 export interface FaultRecord {
   id: string
-  timestamp: string       // ISO 8601
+  timestamp: string // ISO 8601
   type: FaultType
-  summary: string         // 故障原因摘要（≤200字符）
-  detail: string          // 完整错误信息和堆栈
-  context?: Record<string, unknown>  // 操作上下文
-  file: string            // 故障所在文件名
+  summary: string // 故障原因摘要（≤200字符）
+  detail: string // 完整错误信息和堆栈
+  context?: Record<string, unknown> // 操作上下文
+  file: string // 故障所在文件名
   // 环境信息（logFault 自动填充，调用方无需关心）
-  appVersion: string      // package.json version
+  appVersion: string // package.json version
   electronVersion: string // process.versions.electron
-  nodeVersion: string     // process.versions.node
-  platform: string        // process.platform
-  osVersion: string       // os.release()
-  pid: number             // process.pid
-  uptime: number          // process.uptime() 秒
+  nodeVersion: string // process.versions.node
+  platform: string // process.platform
+  osVersion: string // os.release()
+  pid: number // process.pid
+  uptime: number // process.uptime() 秒
 }
 
 // 故障类型中文映射
@@ -122,9 +122,10 @@ export function getRecentLogs(): Array<{ timestamp: string; level: string; messa
 function writeLog(level: LogLevel, message: string, ...args: unknown[]): void {
   if (!logDir) initLogger()
   const timestamp = new Date().toISOString()
-  const argsStr = args.length > 0
-    ? ' ' + args.map(a => (typeof a === 'object' ? JSON.stringify(a) : String(a))).join(' ')
-    : ''
+  const argsStr =
+    args.length > 0
+      ? ' ' + args.map((a) => (typeof a === 'object' ? JSON.stringify(a) : String(a))).join(' ')
+      : ''
   const line = `[${timestamp}] [${level.toUpperCase()}] ${message}${argsStr}\n`
   // P1-3：同步推入环形缓冲区（内存操作，零开销）
   pushToRecentBuffer(level, message + argsStr)
@@ -204,10 +205,7 @@ export async function logFault(
   }
 
   // 构造完整详情（包含堆栈和上下文）
-  const detailParts: string[] = [
-    `Message: ${errObj.message}`,
-    `Stack: ${errObj.stack || 'N/A'}`
-  ]
+  const detailParts: string[] = [`Message: ${errObj.message}`, `Stack: ${errObj.stack || 'N/A'}`]
   if (finalContext && Object.keys(finalContext).length > 0) {
     detailParts.push(`Context: ${JSON.stringify(finalContext, null, 2)}`)
   }
@@ -235,11 +233,7 @@ export async function logFault(
 
   // 异步追加 JSONL（每行一个故障，O(1) 写入）
   try {
-    await fs.promises.appendFile(
-      getFaultLogPath(),
-      JSON.stringify(record) + '\n',
-      'utf-8'
-    )
+    await fs.promises.appendFile(getFaultLogPath(), JSON.stringify(record) + '\n', 'utf-8')
   } catch (err) {
     // 写入失败时仅控制台告警，避免日志系统本身导致崩溃扩散
     console.error('[Logger] 故障日志写入失败:', err)
@@ -272,8 +266,8 @@ async function enforceMaxSize(): Promise<void> {
     const entries = await fs.promises.readdir(logDir)
     const stats = await Promise.all(
       entries
-        .filter(name => name.endsWith('.log') || name.endsWith('.jsonl'))
-        .map(async name => {
+        .filter((name) => name.endsWith('.log') || name.endsWith('.jsonl'))
+        .map(async (name) => {
           const filepath = path.join(logDir, name)
           const stat = await fs.promises.stat(filepath)
           return { name, filepath, size: stat.size, mtime: stat.mtime.getTime() }
@@ -282,7 +276,7 @@ async function enforceMaxSize(): Promise<void> {
 
     // P2-4：阶段 1 - 时间维度过期：删除超过 90 天的日志
     const now = Date.now()
-    const expired = stats.filter(s => (now - s.mtime) > MAX_LOG_AGE_MS)
+    const expired = stats.filter((s) => now - s.mtime > MAX_LOG_AGE_MS)
     for (const file of expired) {
       try {
         await fs.promises.unlink(file.filepath)
@@ -293,7 +287,7 @@ async function enforceMaxSize(): Promise<void> {
     }
 
     // P2-4：阶段 2 - 大小维度：剩余文件总大小超 2GB 时按 mtime 升序删除最旧
-    const remaining = stats.filter(s => !expired.includes(s))
+    const remaining = stats.filter((s) => !expired.includes(s))
     const totalSize = remaining.reduce((sum, s) => sum + s.size, 0)
     if (totalSize <= MAX_TOTAL_LOG_SIZE) return
 

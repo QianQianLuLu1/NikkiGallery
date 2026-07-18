@@ -40,7 +40,7 @@ vi.mock('fs', () => ({
 vi.mock('os', () => ({
   default: {
     networkInterfaces: vi.fn(() => ({
-      'eth0': [{ family: 'IPv4', address: '192.168.1.100', internal: false }]
+      eth0: [{ family: 'IPv4', address: '192.168.1.100', internal: false }]
     }))
   }
 }))
@@ -109,9 +109,7 @@ describe('Slice 7c：share-wifi-service 资源清理', () => {
       const createServerSpy = vi.spyOn(http, 'createServer').mockReturnValue(mockServer as never)
 
       // start() 应抛出 EADDRINUSE 错误
-      await expect(
-        wifiShareService.start(['C:\\test.jpg'])
-      ).rejects.toThrow('EADDRINUSE')
+      await expect(wifiShareService.start(['C:\\test.jpg'])).rejects.toThrow('EADDRINUSE')
 
       // 验证：mock server 的 close 被调用（资源被清理）
       expect(mockServer.close).toHaveBeenCalled()

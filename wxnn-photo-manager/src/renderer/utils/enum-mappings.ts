@@ -39,7 +39,7 @@ export const CLOTH_TYPE_MAP: Record<number, string> = {
   94: '挂饰',
   95: '背饰',
   96: '戒指',
-  97: '臂饰',
+  97: '臂饰'
 }
 
 // ── 服装进化/焕新状态（NikkiClothState enum → zh-CN.json media_params.nikki_cloth_state）──
@@ -50,7 +50,7 @@ export const CLOTH_STATE_MAP: Record<number, string> = {
   3: '1进',
   4: '2进',
   5: '3进',
-  9: '无',
+  9: '无'
 }
 
 // ── 天气类型（Weather enum → zh-CN.json media_params.weather）──
@@ -59,7 +59,7 @@ export const WEATHER_TYPE_MAP: Record<number, string> = {
   0: '晴天',
   2: '雨天',
   4: '彩虹',
-  7: '星海',
+  7: '星海'
 }
 
 // ── 光圈档位（ApertureSection enum → zh-CN.json media_params.aperture_section）──
@@ -79,7 +79,7 @@ export const APERTURE_SECTION_MAP: Record<number, string> = {
   12: 'f/5.6',
   13: 'f/8',
   14: 'f/11',
-  15: 'f/16',
+  15: 'f/16'
 }
 
 // ── 祝福闪光挂载点（EurekaAttachmentPoint enum → zh-CN.json media_params.eureka_attachment_point）──
@@ -87,7 +87,7 @@ export const EUREKA_ATTACHMENT_POINT_MAP: Record<number, string> = {
   0: '未知',
   1: '头部',
   2: '手部',
-  3: '脚部',
+  3: '脚部'
 }
 
 // ── 染色色盘（ColorPalette enum → zh-CN.json media_params.color_palette）──
@@ -110,7 +110,7 @@ export const COLOR_PALETTE_MAP: Record<number, string> = {
   15: '花伞藤萝之雨',
   16: '兔耳草嫩蕊',
   17: '裙撑萤之歌',
-  18: '名流鸦盛宴',
+  18: '名流鸦盛宴'
 }
 
 // ── 染色色格（ColorSwatch enum → zh-CN.json media_params.color_swatch）──
@@ -123,55 +123,55 @@ export const COLOR_SWATCH_MAP: Record<number, string> = {
   5: '第5格',
   6: '第6格',
   7: '第7格',
-  8: '第8格',
+  8: '第8格'
 }
 
 // ── 灯光（字符串ID → other/zh-CN.json light）──
 export const LIGHT_MAP: Record<string, string> = {
-  'None': '无',
-  'DirectionLight_L': '方向补光-侧光-左',
-  'DirectionLight_R': '方向补光-侧光-右',
-  'DirectionLight_T': '方向补光-顶光',
-  'DirectionLight_B': '方向补光-底光',
-  'HueEdgeLight_001_L': '色相边光-柔黄-左',
-  'HueEdgeLight_001_R': '色相边光-柔黄-右',
-  'HueEdgeLight_002_L': '色相边光-月蓝-左',
-  'HueEdgeLight_002_R': '色相边光-月蓝-右',
-  'HueEdgeLight_003_L': '色相边光-明紫-左',
-  'HueEdgeLight_003_R': '色相边光-明紫-右',
-  'HueEdgeLight_004_L': '色相边光-轻粉-左',
-  'HueEdgeLight_004_R': '色相边光-轻粉-右',
-  'VibeLight_001': '氛围灯光-轻白边光',
-  'VibeLight_002': '氛围灯光-梦幻虹光',
-  'VibeLight_003': '氛围灯光-绚丽极光',
-  'VibeLight_004': '氛围灯光-柔纱波光',
+  None: '无',
+  DirectionLight_L: '方向补光-侧光-左',
+  DirectionLight_R: '方向补光-侧光-右',
+  DirectionLight_T: '方向补光-顶光',
+  DirectionLight_B: '方向补光-底光',
+  HueEdgeLight_001_L: '色相边光-柔黄-左',
+  HueEdgeLight_001_R: '色相边光-柔黄-右',
+  HueEdgeLight_002_L: '色相边光-月蓝-左',
+  HueEdgeLight_002_R: '色相边光-月蓝-右',
+  HueEdgeLight_003_L: '色相边光-明紫-左',
+  HueEdgeLight_003_R: '色相边光-明紫-右',
+  HueEdgeLight_004_L: '色相边光-轻粉-左',
+  HueEdgeLight_004_R: '色相边光-轻粉-右',
+  VibeLight_001: '氛围灯光-轻白边光',
+  VibeLight_002: '氛围灯光-梦幻虹光',
+  VibeLight_003: '氛围灯光-绚丽极光',
+  VibeLight_004: '氛围灯光-柔纱波光'
 }
 
 // ── 滤镜（字符串ID → other/zh-CN.json filter）──
 export const FILTER_MAP: Record<string, string> = {
-  'None': '无',
-  'Fresh_001': '清新-薄雾',
-  'Fresh_002': '清新-粉樱',
-  'Fresh_003': '清新-奶油',
-  'Fresh_004': '清新-暖阳',
-  'Fresh_005': '清新-晴日',
-  'Weather_001': '氛围-暮色',
-  'Weather_002': '氛围-月白',
-  'Weather_003': '氛围-夜雨',
-  'Weather_004': '氛围-融雪',
-  'Vibe_009': '氛围-夜河',
-  'Vibe_001': '风格-复古胶片',
-  'Vibe_002': '风格-悠然海岸',
-  'Vibe_003': '风格-夏日午后',
-  'Vibe_004': '风格-曼妙珠光',
-  'Vibe_005': '风格-红蓝交响',
+  None: '无',
+  Fresh_001: '清新-薄雾',
+  Fresh_002: '清新-粉樱',
+  Fresh_003: '清新-奶油',
+  Fresh_004: '清新-暖阳',
+  Fresh_005: '清新-晴日',
+  Weather_001: '氛围-暮色',
+  Weather_002: '氛围-月白',
+  Weather_003: '氛围-夜雨',
+  Weather_004: '氛围-融雪',
+  Vibe_009: '氛围-夜河',
+  Vibe_001: '风格-复古胶片',
+  Vibe_002: '风格-悠然海岸',
+  Vibe_003: '风格-夏日午后',
+  Vibe_004: '风格-曼妙珠光',
+  Vibe_005: '风格-红蓝交响'
 }
 
 // ── 错位摄影（数字ID → other/zh-CN.json puzzle）──
 export const PUZZLE_MAP: Record<number, string> = {
   [-1]: '无',
   30: '埋骨地 - 渴望飞翔 - 长出翅膀的思凯莱',
-  31: '埋骨地 - 神诞地观测 - 仪器中的神诞地',
+  31: '埋骨地 - 神诞地观测 - 仪器中的神诞地'
 }
 
 // ── 拍摄任务（数字ID → other/zh-CN.json interactive）──
@@ -180,7 +180,7 @@ export const INTERACTIVE_MAP: Record<number, string> = {
   261003: '任务 - 再见，为了重逢 - 给米瑞娜和西里安拍一张合照',
   42031201: '绯影存忆 1 - 积木花园',
   42031202: '绯影存忆 2 - 共建的花圃',
-  42031203: '绯影存忆 3 - 远去的旧途',
+  42031203: '绯影存忆 3 - 远去的旧途'
 }
 
 // ── 世界巡游（数字ID → other/zh-CN.json expedition）──
@@ -192,19 +192,19 @@ export const EXPEDITION_MAP: Record<number, string> = {
   101020305: '伊赞之土 - 灵魂观察所',
   101020306: '伊赞之土 - 龙巢所',
   101020307: '伊赞之土 - 纪念地',
-  101020308: '伊赞之土 - 蓝池',
+  101020308: '伊赞之土 - 蓝池'
 }
 
 // ── 动作场景（pose_id → other/zh-CN.json pose）
 //    上游亦为空（仅有 {0: "无"}），需后续收集 ──
 export const POSE_ID_MAP: Record<number, string> = {
-  0: '无',
+  0: '无'
 }
 
 // ── 定格场景（framed_moment → other/zh-CN.json framed_moment）
 //    上游亦为空（仅有 {0: "无"}），需后续收集 ──
 export const FRAMED_MOMENT_MAP: Record<number, string> = {
-  0: '无',
+  0: '无'
 }
 
 // ── 祝福闪光颜色（eureka.color，0-9）
@@ -222,7 +222,7 @@ export const EUREKA_COLOR_MAP: Record<number, string> = {
   6: '蓝',
   7: '紫',
   8: '粉',
-  9: '白',
+  9: '白'
 }
 
 // ═══════════════════════════════════════════════

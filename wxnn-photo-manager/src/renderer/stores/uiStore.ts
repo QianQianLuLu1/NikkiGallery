@@ -1,13 +1,27 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 // C-S2：从 shared 直接导入场景分类，不再经 mediaStore 中转，消除 uiStore ↔ mediaStore 循环依赖
-import type { SceneCategory, SceneTime, SceneCategoryConfig, SceneTimeConfig } from '../../shared/scene-category'
+import type {
+  SceneCategory,
+  SceneTime,
+  SceneCategoryConfig,
+  SceneTimeConfig
+} from '../../shared/scene-category'
 import { SCENE_CATEGORIES, SCENE_TIMES } from '../../shared/scene-category'
 // P2-U6：GroupDimension 类型移至 shared/dimension.ts，此处导入并重新导出保持向后兼容
 import type { GroupDimension } from '../../shared/dimension'
 export type { GroupDimension }
 
-export type ViewLevel = 'gallery' | 'detail' | 'editor' | 'categories' | 'settings' | 'recycle-bin' | 'favorites' | 'duplicates' | 'launcher-cache'
+export type ViewLevel =
+  | 'gallery'
+  | 'detail'
+  | 'editor'
+  | 'categories'
+  | 'settings'
+  | 'recycle-bin'
+  | 'favorites'
+  | 'duplicates'
+  | 'launcher-cache'
 export type ViewMode = 'grid' | 'list' | 'timeline' | 'masonry' | 'event-timeline'
 export type FilterType = 'all' | 'image' | 'video'
 export type SortBy = 'date' | 'name' | 'size' | 'resolution' | 'rating'
@@ -164,184 +178,186 @@ export const useUIStore = create<UIState>()(
         skipVideo: true
       },
 
-  navigateTo: (view) => {
-    const { viewStack } = get()
-    if (viewStack[viewStack.length - 1] !== view) {
-      // 页面切换改用 CSS page-enter 动画（View Transitions 的整页快照交叉淡入会产生闪烁）
-      set({
-        currentView: view,
-        viewStack: [...viewStack, view]
-      })
-    }
-  },
+      navigateTo: (view) => {
+        const { viewStack } = get()
+        if (viewStack[viewStack.length - 1] !== view) {
+          // 页面切换改用 CSS page-enter 动画（View Transitions 的整页快照交叉淡入会产生闪烁）
+          set({
+            currentView: view,
+            viewStack: [...viewStack, view]
+          })
+        }
+      },
 
-  goBack: () => {
-    const { viewStack } = get()
-    if (viewStack.length > 1) {
-      const newStack = viewStack.slice(0, -1)
-      set({
-        currentView: newStack[newStack.length - 1],
-        viewStack: newStack
-      })
-    }
-  },
+      goBack: () => {
+        const { viewStack } = get()
+        if (viewStack.length > 1) {
+          const newStack = viewStack.slice(0, -1)
+          set({
+            currentView: newStack[newStack.length - 1],
+            viewStack: newStack
+          })
+        }
+      },
 
-  toggleSidebar: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
+      toggleSidebar: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
 
-  selectMedia: (id) => set({ selectedMediaId: id, selectedMediaIds: id ? [id] : [] }),
+      selectMedia: (id) => set({ selectedMediaId: id, selectedMediaIds: id ? [id] : [] }),
 
-  setSelectedMediaIds: (ids) => set({ selectedMediaIds: ids, selectedMediaId: ids[0] || null }),
+      setSelectedMediaIds: (ids) => set({ selectedMediaIds: ids, selectedMediaId: ids[0] || null }),
 
-  toggleMediaSelection: (id) => {
-    const { selectedMediaIds } = get()
-    const index = selectedMediaIds.indexOf(id)
-    if (index === -1) {
-      set({ selectedMediaIds: [...selectedMediaIds, id] })
-    } else {
-      const newIds = [...selectedMediaIds]
-      newIds.splice(index, 1)
-      set({ selectedMediaIds: newIds })
-    }
-  },
+      toggleMediaSelection: (id) => {
+        const { selectedMediaIds } = get()
+        const index = selectedMediaIds.indexOf(id)
+        if (index === -1) {
+          set({ selectedMediaIds: [...selectedMediaIds, id] })
+        } else {
+          const newIds = [...selectedMediaIds]
+          newIds.splice(index, 1)
+          set({ selectedMediaIds: newIds })
+        }
+      },
 
-  clearSelection: () => set({ selectedMediaIds: [], selectedMediaId: null }),
+      clearSelection: () => set({ selectedMediaIds: [], selectedMediaId: null }),
 
-  setCategory: (id) => set({ currentCategoryId: id }),
+      setCategory: (id) => set({ currentCategoryId: id }),
 
-  setSearchQuery: (query) => set({ searchQuery: query }),
+      setSearchQuery: (query) => set({ searchQuery: query }),
 
-  setSortBy: (sort) => set({ sortBy: sort }),
+      setSortBy: (sort) => set({ sortBy: sort }),
 
-  toggleSortOrder: () => set((state) => ({ sortOrder: state.sortOrder === 'asc' ? 'desc' : 'asc' })),
+      toggleSortOrder: () =>
+        set((state) => ({ sortOrder: state.sortOrder === 'asc' ? 'desc' : 'asc' })),
 
-  setViewMode: (mode) => set({ viewMode: mode }),
+      setViewMode: (mode) => set({ viewMode: mode }),
 
-  setFilterType: (type) => set({ filterType: type }),
+      setFilterType: (type) => set({ filterType: type }),
 
-  setFilterDateRange: (range) => set({ filterDateRange: range }),
+      setFilterDateRange: (range) => set({ filterDateRange: range }),
 
-  setFilterRating: (rating) => set({ filterRating: rating }),
+      setFilterRating: (rating) => set({ filterRating: rating }),
 
-  setSelectedSceneCategories: (categories) => set({ selectedSceneCategories: categories }),
+      setSelectedSceneCategories: (categories) => set({ selectedSceneCategories: categories }),
 
-  toggleSceneCategory: (category, isCtrl) => {
-    const { selectedSceneCategories } = get()
-    if (isCtrl) {
-      const exists = selectedSceneCategories.includes(category)
-      set({
-        selectedSceneCategories: exists
-          ? selectedSceneCategories.filter((c) => c !== category)
-          : [...selectedSceneCategories, category]
-      })
-    } else {
-      set({ selectedSceneCategories: [category] })
-    }
-  },
+      toggleSceneCategory: (category, isCtrl) => {
+        const { selectedSceneCategories } = get()
+        if (isCtrl) {
+          const exists = selectedSceneCategories.includes(category)
+          set({
+            selectedSceneCategories: exists
+              ? selectedSceneCategories.filter((c) => c !== category)
+              : [...selectedSceneCategories, category]
+          })
+        } else {
+          set({ selectedSceneCategories: [category] })
+        }
+      },
 
-  clearSceneCategories: () => set({ selectedSceneCategories: [] }),
+      clearSceneCategories: () => set({ selectedSceneCategories: [] }),
 
-  selectAllSceneCategories: () => {
-    set({ selectedSceneCategories: SCENE_CATEGORIES.map((c: SceneCategoryConfig) => c.key) })
-  },
+      selectAllSceneCategories: () => {
+        set({ selectedSceneCategories: SCENE_CATEGORIES.map((c: SceneCategoryConfig) => c.key) })
+      },
 
-  // F-O1：场景时段 actions
-  setSelectedSceneTimes: (times) => set({ selectedSceneTimes: times }),
+      // F-O1：场景时段 actions
+      setSelectedSceneTimes: (times) => set({ selectedSceneTimes: times }),
 
-  toggleSceneTime: (time, isCtrl) => {
-    const { selectedSceneTimes } = get()
-    if (isCtrl) {
-      const exists = selectedSceneTimes.includes(time)
-      set({
-        selectedSceneTimes: exists
-          ? selectedSceneTimes.filter((t) => t !== time)
-          : [...selectedSceneTimes, time]
-      })
-    } else {
-      set({ selectedSceneTimes: [time] })
-    }
-  },
+      toggleSceneTime: (time, isCtrl) => {
+        const { selectedSceneTimes } = get()
+        if (isCtrl) {
+          const exists = selectedSceneTimes.includes(time)
+          set({
+            selectedSceneTimes: exists
+              ? selectedSceneTimes.filter((t) => t !== time)
+              : [...selectedSceneTimes, time]
+          })
+        } else {
+          set({ selectedSceneTimes: [time] })
+        }
+      },
 
-  clearSceneTimes: () => set({ selectedSceneTimes: [] }),
+      clearSceneTimes: () => set({ selectedSceneTimes: [] }),
 
-  selectAllSceneTimes: () => {
-    set({ selectedSceneTimes: SCENE_TIMES.map((c: SceneTimeConfig) => c.key) })
-  },
+      selectAllSceneTimes: () => {
+        set({ selectedSceneTimes: SCENE_TIMES.map((c: SceneTimeConfig) => c.key) })
+      },
 
-  // F-O1：套装筛选
-  setFilterOutfit: (outfit) => set({ filterOutfit: outfit }),
+      // F-O1：套装筛选
+      setFilterOutfit: (outfit) => set({ filterOutfit: outfit }),
 
-  // T02：切换仅看丢失
-  setShowMissingOnly: (show) => set({ showMissingOnly: show }),
+      // T02：切换仅看丢失
+      setShowMissingOnly: (show) => set({ showMissingOnly: show }),
 
-  // P0-03：智能分组维度 actions
-  // 切换分组维度时重置已选分组 key，避免旧 key 与新维度错位
-  setGroupDimension: (dim) => set({ groupDimension: dim, selectedGroupKey: 'all' }),
-  setSelectedGroupKey: (key) => set({ selectedGroupKey: key }),
+      // P0-03：智能分组维度 actions
+      // 切换分组维度时重置已选分组 key，避免旧 key 与新维度错位
+      setGroupDimension: (dim) => set({ groupDimension: dim, selectedGroupKey: 'all' }),
+      setSelectedGroupKey: (key) => set({ selectedGroupKey: key }),
 
-  // P1-01：切换显示重复项
-  setShowDuplicates: (show) => set({ showDuplicates: show }),
+      // P1-01：切换显示重复项
+      setShowDuplicates: (show) => set({ showDuplicates: show }),
 
-  openFullscreen: (index) => {
-    // P3-1：用 View Transitions API 实现共享元素过渡（缩略图→全屏图放大）
-    // 调用方需在调用前给源卡片 img 设置 view-transition-name: 'fullscreen-media'
-    const apply = () => {
-      // 清除源元素的 view-transition-name，避免新快照与 FullscreenViewer img 冲突
-      document.querySelectorAll('[style*="view-transition-name"]').forEach((el) => {
-        ;(el as HTMLElement).style.viewTransitionName = ''
-      })
-      set({ fullscreenOpen: true, fullscreenIndex: index })
-    }
-    if (
-      typeof document !== 'undefined' &&
-      (document as any).startViewTransition &&
-      !document.documentElement.classList.contains('reduce-motion')
-    ) {
-      ;(document as any).startViewTransition(apply)
-    } else {
-      apply()
-    }
-  },
+      openFullscreen: (index) => {
+        // P3-1：用 View Transitions API 实现共享元素过渡（缩略图→全屏图放大）
+        // 调用方需在调用前给源卡片 img 设置 view-transition-name: 'fullscreen-media'
+        const apply = () => {
+          // 清除源元素的 view-transition-name，避免新快照与 FullscreenViewer img 冲突
+          document.querySelectorAll('[style*="view-transition-name"]').forEach((el) => {
+            ;(el as HTMLElement).style.viewTransitionName = ''
+          })
+          set({ fullscreenOpen: true, fullscreenIndex: index })
+        }
+        if (
+          typeof document !== 'undefined' &&
+          (document as any).startViewTransition &&
+          !document.documentElement.classList.contains('reduce-motion')
+        ) {
+          ;(document as any).startViewTransition(apply)
+        } else {
+          apply()
+        }
+      },
 
-  closeFullscreen: () => {
-    // P3-1：关闭时实现反向共享元素过渡（全屏图→缩略图缩小）
-    const { fullscreenTargetImg } = get()
-    const apply = () => {
-      // 移除 FullscreenViewer img 的 view-transition-name（旧快照已有，新快照不需要）
-      const fullscreenImg = document.querySelector('[data-fullscreen-img]')
-      if (fullscreenImg) {
-        ;(fullscreenImg as HTMLElement).style.viewTransitionName = ''
-      }
-      // 给目标卡片 img 设置 view-transition-name（新快照中有，旧快照中没有）
-      if (fullscreenTargetImg) {
-        fullscreenTargetImg.style.viewTransitionName = 'fullscreen-media'
-      }
-      set({ fullscreenOpen: false, fullscreenTargetImg: null })
-    }
-    if (
-      typeof document !== 'undefined' &&
-      (document as any).startViewTransition &&
-      !document.documentElement.classList.contains('reduce-motion')
-    ) {
-      const transition = (document as any).startViewTransition(apply)
-      // 过渡完成后清除残留的 view-transition-name
-      transition.finished.finally(() => {
-        document.querySelectorAll('[style*="view-transition-name"]').forEach((el) => {
-          ;(el as HTMLElement).style.viewTransitionName = ''
-        })
-      })
-    } else {
-      apply()
-    }
-  },
+      closeFullscreen: () => {
+        // P3-1：关闭时实现反向共享元素过渡（全屏图→缩略图缩小）
+        const { fullscreenTargetImg } = get()
+        const apply = () => {
+          // 移除 FullscreenViewer img 的 view-transition-name（旧快照已有，新快照不需要）
+          const fullscreenImg = document.querySelector('[data-fullscreen-img]')
+          if (fullscreenImg) {
+            ;(fullscreenImg as HTMLElement).style.viewTransitionName = ''
+          }
+          // 给目标卡片 img 设置 view-transition-name（新快照中有，旧快照中没有）
+          if (fullscreenTargetImg) {
+            fullscreenTargetImg.style.viewTransitionName = 'fullscreen-media'
+          }
+          set({ fullscreenOpen: false, fullscreenTargetImg: null })
+        }
+        if (
+          typeof document !== 'undefined' &&
+          (document as any).startViewTransition &&
+          !document.documentElement.classList.contains('reduce-motion')
+        ) {
+          const transition = (document as any).startViewTransition(apply)
+          // 过渡完成后清除残留的 view-transition-name
+          transition.finished.finally(() => {
+            document.querySelectorAll('[style*="view-transition-name"]').forEach((el) => {
+              ;(el as HTMLElement).style.viewTransitionName = ''
+            })
+          })
+        } else {
+          apply()
+        }
+      },
 
-  // T11：幻灯片播放 actions
-  openSlideshow: (startIndex) => set({ slideshowOpen: true, slideshowStartIndex: startIndex }),
+      // T11：幻灯片播放 actions
+      openSlideshow: (startIndex) => set({ slideshowOpen: true, slideshowStartIndex: startIndex }),
 
-  closeSlideshow: () => set({ slideshowOpen: false }),
+      closeSlideshow: () => set({ slideshowOpen: false }),
 
-  setSlideshowConfig: (config) => set((state) => ({
-    slideshowConfig: { ...state.slideshowConfig, ...config }
-  }))
+      setSlideshowConfig: (config) =>
+        set((state) => ({
+          slideshowConfig: { ...state.slideshowConfig, ...config }
+        }))
     }),
     {
       name: 'wxnn-ui-store',

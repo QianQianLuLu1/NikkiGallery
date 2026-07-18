@@ -20,7 +20,12 @@ interface ToastProps {
  * 仿 iOS 通知风格：圆角卡片 + 毛玻璃背景 + 轻阴影，右下角悬浮，从下方滑入。
  * P1-2：使用 motion AnimatePresence 实现平滑退出动画，替代 CSS toast-enter/toastOut。
  */
-export const Toast: React.FC<ToastProps> = ({ messages, onDismiss, className = '', zIndex = 50 }) => {
+export const Toast: React.FC<ToastProps> = ({
+  messages,
+  onDismiss,
+  className = '',
+  zIndex = 50
+}) => {
   return (
     <div
       className={`fixed bottom-6 right-6 flex flex-col gap-2 max-w-md ${className}`}
@@ -29,11 +34,12 @@ export const Toast: React.FC<ToastProps> = ({ messages, onDismiss, className = '
       <AnimatePresence>
         {messages.map((msg) => {
           // P1-U6：Toast 三态背景色改用 CSS 变量，主题可覆盖
-          const bgColor = msg.type === 'error'
-            ? 'var(--toast-error-bg)'
-            : msg.type === 'info'
-              ? 'var(--toast-info-bg)'
-              : 'var(--toast-success-bg)'
+          const bgColor =
+            msg.type === 'error'
+              ? 'var(--toast-error-bg)'
+              : msg.type === 'info'
+                ? 'var(--toast-info-bg)'
+                : 'var(--toast-success-bg)'
 
           return (
             <motion.div

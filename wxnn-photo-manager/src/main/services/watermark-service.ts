@@ -141,7 +141,16 @@ export class WatermarkService {
 
     const ww = Math.round(text.size * text.content.length * 1.2)
     const wh = Math.round(text.size * 1.5)
-    const pos = this.getWatermarkPosition(config.position, cw, ch, ww, wh, config.margin, config.customX, config.customY)
+    const pos = this.getWatermarkPosition(
+      config.position,
+      cw,
+      ch,
+      ww,
+      wh,
+      config.margin,
+      config.customX,
+      config.customY
+    )
 
     const fontWeight = text.bold ? 'bold' : 'normal'
     const fontStyle = text.italic ? 'italic' : 'normal'
@@ -170,7 +179,11 @@ export class WatermarkService {
     return `<svg width="${cw}" height="${ch}" xmlns="http://www.w3.org/2000/svg">${elements}</svg>`
   }
 
-  private async buildImageWatermarkSvg(config: WatermarkConfig, cw: number, ch: number): Promise<string | null> {
+  private async buildImageWatermarkSvg(
+    config: WatermarkConfig,
+    cw: number,
+    ch: number
+  ): Promise<string | null> {
     const imgCfg = config.image
     if (!imgCfg?.path) return null
     // C-3：统一文件存在检查
@@ -184,7 +197,16 @@ export class WatermarkService {
 
     const ww = imgCfg.width || 120
     const wh = imgCfg.height || 120
-    const pos = this.getWatermarkPosition(config.position, cw, ch, ww, wh, config.margin, config.customX, config.customY)
+    const pos = this.getWatermarkPosition(
+      config.position,
+      cw,
+      ch,
+      ww,
+      wh,
+      config.margin,
+      config.customX,
+      config.customY
+    )
     const opacity = (imgCfg.opacity ?? 80) / 100
     const rotation = config.rotation || 0
 

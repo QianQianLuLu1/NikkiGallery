@@ -63,7 +63,9 @@ export function killAllProcesses(signal: NodeJS.Signals = 'SIGKILL'): void {
   activeProcesses.clear()
 
   for (const cmd of killableCommands) {
-    try { cmd.kill(signal) } catch {}
+    try {
+      cmd.kill(signal)
+    } catch {}
   }
   killableCommands.clear()
 }

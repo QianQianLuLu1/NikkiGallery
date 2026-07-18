@@ -205,18 +205,22 @@ async function measureCacheStats(): Promise<PerfResult> {
 
 function printReport(): void {
   console.log('\n========== T15 性能基线测试报告 ==========\n')
-  const passed = results.filter(r => r.passed).length
-  const failed = results.filter(r => !r.passed).length
+  const passed = results.filter((r) => r.passed).length
+  const failed = results.filter((r) => !r.passed).length
   console.log(`通过: ${passed} / ${results.length}，失败: ${failed}\n`)
 
   results.forEach((r, i) => {
     const status = r.passed ? '✓ PASS' : '✗ FAIL'
     console.log(`[${i + 1}] ${status}  ${r.scenario}`)
-    console.log(`    耗时: ${r.metrics.durationMs}ms` +
-      (r.threshold?.maxMs ? ` (阈值 ≤ ${r.threshold.maxMs}ms)` : ''))
+    console.log(
+      `    耗时: ${r.metrics.durationMs}ms` +
+        (r.threshold?.maxMs ? ` (阈值 ≤ ${r.threshold.maxMs}ms)` : '')
+    )
     if (r.metrics.itemsProcessed !== undefined) {
-      console.log(`    处理量: ${r.metrics.itemsProcessed} 项` +
-        (r.metrics.throughputPerSec ? ` (${r.metrics.throughputPerSec}/秒)` : ''))
+      console.log(
+        `    处理量: ${r.metrics.itemsProcessed} 项` +
+          (r.metrics.throughputPerSec ? ` (${r.metrics.throughputPerSec}/秒)` : '')
+      )
     }
     if (r.detail) console.log(`    详情: ${r.detail}`)
     console.log()
@@ -237,7 +241,7 @@ async function runPerfBaseline(scanPath: string): Promise<void> {
   await measureScanDuration(scanPath)
 
   // 等待扫描完成后的媒体列表刷新
-  await new Promise(resolve => setTimeout(resolve, 2000))
+  await new Promise((resolve) => setTimeout(resolve, 2000))
 
   // 2. 媒体列表加载（首页）
   console.log('[2/5] 测试媒体列表加载（首页 100 条）...')

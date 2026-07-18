@@ -9,7 +9,17 @@ import { Toast } from '../common/Toast'
 import { ConfirmDialog } from '../common/ConfirmDialog'
 import { ExifPanel } from '../common/ExifPanel'
 import { VideoPlayer } from '../video/VideoPlayer'
-import { IconFavorite, IconSaveAs, IconDelete, IconClose, IconChevronLeft, IconChevronRight, IconInfo, IconPause, IconPlay } from '../../icons'
+import {
+  IconFavorite,
+  IconSaveAs,
+  IconDelete,
+  IconClose,
+  IconChevronLeft,
+  IconChevronRight,
+  IconInfo,
+  IconPause,
+  IconPlay
+} from '../../icons'
 import { CameraInfoPanel } from '../common/CameraInfoPanel'
 import { PhotographyPanel } from '../common/PhotographyPanel'
 import { NikkiInfoPanel } from '../common/NikkiInfoPanel'
@@ -32,30 +42,41 @@ export const FullscreenViewer: React.FC<FullscreenViewerProps> = ({ filteredFile
   // 否则全屏打开/关闭两次渲染的 hooks 数量不一致会触发 "Rendered more hooks than during the previous render"
   const toggleFavorite = useFavoriteToggle(showMessage)
   const containerRef = useRef<HTMLDivElement>(null)
-  const [confirm, setConfirm] = useState<{ open: boolean; title: string; message: string; onConfirm: () => void } | null>(null)
+  const [confirm, setConfirm] = useState<{
+    open: boolean
+    title: string
+    message: string
+    onConfirm: () => void
+  } | null>(null)
   const [showControls, setShowControls] = useState(true)
   const mouseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   // P2-C13：原 playInterval 本地状态与 uiStore.slideshowConfig.interval 重复
   // 改为从 uiStore 读取 interval，通过 updateSlideshowConfig 持久化
   const playInterval = useUIStore((s) => s.slideshowConfig.interval)
   const setSlideshowConfig = useUIStore((s) => s.setSlideshowConfig)
-  const setPlayInterval = useCallback((ms: SlideshowConfig['interval']) => {
-    setSlideshowConfig({ interval: ms })
-  }, [setSlideshowConfig])
+  const setPlayInterval = useCallback(
+    (ms: SlideshowConfig['interval']) => {
+      setSlideshowConfig({ interval: ms })
+    },
+    [setSlideshowConfig]
+  )
   const [showIntervalMenu, setShowIntervalMenu] = useState(false)
   // EXIF 信息浮层显示开关（独立于 showControls，避免读 EXIF 时面板自动隐藏）
   const [showInfoPanel, setShowInfoPanel] = useState(false)
 
   const currentFile = filteredFiles[fullscreenIndex]
 
-  const navigate = useCallback((delta: number) => {
-    const newIndex = fullscreenIndex + delta
-    if (newIndex >= 0 && newIndex < filteredFiles.length) {
-      useUIStore.setState({ fullscreenIndex: newIndex })
-      // 切换图片时关闭 EXIF 浮层，避免显示上一张的参数
-      setShowInfoPanel(false)
-    }
-  }, [fullscreenIndex, filteredFiles.length])
+  const navigate = useCallback(
+    (delta: number) => {
+      const newIndex = fullscreenIndex + delta
+      if (newIndex >= 0 && newIndex < filteredFiles.length) {
+        useUIStore.setState({ fullscreenIndex: newIndex })
+        // 切换图片时关闭 EXIF 浮层，避免显示上一张的参数
+        setShowInfoPanel(false)
+      }
+    },
+    [fullscreenIndex, filteredFiles.length]
+  )
 
   // DU3：幻灯片播放逻辑使用共享 hook（原 stopSlideshow/startSlideshow/toggleSlideshow 三函数合并）
   const slideshow = useSlideshow({
@@ -91,39 +112,42 @@ export const FullscreenViewer: React.FC<FullscreenViewerProps> = ({ filteredFile
   // C-S10：handleDelete 用 useCallback 稳定化，并作为键盘事件 effect 的依赖
   // 原实现 handleDelete 为普通函数，键盘事件 effect 依赖数组缺失 handleDelete，
   // 导致键盘 Delete 调用旧版本（currentFile 引用过期）。
-  const handleDelete = useCallback((file: MediaFile) => {
-    setConfirm({
-      open: true,
-      title: '删除文件',
-      message: `确定将 "${file.file_name}" 移至回收站吗？`,
-      onConfirm: async () => {
-        if (!window.electronAPI) return
-        try {
-          const result = await window.electronAPI.file.delete([file.file_path])
-          if (result.success) {
-            await window.electronAPI.mediaAction.delete(Number(file.id))
-            deleteMediaFiles([file.id])
-            // P1-C10：从 store 获取最新 index，避免闭包中 fullscreenIndex 过期
-            // 同时基于当前 filteredFiles.length 计算剩余（props 可能未更新，但有 useEffect 兜底）
-            const currentIndex = useUIStore.getState().fullscreenIndex
-            const remaining = filteredFiles.length - 1
-            if (remaining <= 0) {
-              closeFullscreen()
+  const handleDelete = useCallback(
+    (file: MediaFile) => {
+      setConfirm({
+        open: true,
+        title: '删除文件',
+        message: `确定将 "${file.file_name}" 移至回收站吗？`,
+        onConfirm: async () => {
+          if (!window.electronAPI) return
+          try {
+            const result = await window.electronAPI.file.delete([file.file_path])
+            if (result.success) {
+              await window.electronAPI.mediaAction.delete(Number(file.id))
+              deleteMediaFiles([file.id])
+              // P1-C10：从 store 获取最新 index，避免闭包中 fullscreenIndex 过期
+              // 同时基于当前 filteredFiles.length 计算剩余（props 可能未更新，但有 useEffect 兜底）
+              const currentIndex = useUIStore.getState().fullscreenIndex
+              const remaining = filteredFiles.length - 1
+              if (remaining <= 0) {
+                closeFullscreen()
+              } else {
+                // 当前 index 超出剩余范围时回退到上一张
+                const newIndex = Math.min(currentIndex, remaining - 1)
+                useUIStore.setState({ fullscreenIndex: newIndex })
+              }
             } else {
-              // 当前 index 超出剩余范围时回退到上一张
-              const newIndex = Math.min(currentIndex, remaining - 1)
-              useUIStore.setState({ fullscreenIndex: newIndex })
+              showMessage(result.message || '删除失败', 'error')
             }
-          } else {
-            showMessage(result.message || '删除失败', 'error')
+          } catch (error) {
+            showMessage(error instanceof Error ? error.message : '删除失败', 'error')
           }
-        } catch (error) {
-          showMessage(error instanceof Error ? error.message : '删除失败', 'error')
+          setConfirm(null)
         }
-        setConfirm(null)
-      }
-    })
-  }, [filteredFiles.length, deleteMediaFiles, closeFullscreen, showMessage])
+      })
+    },
+    [filteredFiles.length, deleteMediaFiles, closeFullscreen, showMessage]
+  )
 
   // P3-1：关闭全屏时查找目标卡片 img，用于共享元素过渡（全屏图→缩略图缩小）
   const handleClose = useCallback(() => {
@@ -141,19 +165,22 @@ export const FullscreenViewer: React.FC<FullscreenViewerProps> = ({ filteredFile
       touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
     }
   }, [])
-  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
-    const start = touchStartRef.current
-    touchStartRef.current = null
-    if (!start) return
-    const endX = e.changedTouches[0]?.clientX ?? start.x
-    const endY = e.changedTouches[0]?.clientY ?? start.y
-    const deltaX = endX - start.x
-    const deltaY = endY - start.y
-    // 仅在水平滑动距离 > 50px 且大于垂直滑动时触发导航（避免误触）
-    if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY)) {
-      navigate(deltaX > 0 ? -1 : 1)
-    }
-  }, [navigate])
+  const handleTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
+      const start = touchStartRef.current
+      touchStartRef.current = null
+      if (!start) return
+      const endX = e.changedTouches[0]?.clientX ?? start.x
+      const endY = e.changedTouches[0]?.clientY ?? start.y
+      const deltaX = endX - start.x
+      const deltaY = endY - start.y
+      // 仅在水平滑动距离 > 50px 且大于垂直滑动时触发导航（避免误触）
+      if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY)) {
+        navigate(deltaX > 0 ? -1 : 1)
+      }
+    },
+    [navigate]
+  )
 
   useEffect(() => {
     if (!fullscreenOpen) return
@@ -176,7 +203,9 @@ export const FullscreenViewer: React.FC<FullscreenViewerProps> = ({ filteredFile
           e.preventDefault()
           toggleSlideshow()
           break
-        case 'Delete': if (currentFile) handleDelete(currentFile); break
+        case 'Delete':
+          if (currentFile) handleDelete(currentFile)
+          break
       }
     }
     window.addEventListener('keydown', handleKey)
@@ -253,7 +282,10 @@ export const FullscreenViewer: React.FC<FullscreenViewerProps> = ({ filteredFile
       aria-label={`全屏查看：${currentFile.file_name}`}
       tabIndex={-1}
     >
-      <div className="relative w-full h-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="relative w-full h-full flex items-center justify-center"
+        onClick={(e) => e.stopPropagation()}
+      >
         {currentFile.file_type === 'video' ? (
           <VideoPlayer
             src={fileUrl || ''}
@@ -297,11 +329,7 @@ export const FullscreenViewer: React.FC<FullscreenViewerProps> = ({ filteredFile
                 title={slideshow.isPlaying ? '暂停幻灯片 (空格)' : '播放幻灯片 (空格)'}
                 aria-label={slideshow.isPlaying ? '暂停幻灯片' : '播放幻灯片'}
               >
-                {slideshow.isPlaying ? (
-                  <IconPause size={18} />
-                ) : (
-                  <IconPlay size={18} />
-                )}
+                {slideshow.isPlaying ? <IconPause size={18} /> : <IconPlay size={18} />}
               </button>
               <button
                 className="icon-btn text-white text-xs ml-1"
@@ -315,7 +343,10 @@ export const FullscreenViewer: React.FC<FullscreenViewerProps> = ({ filteredFile
               {showIntervalMenu && (
                 <div
                   className="absolute top-full right-0 mt-1 py-1 rounded-lg z-50 min-w-[80px]"
-                  style={{ background: 'rgba(30, 41, 59, 0.95)', backdropFilter: 'var(--backdrop-blur)' }}
+                  style={{
+                    background: 'rgba(30, 41, 59, 0.95)',
+                    backdropFilter: 'var(--backdrop-blur)'
+                  }}
                   onClick={(e) => e.stopPropagation()}
                 >
                   {([1000, 2000, 3000, 5000, 8000] as const).map((ms) => (
@@ -326,7 +357,11 @@ export const FullscreenViewer: React.FC<FullscreenViewerProps> = ({ filteredFile
                         setPlayInterval(ms)
                         setShowIntervalMenu(false)
                       }}
-                      style={playInterval === ms ? { color: 'var(--accent)', fontWeight: 600 } : undefined}
+                      style={
+                        playInterval === ms
+                          ? { color: 'var(--accent)', fontWeight: 600 }
+                          : undefined
+                      }
                     >
                       {ms / 1000} 秒
                     </button>
@@ -335,8 +370,17 @@ export const FullscreenViewer: React.FC<FullscreenViewerProps> = ({ filteredFile
               )}
             </div>
             <div className="w-px h-5 bg-white/20" />
-            <button className="icon-btn text-white" onClick={() => toggleFavorite(currentFile)} title={currentFile.is_favorite ? '取消收藏' : '收藏'} aria-label={currentFile.is_favorite ? '取消收藏' : '收藏'}>
-              <IconFavorite size={18} filled={currentFile.is_favorite} color={currentFile.is_favorite ? 'var(--favorite)' : 'white'} />
+            <button
+              className="icon-btn text-white"
+              onClick={() => toggleFavorite(currentFile)}
+              title={currentFile.is_favorite ? '取消收藏' : '收藏'}
+              aria-label={currentFile.is_favorite ? '取消收藏' : '收藏'}
+            >
+              <IconFavorite
+                size={18}
+                filled={currentFile.is_favorite}
+                color={currentFile.is_favorite ? 'var(--favorite)' : 'white'}
+              />
             </button>
             {/* 图片相机参数浮层开关（视频文件不显示） */}
             {currentFile.file_type === 'image' && (
@@ -350,13 +394,28 @@ export const FullscreenViewer: React.FC<FullscreenViewerProps> = ({ filteredFile
                 <IconInfo size={18} />
               </button>
             )}
-            <button className="icon-btn text-white" onClick={() => handleSaveAs(currentFile)} title="另存为" aria-label="另存为">
+            <button
+              className="icon-btn text-white"
+              onClick={() => handleSaveAs(currentFile)}
+              title="另存为"
+              aria-label="另存为"
+            >
               <IconSaveAs size={18} />
             </button>
-            <button className="icon-btn text-white" onClick={() => handleDelete(currentFile)} title="删除" aria-label="删除">
+            <button
+              className="icon-btn text-white"
+              onClick={() => handleDelete(currentFile)}
+              title="删除"
+              aria-label="删除"
+            >
               <IconDelete size={18} />
             </button>
-            <button className="icon-btn text-white" onClick={handleClose} title="关闭 (Esc)" aria-label="关闭">
+            <button
+              className="icon-btn text-white"
+              onClick={handleClose}
+              title="关闭 (Esc)"
+              aria-label="关闭"
+            >
               <IconClose size={18} />
             </button>
           </div>
@@ -415,7 +474,10 @@ export const FullscreenViewer: React.FC<FullscreenViewerProps> = ({ filteredFile
             </button>
           </div>
           <ExifPanel file={currentFile} variant="dark" showTitle={false} />
-          <div className="pt-3 mt-3 space-y-3" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+          <div
+            className="pt-3 mt-3 space-y-3"
+            style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}
+          >
             <PhotographyPanel file={currentFile} variant="dark" showTitle={false} />
             <CameraInfoPanel file={currentFile} variant="dark" showTitle={false} />
             <NikkiInfoPanel file={currentFile} variant="dark" showTitle={false} />

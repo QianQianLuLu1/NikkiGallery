@@ -80,8 +80,14 @@ export const GalleryPage: React.FC = () => {
     message: string
     onConfirm: () => void
   }>({ open: false, title: '', message: '', onConfirm: () => {} })
-  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; file: MediaFile } | null>(null)
-  const [renameDialog, setRenameDialog] = useState<{ open: boolean; file: MediaFile | null; newName: string }>({
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; file: MediaFile } | null>(
+    null
+  )
+  const [renameDialog, setRenameDialog] = useState<{
+    open: boolean
+    file: MediaFile | null
+    newName: string
+  }>({
     open: false,
     file: null,
     newName: ''
@@ -105,7 +111,10 @@ export const GalleryPage: React.FC = () => {
   // P0-03：智能分组面板展开状态
   const [groupPanelOpen, setGroupPanelOpen] = useState(false)
   // 图片属性弹窗（含 EXIF 拍摄参数 + 复制按钮）
-  const [propertiesDialog, setPropertiesDialog] = useState<{ open: boolean; file: MediaFile | null }>({
+  const [propertiesDialog, setPropertiesDialog] = useState<{
+    open: boolean
+    file: MediaFile | null
+  }>({
     open: false,
     file: null
   })
@@ -147,39 +156,51 @@ export const GalleryPage: React.FC = () => {
   })
 
   // 网格/列表项选择处理
-  const handleGridItemClick = useCallback((id: string, fileIndex: number, e: React.MouseEvent | React.KeyboardEvent) => {
-    const isCtrl = 'ctrlKey' in e && e.ctrlKey
-    const isMeta = 'metaKey' in e && e.metaKey
-    const isShift = 'shiftKey' in e && e.shiftKey
-    if (isCtrl || isMeta) {
-      toggleMediaSelection(id)
-    } else if (isShift) {
-      // Shift 连续选择
-      if (selectedMediaIds.length === 0) {
-        selectMedia(id)
-        return
-      }
-      const lastIndex = filteredFiles.findIndex((f) => f.id === selectedMediaIds[selectedMediaIds.length - 1])
-      if (lastIndex < 0 || lastIndex >= filteredFiles.length) {
-        selectMedia(id)
-        return
-      }
-      const start = Math.min(lastIndex, fileIndex)
-      const end = Math.max(lastIndex, fileIndex)
-      const rangeIds = filteredFiles.slice(start, end + 1).map((f) => f.id)
-      setSelectedMediaIds(rangeIds)
-    } else {
-      // P3-1：给被点击的卡片 img 设置 view-transition-name，供 FullscreenViewer 共享元素过渡
-      if (typeof document !== 'undefined' && (document as any).startViewTransition) {
-        const sourceImg = (e.currentTarget as HTMLElement).querySelector('img[data-media-id]')
-        if (sourceImg) {
-          ;(sourceImg as HTMLElement).style.viewTransitionName = 'fullscreen-media'
+  const handleGridItemClick = useCallback(
+    (id: string, fileIndex: number, e: React.MouseEvent | React.KeyboardEvent) => {
+      const isCtrl = 'ctrlKey' in e && e.ctrlKey
+      const isMeta = 'metaKey' in e && e.metaKey
+      const isShift = 'shiftKey' in e && e.shiftKey
+      if (isCtrl || isMeta) {
+        toggleMediaSelection(id)
+      } else if (isShift) {
+        // Shift 连续选择
+        if (selectedMediaIds.length === 0) {
+          selectMedia(id)
+          return
         }
+        const lastIndex = filteredFiles.findIndex(
+          (f) => f.id === selectedMediaIds[selectedMediaIds.length - 1]
+        )
+        if (lastIndex < 0 || lastIndex >= filteredFiles.length) {
+          selectMedia(id)
+          return
+        }
+        const start = Math.min(lastIndex, fileIndex)
+        const end = Math.max(lastIndex, fileIndex)
+        const rangeIds = filteredFiles.slice(start, end + 1).map((f) => f.id)
+        setSelectedMediaIds(rangeIds)
+      } else {
+        // P3-1：给被点击的卡片 img 设置 view-transition-name，供 FullscreenViewer 共享元素过渡
+        if (typeof document !== 'undefined' && (document as any).startViewTransition) {
+          const sourceImg = (e.currentTarget as HTMLElement).querySelector('img[data-media-id]')
+          if (sourceImg) {
+            ;(sourceImg as HTMLElement).style.viewTransitionName = 'fullscreen-media'
+          }
+        }
+        selectMedia(id)
+        openFullscreen(fileIndex)
       }
-      selectMedia(id)
-      openFullscreen(fileIndex)
-    }
-  }, [filteredFiles, selectedMediaIds, selectMedia, setSelectedMediaIds, toggleMediaSelection, openFullscreen])
+    },
+    [
+      filteredFiles,
+      selectedMediaIds,
+      selectMedia,
+      setSelectedMediaIds,
+      toggleMediaSelection,
+      openFullscreen
+    ]
+  )
 
   const handleSelectAll = useCallback(() => {
     setSelectedMediaIds(filteredFiles.map((f) => f.id))
@@ -188,9 +209,7 @@ export const GalleryPage: React.FC = () => {
   const handleSelectAllInCategory = useCallback(() => {
     if (!contextMenu) return
     const category = contextMenu.file.scene_category
-    const ids = filteredFiles
-      .filter((f) => f.scene_category === category)
-      .map((f) => f.id)
+    const ids = filteredFiles.filter((f) => f.scene_category === category).map((f) => f.id)
     setSelectedMediaIds(ids)
     setContextMenu(null)
   }, [contextMenu, filteredFiles, setSelectedMediaIds])
@@ -223,75 +242,93 @@ export const GalleryPage: React.FC = () => {
     setRenameDialog({ open: false, file: null, newName: '' })
   }, [renameDialog.file, renameDialog.newName, fileOperations])
 
-  const handleDelete = useCallback((file: MediaFile, permanent = false) => {
-    const config = fileOperations.getDeleteConfirm(file, permanent)
-    setConfirmDialog({
-      open: true,
-      title: config.title,
-      message: config.message,
-      onConfirm: config.onConfirm
-    })
-  }, [fileOperations])
+  const handleDelete = useCallback(
+    (file: MediaFile, permanent = false) => {
+      const config = fileOperations.getDeleteConfirm(file, permanent)
+      setConfirmDialog({
+        open: true,
+        title: config.title,
+        message: config.message,
+        onConfirm: config.onConfirm
+      })
+    },
+    [fileOperations]
+  )
 
   // 稳定回调：避免内联函数破坏 VirtualImageGrid 的 React.memo 浅比较
   const handleGridHover = useCallback(() => {}, [])
-  const handleGridDelete = useCallback((file: MediaFile) => handleDelete(file, false), [handleDelete])
+  const handleGridDelete = useCallback(
+    (file: MediaFile) => handleDelete(file, false),
+    [handleDelete]
+  )
 
   const handleShowProperties = useCallback((file: MediaFile) => {
     setPropertiesDialog({ open: true, file })
   }, [])
 
   // 在资源管理器中打开文件所在位置并选中该文件
-  const handleOpenLocation = useCallback(async (file: MediaFile) => {
-    try {
-      const result = await window.electronAPI?.shell?.showItemInFolder(file.file_path)
-      if (result && !result.success) {
-        showMessage(result.message || '打开文件所在位置失败', 'error')
+  const handleOpenLocation = useCallback(
+    async (file: MediaFile) => {
+      try {
+        const result = await window.electronAPI?.shell?.showItemInFolder(file.file_path)
+        if (result && !result.success) {
+          showMessage(result.message || '打开文件所在位置失败', 'error')
+        }
+      } catch (err) {
+        showMessage(err instanceof Error ? err.message : '打开文件所在位置失败', 'error')
       }
-    } catch (err) {
-      showMessage(err instanceof Error ? err.message : '打开文件所在位置失败', 'error')
-    }
-  }, [showMessage])
+    },
+    [showMessage]
+  )
 
-  const handleExportSingle = useCallback((file: MediaFile) => {
-    selectMedia(file.id)
-    useUIStore.getState().setSelectedMediaIds([file.id])
-    batchOperations.handleBatchExport()
-  }, [selectMedia, batchOperations])
+  const handleExportSingle = useCallback(
+    (file: MediaFile) => {
+      selectMedia(file.id)
+      useUIStore.getState().setSelectedMediaIds([file.id])
+      batchOperations.handleBatchExport()
+    },
+    [selectMedia, batchOperations]
+  )
 
   // T09：剪贴板分享核心流程——复制文件 → 检测应用 → 弹引导窗
-  const handleShareToClipboard = useCallback(async (filePaths: string[], channelId: ShareChannelId) => {
-    if (filePaths.length === 0) {
-      showMessage('请先选择要分享的媒体文件', 'error')
-      return
-    }
-    const api = window.electronAPI?.share
-    if (!api) {
-      showMessage('分享接口不可用', 'error')
-      return
-    }
-    // 第一步：复制到剪贴板
-    const copyResult = await api.copyFiles(filePaths)
-    if (!copyResult.success) {
-      // 复制失败：直接弹错误引导窗（不自动关闭）
-      setShareGuide({ open: true, channelId, installed: false, running: false, copyResult })
-      return
-    }
-    // 第二步：检测目标应用状态（installed + running）
-    const detect = await api.detectApp(channelId)
-    setShareGuide({
-      open: true,
-      channelId,
-      installed: detect.success ? detect.installed : false,
-      running: detect.success ? !!detect.running : false,
-      copyResult
-    })
-  }, [showMessage])
+  const handleShareToClipboard = useCallback(
+    async (filePaths: string[], channelId: ShareChannelId) => {
+      if (filePaths.length === 0) {
+        showMessage('请先选择要分享的媒体文件', 'error')
+        return
+      }
+      const api = window.electronAPI?.share
+      if (!api) {
+        showMessage('分享接口不可用', 'error')
+        return
+      }
+      // 第一步：复制到剪贴板
+      const copyResult = await api.copyFiles(filePaths)
+      if (!copyResult.success) {
+        // 复制失败：直接弹错误引导窗（不自动关闭）
+        setShareGuide({ open: true, channelId, installed: false, running: false, copyResult })
+        return
+      }
+      // 第二步：检测目标应用状态（installed + running）
+      const detect = await api.detectApp(channelId)
+      setShareGuide({
+        open: true,
+        channelId,
+        installed: detect.success ? detect.installed : false,
+        running: detect.success ? !!detect.running : false,
+        copyResult
+      })
+    },
+    [showMessage]
+  )
 
   // T09：单文件分享（来自右键菜单）
-  const handleShareSingle = useCallback((file: MediaFile, channelId: ShareChannelId) => {
-    void handleShareToClipboard([file.file_path], channelId)
-  }, [handleShareToClipboard])
+  const handleShareSingle = useCallback(
+    (file: MediaFile, channelId: ShareChannelId) => {
+      void handleShareToClipboard([file.file_path], channelId)
+    },
+    [handleShareToClipboard]
+  )
 
   const contextMenuItems = useMemo(() => {
     if (!contextMenu) return []
@@ -312,7 +349,17 @@ export const GalleryPage: React.FC = () => {
       onShare: handleShareSingle,
       onOpenLocation: handleOpenLocation
     })
-  }, [contextMenu, fileOperations, handleExportSingle, handleRenameOpen, handleDelete, handleShowProperties, handleSelectAllInCategory, handleShareSingle, handleOpenLocation])
+  }, [
+    contextMenu,
+    fileOperations,
+    handleExportSingle,
+    handleRenameOpen,
+    handleDelete,
+    handleShowProperties,
+    handleSelectAllInCategory,
+    handleShareSingle,
+    handleOpenLocation
+  ])
 
   const handleBatchDelete = useCallback(() => {
     setConfirmDialog({
@@ -340,15 +387,18 @@ export const GalleryPage: React.FC = () => {
   }, [selectedMediaIds, filteredFiles, showMessage])
 
   // T09：批量分享（来自工具栏 / 批量操作栏）
-  const handleShareBatch = useCallback((channelId: ShareChannelId) => {
-    if (selectedMediaIds.length === 0) {
-      showMessage('请先选择要分享的媒体文件', 'error')
-      return
-    }
-    const selectedSet = new Set(selectedMediaIds)
-    const paths = filteredFiles.filter((f) => selectedSet.has(f.id)).map((f) => f.file_path)
-    void handleShareToClipboard(paths, channelId)
-  }, [selectedMediaIds, filteredFiles, showMessage, handleShareToClipboard])
+  const handleShareBatch = useCallback(
+    (channelId: ShareChannelId) => {
+      if (selectedMediaIds.length === 0) {
+        showMessage('请先选择要分享的媒体文件', 'error')
+        return
+      }
+      const selectedSet = new Set(selectedMediaIds)
+      const paths = filteredFiles.filter((f) => selectedSet.has(f.id)).map((f) => f.file_path)
+      void handleShareToClipboard(paths, channelId)
+    },
+    [selectedMediaIds, filteredFiles, showMessage, handleShareToClipboard]
+  )
 
   // T11：启动幻灯片播放——若已选择文件则从首个选中开始，否则从列表第一张开始
   const handleStartSlideshow = useCallback(() => {
@@ -427,9 +477,7 @@ export const GalleryPage: React.FC = () => {
       </div>
 
       {/* P0-03：智能分组面板（条件渲染） */}
-      {groupPanelOpen && (
-        <SmartGroupPanel onClose={() => setGroupPanelOpen(false)} />
-      )}
+      {groupPanelOpen && <SmartGroupPanel onClose={() => setGroupPanelOpen(false)} />}
 
       {/* 文件列表 */}
       {filteredFiles.length === 0 ? (
@@ -462,7 +510,11 @@ export const GalleryPage: React.FC = () => {
             />
           )}
           {viewMode === 'timeline' && (
-            <TimelineView files={filteredFiles} onOpen={fileOperations.handleOpen} />
+            <TimelineView
+              files={filteredFiles}
+              onOpen={fileOperations.handleOpen}
+              onContextMenu={handleContextMenu}
+            />
           )}
           {viewMode === 'masonry' && (
             <MasonryView
@@ -473,7 +525,11 @@ export const GalleryPage: React.FC = () => {
             />
           )}
           {viewMode === 'event-timeline' && (
-            <EventTimelineView files={filteredFiles} onOpen={fileOperations.handleOpen} />
+            <EventTimelineView
+              files={filteredFiles}
+              onOpen={fileOperations.handleOpen}
+              onContextMenu={handleContextMenu}
+            />
           )}
         </>
       )}
@@ -563,7 +619,15 @@ export const GalleryPage: React.FC = () => {
         channelId={shareGuide.channelId}
         installed={shareGuide.installed}
         copyResult={shareGuide.copyResult}
-        onClose={() => setShareGuide({ open: false, channelId: null, installed: false, running: false, copyResult: null })}
+        onClose={() =>
+          setShareGuide({
+            open: false,
+            channelId: null,
+            installed: false,
+            running: false,
+            copyResult: null
+          })
+        }
       />
 
       {/* T11：幻灯片播放器 */}

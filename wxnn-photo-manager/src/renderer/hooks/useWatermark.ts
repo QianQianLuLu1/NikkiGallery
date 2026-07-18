@@ -39,26 +39,44 @@ export function useWatermark(initial?: WatermarkConfig | null): UseWatermarkRetu
     return config ?? { ...defaultConfig }
   }, [config])
 
-  const updateText = useCallback((text: Partial<NonNullable<WatermarkConfig['text']>>) => {
-    const current = ensureConfig()
-    setConfig({
-      ...current,
-      text: { ...(current.text || defaultConfig.text!), ...text }
-    })
-  }, [ensureConfig])
+  const updateText = useCallback(
+    (text: Partial<NonNullable<WatermarkConfig['text']>>) => {
+      const current = ensureConfig()
+      setConfig({
+        ...current,
+        text: { ...(current.text || defaultConfig.text!), ...text }
+      })
+    },
+    [ensureConfig]
+  )
 
-  const updateImage = useCallback((image: Partial<NonNullable<WatermarkConfig['image']>>) => {
-    const current = ensureConfig()
-    setConfig({
-      ...current,
-      image: { ...(current.image || { path: '', width: 100, height: 100, opacity: 0.7, blendMode: 'normal' }), ...image }
-    })
-  }, [ensureConfig])
+  const updateImage = useCallback(
+    (image: Partial<NonNullable<WatermarkConfig['image']>>) => {
+      const current = ensureConfig()
+      setConfig({
+        ...current,
+        image: {
+          ...(current.image || {
+            path: '',
+            width: 100,
+            height: 100,
+            opacity: 0.7,
+            blendMode: 'normal'
+          }),
+          ...image
+        }
+      })
+    },
+    [ensureConfig]
+  )
 
-  const updatePosition = useCallback((position: NonNullable<WatermarkConfig['position']>) => {
-    const current = ensureConfig()
-    setConfig({ ...current, position })
-  }, [ensureConfig])
+  const updatePosition = useCallback(
+    (position: NonNullable<WatermarkConfig['position']>) => {
+      const current = ensureConfig()
+      setConfig({ ...current, position })
+    },
+    [ensureConfig]
+  )
 
   const toggleTile = useCallback(() => {
     const current = ensureConfig()

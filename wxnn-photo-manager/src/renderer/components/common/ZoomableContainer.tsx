@@ -35,19 +35,22 @@ export const ZoomableContainer: React.FC<ZoomableContainerProps> = ({
 }) => {
   const { scale, position, dragging, dragStartPos, handlers, reset } = useZoomable({ maxZoom })
 
-  const handleClick = useCallback((e: React.MouseEvent) => {
-    if (!onClick) return
-    // U-G1：拖拽后释放会触发 click，检查移动距离避免误触发
-    if (dragStartPos.current) {
-      const dx = Math.abs(e.clientX - dragStartPos.current.x)
-      const dy = Math.abs(e.clientY - dragStartPos.current.y)
-      dragStartPos.current = null
-      if (dx > 5 || dy > 5) return
-    }
-    onClick()
-  }, [onClick])
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (!onClick) return
+      // U-G1：拖拽后释放会触发 click，检查移动距离避免误触发
+      if (dragStartPos.current) {
+        const dx = Math.abs(e.clientX - dragStartPos.current.x)
+        const dy = Math.abs(e.clientY - dragStartPos.current.y)
+        dragStartPos.current = null
+        if (dx > 5 || dy > 5) return
+      }
+      onClick()
+    },
+    [onClick]
+  )
 
-  const cursor = scale > 1 ? (dragging ? 'grabbing' : 'grab') : (onClick ? 'zoom-in' : 'default')
+  const cursor = scale > 1 ? (dragging ? 'grabbing' : 'grab') : onClick ? 'zoom-in' : 'default'
 
   return (
     <div
@@ -72,7 +75,10 @@ export const ZoomableContainer: React.FC<ZoomableContainerProps> = ({
       {scale > 1 && resetVariant === 'icon' && (
         <button
           className="absolute bottom-4 right-4 icon-btn"
-          onClick={(e) => { e.stopPropagation(); reset() }}
+          onClick={(e) => {
+            e.stopPropagation()
+            reset()
+          }}
           title="重置缩放"
           aria-label="重置缩放"
         >
@@ -80,11 +86,17 @@ export const ZoomableContainer: React.FC<ZoomableContainerProps> = ({
         </button>
       )}
       {scale > 1 && resetVariant === 'text' && (
-        <div className="absolute bottom-3 right-3 flex items-center gap-2 px-3 py-1.5 rounded-lg z-20" style={{ background: 'var(--overlay-bg)', color: 'var(--text-on-overlay)' }}>
+        <div
+          className="absolute bottom-3 right-3 flex items-center gap-2 px-3 py-1.5 rounded-lg z-20"
+          style={{ background: 'var(--overlay-bg)', color: 'var(--text-on-overlay)' }}
+        >
           <span className="text-xs font-mono">{Math.round(scale * 100)}%</span>
           <button
             className="text-xs px-2 py-0.5 rounded hover:bg-white/20 transition-colors"
-            onClick={(e) => { e.stopPropagation(); reset() }}
+            onClick={(e) => {
+              e.stopPropagation()
+              reset()
+            }}
             title="重置缩放"
           >
             复位

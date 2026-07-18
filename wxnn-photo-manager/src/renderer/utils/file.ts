@@ -2,7 +2,11 @@
 // 在 Electron 中使用自定义 media:// 协议，在浏览器预览版中直接使用对象 URL
 export function toFileUrl(filePath: string | null | undefined): string | null {
   if (!filePath) return null
-  if (filePath.startsWith('media://') || filePath.startsWith('blob:') || filePath.startsWith('data:')) {
+  if (
+    filePath.startsWith('media://') ||
+    filePath.startsWith('blob:') ||
+    filePath.startsWith('data:')
+  ) {
     return filePath
   }
   if (filePath.startsWith('file://')) {

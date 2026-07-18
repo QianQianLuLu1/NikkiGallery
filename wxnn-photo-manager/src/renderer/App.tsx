@@ -16,14 +16,27 @@ import { useFilteredMediaFiles } from './hooks/useFilteredMediaFiles'
 import { useGlobalUndo } from './hooks/useGlobalUndo'
 import { useOperationHistoryStore } from './stores/operationHistoryStore'
 // P1-F5：注册操作历史数据库写入失败回调，在 React 树内桥接到 Toast
-import { addOperationHistoryErrorHandler, removeOperationHistoryErrorHandler } from './stores/operationHistoryStore'
+import {
+  addOperationHistoryErrorHandler,
+  removeOperationHistoryErrorHandler
+} from './stores/operationHistoryStore'
 // P0-3：全局 Toast Provider，覆盖所有页面（不仅限设置页）
 import { GlobalToastProvider, useGlobalToast } from './pages/settings/sections'
 
 // 修复 U-S2：原 PageTransition 使用 key={currentView} 强制重挂载，
 // 导致视图切换丢失滚动位置与组件内部状态、重复触发 loadMediaFromDatabase。
 // 改为 keep-alive 模式：已访问过的页面保持挂载，仅用 display:none 隐藏非活动页面。
-const ALL_VIEWS: ViewLevel[] = ['gallery', 'detail', 'editor', 'categories', 'settings', 'recycle-bin', 'favorites', 'duplicates', 'launcher-cache']
+const ALL_VIEWS: ViewLevel[] = [
+  'gallery',
+  'detail',
+  'editor',
+  'categories',
+  'settings',
+  'recycle-bin',
+  'favorites',
+  'duplicates',
+  'launcher-cache'
+]
 
 // C 阶段：界面层级映射，用于毛玻璃分层应用
 // 一级界面不强化毛玻璃，二/三/四级界面逐级降低不透明度让模糊更可见
@@ -105,14 +118,25 @@ const App: React.FC = () => {
       try {
         const html = document.documentElement
         // 字号
-        const size = await window.electronAPI.settings.get('display.fontSize', 'normal') as string
-        html.classList.remove('font-size-small', 'font-size-normal', 'font-size-large', 'font-size-xlarge')
+        const size = (await window.electronAPI.settings.get('display.fontSize', 'normal')) as string
+        html.classList.remove(
+          'font-size-small',
+          'font-size-normal',
+          'font-size-large',
+          'font-size-xlarge'
+        )
         html.classList.add(`font-size-${size || 'normal'}`)
         // 紧凑模式
-        const compact = await window.electronAPI.settings.get('display.compactMode', false) as boolean
+        const compact = (await window.electronAPI.settings.get(
+          'display.compactMode',
+          false
+        )) as boolean
         html.classList.toggle('compact-mode', compact)
         // 动效减弱
-        const motion = await window.electronAPI.settings.get('display.reduceMotion', false) as boolean
+        const motion = (await window.electronAPI.settings.get(
+          'display.reduceMotion',
+          false
+        )) as boolean
         html.classList.toggle('reduce-motion', motion)
       } catch {
         // 预览版无 IPC，静默忽略

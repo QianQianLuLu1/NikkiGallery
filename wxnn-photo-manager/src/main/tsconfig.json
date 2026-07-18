@@ -12,7 +12,11 @@
     "resolveJsonModule": true,
     "declaration": true,
     "sourceMap": true,
-    "composite": true
+    "composite": true,
+    "baseUrl": "../",
+    "paths": {
+      "@common/*": ["common/*"]
+    }
   },
   "include": ["**/*", "../shared/**/*"],
   "exclude": ["node_modules", "**/*.test.ts"]

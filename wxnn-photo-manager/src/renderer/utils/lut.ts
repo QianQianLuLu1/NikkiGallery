@@ -116,7 +116,12 @@ export function applyLut3D(imageData: ImageData, lut: Lut3D): ImageData {
   return imageData
 }
 
-export function createBuiltInLut(id: string, name: string, size: number, fn: (r: number, g: number, b: number) => [number, number, number]): Lut3D {
+export function createBuiltInLut(
+  id: string,
+  name: string,
+  size: number,
+  fn: (r: number, g: number, b: number) => [number, number, number]
+): Lut3D {
   const data = new Float32Array(size * size * size * 3)
   let idx = 0
   for (let z = 0; z < size; z++) {

@@ -21,7 +21,7 @@ export function installGlobalErrorHandler(): void {
   // 注意：addEventListener('error') 能捕获资源加载失败，window.onerror 不能
   window.addEventListener('error', (event) => {
     try {
-      const message = event.message || (event.error?.message || 'Unknown error')
+      const message = event.message || event.error?.message || 'Unknown error'
       window.electronAPI?.log?.reportRendererError({
         message,
         stack: event.error?.stack,

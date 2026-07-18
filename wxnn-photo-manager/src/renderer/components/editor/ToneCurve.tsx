@@ -11,7 +11,12 @@ interface ToneCurveProps {
 
 const channelNames = { rgb: 'RGB', r: '红', g: '绿', b: '蓝' }
 // P1-U5：从 CHANNEL_COLORS 派生纯色值，颜色变更单点修改
-const channelColors = { rgb: CHANNEL_COLORS.rgb.solid, r: CHANNEL_COLORS.r.solid, g: CHANNEL_COLORS.g.solid, b: CHANNEL_COLORS.b.solid }
+const channelColors = {
+  rgb: CHANNEL_COLORS.rgb.solid,
+  r: CHANNEL_COLORS.r.solid,
+  g: CHANNEL_COLORS.g.solid,
+  b: CHANNEL_COLORS.b.solid
+}
 
 export const ToneCurve: React.FC<ToneCurveProps> = ({ channel, value, onChange }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -146,11 +151,19 @@ export const ToneCurve: React.FC<ToneCurveProps> = ({ channel, value, onChange }
   return (
     <div className="space-y-2">
       <div className="flex justify-between items-center">
-        <span className="text-sm font-medium" style={{ color: channelColors[channel] }}>{channelNames[channel]} 曲线</span>
+        <span className="text-sm font-medium" style={{ color: channelColors[channel] }}>
+          {channelNames[channel]} 曲线
+        </span>
         <button
           className="text-xs px-2 py-1 rounded"
           style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}
-          onClick={() => onChange([{ x: 0, y: 0 }, { x: 0.5, y: 0.5 }, { x: 1, y: 1 }])}
+          onClick={() =>
+            onChange([
+              { x: 0, y: 0 },
+              { x: 0.5, y: 0.5 },
+              { x: 1, y: 1 }
+            ])
+          }
         >
           重置
         </button>
@@ -167,7 +180,10 @@ export const ToneCurve: React.FC<ToneCurveProps> = ({ channel, value, onChange }
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
-        onMouseLeave={() => { setHover(null); setDragging(null) }}
+        onMouseLeave={() => {
+          setHover(null)
+          setDragging(null)
+        }}
       />
     </div>
   )

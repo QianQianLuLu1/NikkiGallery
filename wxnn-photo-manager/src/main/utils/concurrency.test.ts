@@ -19,10 +19,13 @@ describe('concurrency - runWithConcurrency', () => {
 
   it('并发数为 1 时严格串行执行', async () => {
     const executionOrder: number[] = []
-    const tasks = [0, 1, 2].map((i) => () => new Promise<void>((resolve) => {
-      executionOrder.push(i)
-      setTimeout(resolve, 10)
-    }).then(() => i))
+    const tasks = [0, 1, 2].map(
+      (i) => () =>
+        new Promise<void>((resolve) => {
+          executionOrder.push(i)
+          setTimeout(resolve, 10)
+        }).then(() => i)
+    )
     const result = await runWithConcurrency(tasks, 1)
     expect(result).toEqual([0, 1, 2])
     expect(executionOrder).toEqual([0, 1, 2])
@@ -44,10 +47,7 @@ describe('concurrency - runWithConcurrency', () => {
   })
 
   it('任务抛错时 reject 整个 Promise', async () => {
-    const tasks = [
-      () => Promise.resolve('ok'),
-      () => Promise.reject(new Error('fail'))
-    ]
+    const tasks = [() => Promise.resolve('ok'), () => Promise.reject(new Error('fail'))]
     await expect(runWithConcurrency(tasks, 2)).rejects.toThrow('fail')
   })
 

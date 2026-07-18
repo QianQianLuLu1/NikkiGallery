@@ -18,7 +18,14 @@ const ROOT = path.resolve(__dirname, '..')
 const PREVIEW_PATH = path.join(ROOT, 'preview.html')
 const SIDEBAR_TSX_PATH = path.join(ROOT, 'src', 'renderer', 'components', 'layout', 'Sidebar.tsx')
 const GLOBALS_CSS_PATH = path.join(ROOT, 'src', 'renderer', 'styles', 'globals.css')
-const THEME_PINK_CSS_PATH = path.join(ROOT, 'src', 'renderer', 'styles', 'themes', 'soft-pink-luxury.css')
+const THEME_PINK_CSS_PATH = path.join(
+  ROOT,
+  'src',
+  'renderer',
+  'styles',
+  'themes',
+  'soft-pink-luxury.css'
+)
 const ZH_CN_PATH = path.join(ROOT, 'src', 'renderer', 'i18n', 'locales', 'zh-CN.json')
 const PACKAGE_JSON_PATH = path.join(ROOT, 'package.json')
 
@@ -131,8 +138,14 @@ function checkCssVars(): void {
       // CSS 变量漂移为 WARN：preview 可能不必引用每个 spacing token
       hasWarn = true
       const sub: string[] = []
-      if (missing.length > 0) sub.push(`缺失 ${missing.length} 个：${missing.slice(0, 5).join(', ')}${missing.length > 5 ? '...' : ''}`)
-      if (extra.length > 0) sub.push(`多余 ${extra.length} 个：${extra.slice(0, 5).join(', ')}${extra.length > 5 ? '...' : ''}`)
+      if (missing.length > 0)
+        sub.push(
+          `缺失 ${missing.length} 个：${missing.slice(0, 5).join(', ')}${missing.length > 5 ? '...' : ''}`
+        )
+      if (extra.length > 0)
+        sub.push(
+          `多余 ${extra.length} 个：${extra.slice(0, 5).join(', ')}${extra.length > 5 ? '...' : ''}`
+        )
       parts.push(`${sel}：${sub.join('；')}`)
     }
   }
@@ -251,7 +264,9 @@ function main(): void {
 
   const failCount = results.filter((r) => r.status === 'FAIL').length
   const warnCount = results.filter((r) => r.status === 'WARN').length
-  console.log(`\n总计：${results.length} 项；PASS=${results.length - failCount - warnCount}，WARN=${warnCount}，FAIL=${failCount}`)
+  console.log(
+    `\n总计：${results.length} 项；PASS=${results.length - failCount - warnCount}，WARN=${warnCount}，FAIL=${failCount}`
+  )
 
   if (failCount > 0) {
     console.error('\n❌ 存在致命漂移，请修复后再次提交')

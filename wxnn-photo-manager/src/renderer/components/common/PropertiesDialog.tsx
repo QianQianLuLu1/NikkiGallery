@@ -28,14 +28,23 @@ function getBasicInfoRows(file: MediaFile, t: TFunction): InfoRow[] {
   return [
     { label: t('common.propertiesDialog.basic.name'), value: file.file_name },
     { label: t('common.propertiesDialog.basic.path'), value: file.file_path },
-    { label: t('common.propertiesDialog.basic.type'), value: file.file_type === 'image' ? t('common.propertiesDialog.basic.typeImage') : t('common.propertiesDialog.basic.typeVideo') },
+    {
+      label: t('common.propertiesDialog.basic.type'),
+      value:
+        file.file_type === 'image'
+          ? t('common.propertiesDialog.basic.typeImage')
+          : t('common.propertiesDialog.basic.typeVideo')
+    },
     { label: t('common.propertiesDialog.basic.size'), value: formatSize(file.file_size) },
     {
       label: t('common.propertiesDialog.basic.resolution'),
       value: file.width && file.height ? `${file.width} × ${file.height}` : '-'
     },
     { label: t('common.propertiesDialog.basic.createdAt'), value: formatDateTime(file.created_at) },
-    { label: t('common.propertiesDialog.basic.modifiedAt'), value: formatDateTime(file.modified_at) }
+    {
+      label: t('common.propertiesDialog.basic.modifiedAt'),
+      value: formatDateTime(file.modified_at)
+    }
   ]
 }
 
@@ -95,20 +104,33 @@ export const PropertiesDialog: React.FC<PropertiesDialogProps> = ({ open, file, 
       const exif = await window.electronAPI?.file?.getExif(file.file_path)
       if (exif) {
         const exifLines: string[] = []
-        if (exif.camera) exifLines.push(`${t('common.propertiesDialog.copySection.cameraModel')}: ${exif.camera}`)
-        if (exif.lens) exifLines.push(`${t('common.propertiesDialog.copySection.lens')}: ${exif.lens}`)
-        if (exif.aperture) exifLines.push(`${t('common.propertiesDialog.copySection.aperture')}: ${exif.aperture}`)
-        if (exif.shutter) exifLines.push(`${t('common.propertiesDialog.copySection.shutter')}: ${exif.shutter}`)
+        if (exif.camera)
+          exifLines.push(`${t('common.propertiesDialog.copySection.cameraModel')}: ${exif.camera}`)
+        if (exif.lens)
+          exifLines.push(`${t('common.propertiesDialog.copySection.lens')}: ${exif.lens}`)
+        if (exif.aperture)
+          exifLines.push(`${t('common.propertiesDialog.copySection.aperture')}: ${exif.aperture}`)
+        if (exif.shutter)
+          exifLines.push(`${t('common.propertiesDialog.copySection.shutter')}: ${exif.shutter}`)
         if (exif.iso) exifLines.push(`ISO: ${exif.iso}`)
-        if (exif.focalLength) exifLines.push(`${t('common.propertiesDialog.copySection.focalLength')}: ${exif.focalLength}`)
+        if (exif.focalLength)
+          exifLines.push(
+            `${t('common.propertiesDialog.copySection.focalLength')}: ${exif.focalLength}`
+          )
         if (exif.dateTaken) {
           const d = new Date(exif.dateTaken)
           if (!isNaN(d.getTime())) {
-            exifLines.push(`${t('common.propertiesDialog.copySection.dateTaken')}: ${d.toLocaleString('zh-CN', { hour12: false })}`)
+            exifLines.push(
+              `${t('common.propertiesDialog.copySection.dateTaken')}: ${d.toLocaleString('zh-CN', { hour12: false })}`
+            )
           }
         }
-        if (exif.gps) exifLines.push(`GPS: ${exif.gps.latitude.toFixed(6)}, ${exif.gps.longitude.toFixed(6)}`)
-        if (exif.width && exif.height) exifLines.push(`${t('common.propertiesDialog.copySection.originalSize')}: ${exif.width} × ${exif.height}`)
+        if (exif.gps)
+          exifLines.push(`GPS: ${exif.gps.latitude.toFixed(6)}, ${exif.gps.longitude.toFixed(6)}`)
+        if (exif.width && exif.height)
+          exifLines.push(
+            `${t('common.propertiesDialog.copySection.originalSize')}: ${exif.width} × ${exif.height}`
+          )
         if (exifLines.length > 0) {
           lines.push('')
           lines.push(t('common.propertiesDialog.copySection.shootingParams'))
@@ -122,7 +144,9 @@ export const PropertiesDialog: React.FC<PropertiesDialogProps> = ({ open, file, 
     if (file.file_type === 'image' && file.album_type) {
       try {
         const result = await window.electronAPI?.decrypt?.decodeFile(
-          file.file_path, file.album_type, file.account_uid
+          file.file_path,
+          file.album_type,
+          file.account_uid
         )
         if (result?.success && result.data?.hasParams) {
           const d = result.data
@@ -179,7 +203,11 @@ export const PropertiesDialog: React.FC<PropertiesDialogProps> = ({ open, file, 
     >
       {/* 标题 + 操作按钮 */}
       <div className="flex items-center justify-between">
-        <h3 id="props-title" className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
+        <h3
+          id="props-title"
+          className="text-lg font-semibold"
+          style={{ color: 'var(--text-primary)' }}
+        >
           {t('common.propertiesDialog.title')}
         </h3>
         <div className="flex items-center gap-2">
@@ -197,7 +225,11 @@ export const PropertiesDialog: React.FC<PropertiesDialogProps> = ({ open, file, 
             title={t('common.propertiesDialog.copyAllTitle')}
           >
             <IconCopyText size={14} />
-            <span>{copiedAll ? t('common.propertiesDialog.copied') : t('common.propertiesDialog.copyAll')}</span>
+            <span>
+              {copiedAll
+                ? t('common.propertiesDialog.copied')
+                : t('common.propertiesDialog.copyAll')}
+            </span>
           </button>
         </div>
       </div>
@@ -210,10 +242,7 @@ export const PropertiesDialog: React.FC<PropertiesDialogProps> = ({ open, file, 
             className="flex items-baseline gap-3 text-sm py-1 border-b last:border-b-0"
             style={{ borderColor: 'var(--divider)' }}
           >
-            <span
-              className="flex-shrink-0 w-20 text-xs"
-              style={{ color: 'var(--text-tertiary)' }}
-            >
+            <span className="flex-shrink-0 w-20 text-xs" style={{ color: 'var(--text-tertiary)' }}>
               {row.label}
             </span>
             <span
@@ -259,7 +288,9 @@ export const PropertiesDialog: React.FC<PropertiesDialogProps> = ({ open, file, 
 
       {/* 底部关闭按钮 */}
       <div className="flex justify-end pt-2">
-        <button ref={closeBtnRef} className="btn-primary" onClick={onClose}>{t('common.close')}</button>
+        <button ref={closeBtnRef} className="btn-primary" onClick={onClose}>
+          {t('common.close')}
+        </button>
       </div>
     </BaseDialog>
   )

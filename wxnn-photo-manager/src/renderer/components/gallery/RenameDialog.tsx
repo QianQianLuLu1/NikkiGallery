@@ -51,7 +51,13 @@ export const RenameDialog: React.FC<RenameDialogProps> = ({
       size="sm"
       initialFocusRef={inputRef}
     >
-      <h3 id="rename-title" className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>重命名</h3>
+      <h3
+        id="rename-title"
+        className="text-lg font-semibold"
+        style={{ color: 'var(--text-primary)' }}
+      >
+        重命名
+      </h3>
       <div className="space-y-2">
         <input
           ref={inputRef}
@@ -69,12 +75,18 @@ export const RenameDialog: React.FC<RenameDialogProps> = ({
           aria-describedby="rename-error"
         />
         {error && (
-          <p id="rename-error" className="text-xs" style={{ color: 'var(--danger)' }}>{error}</p>
+          <p id="rename-error" className="text-xs" style={{ color: 'var(--danger)' }}>
+            {error}
+          </p>
         )}
       </div>
       <div className="flex justify-end gap-2">
-        <button className="btn-secondary" onClick={onCancel}>取消</button>
-        <button className="btn-primary" onClick={handleConfirm} disabled={!!error}>确定</button>
+        <button className="btn-secondary" onClick={onCancel}>
+          取消
+        </button>
+        <button className="btn-primary" onClick={handleConfirm} disabled={!!error}>
+          确定
+        </button>
       </div>
     </BaseDialog>
   )

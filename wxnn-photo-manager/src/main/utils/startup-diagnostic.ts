@@ -35,9 +35,7 @@ export function logStartupError(stage: string, error: unknown): void {
   try {
     const logPath = getStartupLogPath()
     const timestamp = new Date().toISOString()
-    const errStr = error instanceof Error
-      ? `${error.message}\n${error.stack || ''}`
-      : String(error)
+    const errStr = error instanceof Error ? `${error.message}\n${error.stack || ''}` : String(error)
     const line = `[${timestamp}] [STAGE: ${stage}] ${errStr}\n`
     // 追加写入，最多保留 100KB
     try {

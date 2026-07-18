@@ -91,7 +91,9 @@ function parseProcessType(filename: string): string {
  *
  * 业务决策：不引入 minidump-stackwalk 等依赖，避免打包体积膨胀和跨平台问题
  */
-async function parseCrashDump(filePath: string): Promise<{ crashReason?: string; topFrame?: string }> {
+async function parseCrashDump(
+  filePath: string
+): Promise<{ crashReason?: string; topFrame?: string }> {
   const result: { crashReason?: string; topFrame?: string } = {}
 
   // 1. 优先读取配套 .txt 摘要文件（Crashpad 自动生成）
@@ -107,12 +109,13 @@ async function parseCrashDump(filePath: string): Promise<{ crashReason?: string;
         if (reasonMatch) {
           result.crashReason = reasonMatch[1].trim()
         }
-        const frameMatch = content.match(/Top frame:\s*(.+)/i) || content.match(/Frame 0[^\n]*\n\s*(.+)/i)
+        const frameMatch =
+          content.match(/Top frame:\s*(.+)/i) || content.match(/Frame 0[^\n]*\n\s*(.+)/i)
         if (frameMatch) {
           result.topFrame = frameMatch[1].trim().slice(0, 200)
         }
         if (result.crashReason || result.topFrame) return result
-        break  // 找到 txt 但无关键字，跳过 dump 头解析
+        break // 找到 txt 但无关键字，跳过 dump 头解析
       } catch {
         // 该路径 .txt 不存在，尝试下一个
       }
@@ -226,7 +229,11 @@ export async function openCrashDirectory(): Promise<{ success: boolean; message:
 /**
  * T13：清空所有崩溃记录
  */
-export async function clearAllCrashes(): Promise<{ success: boolean; cleared: number; message: string }> {
+export async function clearAllCrashes(): Promise<{
+  success: boolean
+  cleared: number
+  message: string
+}> {
   const records = await listCrashes()
   let cleared = 0
   for (const record of records) {
@@ -236,7 +243,9 @@ export async function clearAllCrashes(): Promise<{ success: boolean; cleared: nu
       // P2-1：同时清理配套 .txt 摘要文件
       const txtPath = record.filePath.replace(/\.dmp$/i, '.txt')
       if (txtPath !== record.filePath) {
-        try { await fsp.unlink(txtPath) } catch {}
+        try {
+          await fsp.unlink(txtPath)
+        } catch {}
       }
     } catch {
       // 文件已被删除或权限不足，跳过
@@ -271,7 +280,7 @@ export async function enforceCrashLimit(): Promise<{ evicted: number }> {
 
   // 2. 数量维度：超过 MAX_CRASH_FILES 的删除最旧的
   // 先过滤掉已被时间维度选中的，避免重复
-  const remaining = records.filter(r => !toDelete.includes(r))
+  const remaining = records.filter((r) => !toDelete.includes(r))
   if (remaining.length > MAX_CRASH_FILES) {
     // records 已按时间倒序，末尾是最旧的
     toDelete.push(...remaining.slice(MAX_CRASH_FILES))
@@ -285,7 +294,9 @@ export async function enforceCrashLimit(): Promise<{ evicted: number }> {
       // P2-1：同时清理配套 .txt 摘要文件
       const txtPath = record.filePath.replace(/\.dmp$/i, '.txt')
       if (txtPath !== record.filePath) {
-        try { await fsp.unlink(txtPath) } catch {}
+        try {
+          await fsp.unlink(txtPath)
+        } catch {}
       }
     } catch {
       // 跳过

@@ -5,7 +5,8 @@
  * 可安全被主进程与渲染进程同时导入。
  */
 
-export type GroupDimension = 'none' | 'album_type' | 'scene_category' | 'scene_time' | 'outfit' | 'file_type'
+export type GroupDimension =
+  'none' | 'album_type' | 'scene_category' | 'scene_time' | 'outfit' | 'file_type'
 
 export interface GroupDimensionOption {
   value: GroupDimension

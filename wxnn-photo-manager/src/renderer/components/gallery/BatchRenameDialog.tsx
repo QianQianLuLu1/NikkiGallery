@@ -22,11 +22,7 @@ const TEMPLATE_VARS: { token: string; label: string; description: string }[] = [
 const INVALID_CHARS = /[\\/:*?"<>|]/
 
 // T12：模板变量解析
-function resolveTemplate(
-  template: string,
-  file: MediaFile,
-  seq: number
-): string {
+function resolveTemplate(template: string, file: MediaFile, seq: number): string {
   const createdAt = new Date(file.created_at)
   const pad = (n: number, len = 2) => String(n).padStart(len, '0')
   const dateStr = `${createdAt.getFullYear()}${pad(createdAt.getMonth() + 1)}${pad(createdAt.getDate())}`
@@ -103,7 +99,11 @@ export const BatchRenameDialog: React.FC<BatchRenameDialogProps> = ({
       initialFocusRef={inputRef}
     >
       <div>
-        <h3 id="batch-rename-title" className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
+        <h3
+          id="batch-rename-title"
+          className="text-lg font-semibold"
+          style={{ color: 'var(--text-primary)' }}
+        >
           批量重命名
         </h3>
         <p className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>
@@ -133,13 +133,17 @@ export const BatchRenameDialog: React.FC<BatchRenameDialogProps> = ({
           aria-describedby="template-error"
         />
         {error && (
-          <p id="template-error" className="text-xs" style={{ color: 'var(--danger)' }}>{error}</p>
+          <p id="template-error" className="text-xs" style={{ color: 'var(--danger)' }}>
+            {error}
+          </p>
         )}
       </div>
 
       {/* 变量快捷插入 */}
       <div>
-        <p className="text-xs mb-2" style={{ color: 'var(--text-tertiary)' }}>点击插入变量：</p>
+        <p className="text-xs mb-2" style={{ color: 'var(--text-tertiary)' }}>
+          点击插入变量：
+        </p>
         <div className="flex flex-wrap gap-1.5">
           {TEMPLATE_VARS.map((v) => (
             <button
@@ -153,7 +157,9 @@ export const BatchRenameDialog: React.FC<BatchRenameDialogProps> = ({
               }}
               title={v.description}
             >
-              <span className="font-mono" style={{ color: 'var(--accent)' }}>{v.token}</span>
+              <span className="font-mono" style={{ color: 'var(--accent)' }}>
+                {v.token}
+              </span>
               <span className="ml-1">{v.label}</span>
             </button>
           ))}
@@ -198,8 +204,14 @@ export const BatchRenameDialog: React.FC<BatchRenameDialogProps> = ({
 
       {/* 操作按钮 */}
       <div className="flex justify-end gap-2 pt-2">
-        <button className="btn-secondary" onClick={onClose}>取消</button>
-        <button className="btn-primary" onClick={handleConfirm} disabled={!!error || files.length === 0}>
+        <button className="btn-secondary" onClick={onClose}>
+          取消
+        </button>
+        <button
+          className="btn-primary"
+          onClick={handleConfirm}
+          disabled={!!error || files.length === 0}
+        >
           重命名 {files.length} 个文件
         </button>
       </div>

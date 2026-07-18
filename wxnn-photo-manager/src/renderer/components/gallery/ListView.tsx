@@ -34,41 +34,45 @@ const ListViewComponent: React.FC<ListViewProps> = ({
   // C-O4 配套：选中态 Set，O(1) 查找替代 O(n) 的 includes
   const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds])
 
-  const {
-    containerRef,
-    startIndex,
-    endIndex,
-    totalHeight,
-    offsetY
-  } = useVirtualScroll({
+  const { containerRef, startIndex, endIndex, totalHeight, offsetY } = useVirtualScroll({
     itemCount: files.length,
     itemHeight: ITEM_HEIGHT,
     gap: GAP,
     overscan: 5
   })
 
-  const handleClick = useCallback((file: MediaFile, index: number, e: React.MouseEvent) => {
-    if (e.ctrlKey || e.metaKey) {
-      onToggleSelection(file.id)
-    } else {
-      onSelect(file.id, index, e)
-    }
-  }, [onSelect, onToggleSelection])
+  const handleClick = useCallback(
+    (file: MediaFile, index: number, e: React.MouseEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        onToggleSelection(file.id)
+      } else {
+        onSelect(file.id, index, e)
+      }
+    },
+    [onSelect, onToggleSelection]
+  )
 
-  const handleKeyDown = useCallback((file: MediaFile, index: number, e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
-      onSelect(file.id, index, e)
-    } else if (e.key === 'ArrowDown') {
-      e.preventDefault()
-      const next = containerRef.current?.querySelector(`[data-list-index="${index + 1}"]`) as HTMLElement | null
-      next?.focus()
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault()
-      const prev = containerRef.current?.querySelector(`[data-list-index="${index - 1}"]`) as HTMLElement | null
-      prev?.focus()
-    }
-  }, [containerRef, onSelect])
+  const handleKeyDown = useCallback(
+    (file: MediaFile, index: number, e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault()
+        onSelect(file.id, index, e)
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        const next = containerRef.current?.querySelector(
+          `[data-list-index="${index + 1}"]`
+        ) as HTMLElement | null
+        next?.focus()
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        const prev = containerRef.current?.querySelector(
+          `[data-list-index="${index - 1}"]`
+        ) as HTMLElement | null
+        prev?.focus()
+      }
+    },
+    [containerRef, onSelect]
+  )
 
   const visibleFiles = files.slice(startIndex, endIndex + 1)
 
@@ -118,7 +122,10 @@ const ListViewComponent: React.FC<ListViewProps> = ({
               >
                 <div
                   className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 relative overflow-hidden"
-                  style={{ background: isSelected ? 'var(--text-on-overlay)' : 'var(--bg-tertiary)', opacity: isSelected ? 0.18 : 1 }}
+                  style={{
+                    background: isSelected ? 'var(--text-on-overlay)' : 'var(--bg-tertiary)',
+                    opacity: isSelected ? 0.18 : 1
+                  }}
                 >
                   {/* T02：丢失文件角标（P1-H：抽取为 MissingBadge 组件） */}
                   {isMissing && <MissingBadge size="sm" />}
@@ -144,7 +151,9 @@ const ListViewComponent: React.FC<ListViewProps> = ({
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm truncate">{file.file_name}</p>
                   {/* U-G15：选中态提升次级文字对比度（opacity-70 → opacity-95 满足 WCAG AA 4.5:1） */}
-                  <p className="text-xs" style={{ opacity: isSelected ? 0.95 : 0.7 }}>{formatDate(file.created_at)}</p>
+                  <p className="text-xs" style={{ opacity: isSelected ? 0.95 : 0.7 }}>
+                    {formatDate(file.created_at)}
+                  </p>
                 </div>
                 <div className="text-xs text-right" style={{ opacity: isSelected ? 0.95 : 0.7 }}>
                   <p>{file.width && file.height ? `${file.width}x${file.height}` : '-'}</p>

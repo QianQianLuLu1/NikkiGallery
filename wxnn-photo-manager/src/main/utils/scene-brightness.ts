@@ -21,9 +21,7 @@ import { runWithConcurrency } from './concurrency'
 export async function analyzeSceneBrightness(filePath: string): Promise<SceneTime> {
   try {
     // A10：fit 'inside' 保留完整图像信息；'cover' 会按短边裁剪丢失部分像素，亮度估算偏差
-    const stats = await sharp(filePath)
-      .resize(100, 100, { fit: 'inside' })
-      .stats()
+    const stats = await sharp(filePath).resize(100, 100, { fit: 'inside' }).stats()
 
     // stats.channels 顺序为 [R, G, B]
     const channels = stats.channels

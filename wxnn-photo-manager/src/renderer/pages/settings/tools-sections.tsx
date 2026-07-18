@@ -18,10 +18,7 @@ export const ToolsShareCodeSection: React.FC = () => {
               {t('settings.tools.shareCode.decoderDesc')}
             </div>
           </div>
-          <button
-            className="btn-primary flex-shrink-0"
-            onClick={() => setDecoderOpen(true)}
-          >
+          <button className="btn-primary flex-shrink-0" onClick={() => setDecoderOpen(true)}>
             {t('settings.tools.shareCode.openTool')}
           </button>
         </div>

@@ -10,7 +10,12 @@
  */
 import path from 'path'
 // P2-A3：引用 constants 常量替代硬编码数字
-import { MAX_PATH_ARRAY_SIZE, MAX_MEDIA_ID_ARRAY_SIZE, MAX_TAG_NAME_LENGTH, MAX_FILE_PATH_LENGTH } from './constants'
+import {
+  MAX_PATH_ARRAY_SIZE,
+  MAX_MEDIA_ID_ARRAY_SIZE,
+  MAX_TAG_NAME_LENGTH,
+  MAX_FILE_PATH_LENGTH
+} from './constants'
 
 /**
  * P1-A5：系统敏感目录黑名单
@@ -33,7 +38,10 @@ export const SYSTEM_SENSITIVE_DIRS: readonly string[] = [
  * 该函数对绝大多数输入恒返回 false，仅提供虚假安全感。
  * 写操作的路径安全由 validateNonSensitivePath 黑名单兜底。
  */
-export function validateFilePathArray(filePaths: unknown, maxCount = MAX_PATH_ARRAY_SIZE): { valid: boolean; message?: string } {
+export function validateFilePathArray(
+  filePaths: unknown,
+  maxCount = MAX_PATH_ARRAY_SIZE
+): { valid: boolean; message?: string } {
   if (!Array.isArray(filePaths)) {
     return { valid: false, message: '参数必须是字符串数组' }
   }
@@ -58,7 +66,11 @@ export function validateFilePathArray(filePaths: unknown, maxCount = MAX_PATH_AR
  * 校验单个文件路径
  */
 export function validateFilePath(filePath: unknown): { valid: boolean; message?: string } {
-  if (typeof filePath !== 'string' || filePath.length === 0 || filePath.length > MAX_FILE_PATH_LENGTH) {
+  if (
+    typeof filePath !== 'string' ||
+    filePath.length === 0 ||
+    filePath.length > MAX_FILE_PATH_LENGTH
+  ) {
     return { valid: false, message: `路径必须是 1-${MAX_FILE_PATH_LENGTH} 字符的字符串` }
   }
   if (!path.isAbsolute(filePath)) {
@@ -75,10 +87,12 @@ export function validateFilePath(filePath: unknown): { valid: boolean; message?:
 export function validateNonSensitivePath(filePath: string): { valid: boolean; message?: string } {
   const normalized = path.resolve(filePath).toLowerCase()
   // P1-A8：精确目录边界检查，避免前缀误匹配（如 'C:\Program Filesabc' 不应被 'C:\Program Files' 误拦）
-  if (SYSTEM_SENSITIVE_DIRS.some(d => {
-    const dl = d.toLowerCase()
-    return normalized === dl || normalized.startsWith(dl + path.sep)
-  })) {
+  if (
+    SYSTEM_SENSITIVE_DIRS.some((d) => {
+      const dl = d.toLowerCase()
+      return normalized === dl || normalized.startsWith(dl + path.sep)
+    })
+  ) {
     return { valid: false, message: '出于安全考虑，不允许操作系统敏感目录' }
   }
   return { valid: true }
@@ -87,7 +101,12 @@ export function validateNonSensitivePath(filePath: string): { valid: boolean; me
 /**
  * 校验数值范围
  */
-export function validateNumberRange(value: unknown, min: number, max: number, name = 'value'): { valid: boolean; message?: string } {
+export function validateNumberRange(
+  value: unknown,
+  min: number,
+  max: number,
+  name = 'value'
+): { valid: boolean; message?: string } {
   if (typeof value !== 'number' || !Number.isFinite(value)) {
     return { valid: false, message: `${name} 必须是有限数字` }
   }
@@ -100,7 +119,12 @@ export function validateNumberRange(value: unknown, min: number, max: number, na
 /**
  * 校验整数范围
  */
-export function validateIntRange(value: unknown, min: number, max: number, name = 'value'): { valid: boolean; message?: string } {
+export function validateIntRange(
+  value: unknown,
+  min: number,
+  max: number,
+  name = 'value'
+): { valid: boolean; message?: string } {
   if (typeof value !== 'number' || !Number.isInteger(value)) {
     return { valid: false, message: `${name} 必须是整数` }
   }
@@ -113,7 +137,11 @@ export function validateIntRange(value: unknown, min: number, max: number, name 
 /**
  * 校验字符串长度
  */
-export function validateStringLength(value: unknown, max = MAX_FILE_PATH_LENGTH, name = 'string'): { valid: boolean; message?: string } {
+export function validateStringLength(
+  value: unknown,
+  max = MAX_FILE_PATH_LENGTH,
+  name = 'string'
+): { valid: boolean; message?: string } {
   if (typeof value !== 'string') {
     return { valid: false, message: `${name} 必须是字符串` }
   }
@@ -133,7 +161,10 @@ export function validateMediaId(mediaId: unknown): { valid: boolean; message?: s
 /**
  * 校验 mediaId 数组
  */
-export function validateMediaIdArray(mediaIds: unknown, maxCount = MAX_MEDIA_ID_ARRAY_SIZE): { valid: boolean; message?: string } {
+export function validateMediaIdArray(
+  mediaIds: unknown,
+  maxCount = MAX_MEDIA_ID_ARRAY_SIZE
+): { valid: boolean; message?: string } {
   if (!Array.isArray(mediaIds)) {
     return { valid: false, message: 'mediaIds 必须是数组' }
   }

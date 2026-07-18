@@ -4,7 +4,13 @@ interface IconProps extends React.SVGProps<SVGSVGElement> {
   size?: number
 }
 
-const BaseIcon: React.FC<IconProps & { children: React.ReactNode }> = ({ size = 16, className, style, children, ...props }) => (
+const BaseIcon: React.FC<IconProps & { children: React.ReactNode }> = ({
+  size = 16,
+  className,
+  style,
+  children,
+  ...props
+}) => (
   <svg
     width={size}
     height={size}
@@ -78,7 +84,11 @@ export const IconRename: React.FC<IconProps> = (props) => (
   </BaseIcon>
 )
 
-export const IconFavorite: React.FC<IconProps & { filled?: boolean; color?: string }> = ({ filled = false, color = 'var(--favorite)', ...props }) => (
+export const IconFavorite: React.FC<IconProps & { filled?: boolean; color?: string }> = ({
+  filled = false,
+  color = 'var(--favorite)',
+  ...props
+}) => (
   <BaseIcon {...props} fill={filled ? color : 'none'} stroke={filled ? color : 'currentColor'}>
     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
   </BaseIcon>
@@ -204,7 +214,11 @@ export const IconWatermark: React.FC<IconProps> = (props) => (
   </BaseIcon>
 )
 
-export const IconStar: React.FC<IconProps & { filled?: boolean; color?: string }> = ({ filled = false, color = '#FFB800', ...props }) => (
+export const IconStar: React.FC<IconProps & { filled?: boolean; color?: string }> = ({
+  filled = false,
+  color = '#FFB800',
+  ...props
+}) => (
   <BaseIcon {...props} fill={filled ? color : 'none'} stroke={filled ? color : 'currentColor'}>
     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
   </BaseIcon>

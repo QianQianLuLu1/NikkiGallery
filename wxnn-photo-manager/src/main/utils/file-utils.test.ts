@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import fsp from 'fs/promises'
 import path from 'path'
 import os from 'os'
@@ -7,7 +7,8 @@ import {
   getUniqueFilePath,
   parseDataUrlToBuffer,
   bufferToDataUrl,
-  calculateFileHash
+  calculateFileHash,
+  moveFile
 } from './file-utils'
 
 describe('file-utils', () => {
@@ -85,7 +86,8 @@ describe('file-utils', () => {
 
   describe('parseDataUrlToBuffer', () => {
     it('正常 DataURL 解析为 buffer + mimeType', () => {
-      const dataUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+      const dataUrl =
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
       const { buffer, mimeType } = parseDataUrlToBuffer(dataUrl)
       expect(mimeType).toBe('image/png')
       expect(buffer).toBeInstanceOf(Buffer)
@@ -93,7 +95,8 @@ describe('file-utils', () => {
     })
 
     it('jpeg DataURL 也能解析', () => {
-      const dataUrl = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAABAAEDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD3+iiigD/2Q=='
+      const dataUrl =
+        'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAABAAEDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD3+iiigD/2Q=='
       const { buffer, mimeType } = parseDataUrlToBuffer(dataUrl)
       expect(mimeType).toBe('image/jpeg')
       expect(buffer.length).toBeGreaterThan(0)
@@ -165,6 +168,118 @@ describe('file-utils', () => {
       await fsp.writeFile(file, chunk)
       const hash = await calculateFileHash(file)
       expect(hash).toMatch(/^[a-f0-9]{64}$/)
+    })
+  })
+
+  describe('moveFile', () => {
+    it('同盘符移动：源成功重命名为目标，源不再存在', async () => {
+      const src = path.join(tmpDir, 'src.txt')
+      const dst = path.join(tmpDir, 'dst.txt')
+      await fsp.writeFile(src, 'hello')
+      await moveFile(src, dst)
+      expect(await pathExists(src)).toBe(false)
+      expect(await pathExists(dst)).toBe(true)
+      expect(await fsp.readFile(dst, 'utf8')).toBe('hello')
+    })
+
+    it('源文件不存在时抛出 ENOENT', async () => {
+      const src = path.join(tmpDir, 'nonexistent.txt')
+      const dst = path.join(tmpDir, 'dst.txt')
+      await expect(moveFile(src, dst)).rejects.toThrow()
+      try {
+        await moveFile(src, dst)
+      } catch (err) {
+        expect((err as NodeJS.ErrnoException).code).toBe('ENOENT')
+      }
+    })
+
+    it('rename 抛 EEXIST 时原样向上抛（不吞错）', async () => {
+      const src = path.join(tmpDir, 'src.txt')
+      const dst = path.join(tmpDir, 'dst.txt')
+      await fsp.writeFile(src, 'content')
+
+      // 不同文件系统对已存在目标的 rename 行为不同：POSIX 覆盖，Windows 抛 EEXIST
+      // 此处固化 moveFile 的契约：非 EXDEV 错误一律向上抛，不被吞掉
+      const renameSpy = vi
+        .spyOn(fsp, 'rename')
+        .mockRejectedValue(
+          Object.assign(new Error('EEXIST: file already exists'), { code: 'EEXIST' })
+        )
+
+      await expect(moveFile(src, dst)).rejects.toThrow('EEXIST')
+      renameSpy.mockRestore()
+    })
+
+    it('跨设备移动（EXDEV）回退到 copyFile + unlink', async () => {
+      const src = path.join(tmpDir, 'src.txt')
+      const dst = path.join(tmpDir, 'dst.txt')
+      await fsp.writeFile(src, 'cross-device-content')
+
+      // mock rename 抛 EXDEV，验证 fallback 到 copyFile + unlink
+      const renameSpy = vi
+        .spyOn(fsp, 'rename')
+        .mockRejectedValue(
+          Object.assign(new Error('EXDEV: cross-device link not permitted'), { code: 'EXDEV' })
+        )
+
+      await moveFile(src, dst)
+
+      expect(renameSpy).toHaveBeenCalledTimes(1)
+      // fallback 后源已被 unlink，目标已写入
+      expect(await pathExists(src)).toBe(false)
+      expect(await pathExists(dst)).toBe(true)
+      expect(await fsp.readFile(dst, 'utf8')).toBe('cross-device-content')
+
+      renameSpy.mockRestore()
+    })
+
+    it('EXDEV 时 copyFile 失败：异常向上抛，源文件保留', async () => {
+      const src = path.join(tmpDir, 'src.txt')
+      const dst = path.join(tmpDir, 'dst.txt')
+      await fsp.writeFile(src, 'content')
+
+      const renameSpy = vi
+        .spyOn(fsp, 'rename')
+        .mockRejectedValue(Object.assign(new Error('EXDEV'), { code: 'EXDEV' }))
+      const copySpy = vi.spyOn(fsp, 'copyFile').mockRejectedValue(new Error('磁盘已满'))
+
+      await expect(moveFile(src, dst)).rejects.toThrow('磁盘已满')
+      // 源文件保留
+      expect(await pathExists(src)).toBe(true)
+      // 目标未写入
+      expect(await pathExists(dst)).toBe(false)
+
+      renameSpy.mockRestore()
+      copySpy.mockRestore()
+    })
+
+    it('非 EXDEV 错误原样向上抛', async () => {
+      const src = path.join(tmpDir, 'src.txt')
+      const dst = path.join(tmpDir, 'dst.txt')
+      await fsp.writeFile(src, 'content')
+
+      const renameSpy = vi
+        .spyOn(fsp, 'rename')
+        .mockRejectedValue(
+          Object.assign(new Error('EACCES: permission denied'), { code: 'EACCES' })
+        )
+
+      await expect(moveFile(src, dst)).rejects.toThrow('EACCES')
+      // 源文件保留
+      expect(await pathExists(src)).toBe(true)
+
+      renameSpy.mockRestore()
+    })
+
+    it('目录也能被 moveFile 移动', async () => {
+      const src = path.join(tmpDir, 'srcdir')
+      const dst = path.join(tmpDir, 'dstdir')
+      await fsp.mkdir(src)
+      await fsp.writeFile(path.join(src, 'inner.txt'), 'inner')
+      await moveFile(src, dst)
+      expect(await pathExists(src)).toBe(false)
+      expect(await pathExists(dst)).toBe(true)
+      expect(await fsp.readFile(path.join(dst, 'inner.txt'), 'utf8')).toBe('inner')
     })
   })
 })

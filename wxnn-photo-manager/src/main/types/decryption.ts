@@ -4,7 +4,7 @@ export enum MediaParamType {
   NikkiPhoto = 'NikkiPhoto',
   ClockInPhoto = 'ClockInPhoto',
   Collage = 'Collage',
-  DIY = 'DIY',
+  DIY = 'DIY'
 }
 
 /** 相册类型到 MediaParamType 的映射
@@ -31,22 +31,22 @@ export const ALBUM_TYPE_MAP: Record<string, MediaParamType> = {
   CustomHomeBoardPhoto: MediaParamType.DIY,
   customhomeboardphoto: MediaParamType.DIY,
   // 中文显示标签（匹配数据库 album_type）
-  '游戏截图': MediaParamType.CameraParams,
-  '低质量照片': MediaParamType.NikkiPhoto,
-  '高质量照片': MediaParamType.NikkiPhoto,
-  '杂志照': MediaParamType.NikkiPhoto,
-  '打卡照': MediaParamType.ClockInPhoto,
-  '拼图': MediaParamType.Collage,
-  '高质量拼图': MediaParamType.Collage,
-  '低质量拼图': MediaParamType.Collage,
-  '拼图照片': MediaParamType.Collage,
-  '自定义头像': MediaParamType.DIY,
-  '自定义名片': MediaParamType.DIY,
-  '主页照片': MediaParamType.DIY,
-  '主页模板': MediaParamType.DIY,
-  '植物染色': MediaParamType.DIY,
-  'DIY': MediaParamType.DIY,
-  '二维码': MediaParamType.DIY,
+  游戏截图: MediaParamType.CameraParams,
+  低质量照片: MediaParamType.NikkiPhoto,
+  高质量照片: MediaParamType.NikkiPhoto,
+  杂志照: MediaParamType.NikkiPhoto,
+  打卡照: MediaParamType.ClockInPhoto,
+  拼图: MediaParamType.Collage,
+  高质量拼图: MediaParamType.Collage,
+  低质量拼图: MediaParamType.Collage,
+  拼图照片: MediaParamType.Collage,
+  自定义头像: MediaParamType.DIY,
+  自定义名片: MediaParamType.DIY,
+  主页照片: MediaParamType.DIY,
+  主页模板: MediaParamType.DIY,
+  植物染色: MediaParamType.DIY,
+  DIY: MediaParamType.DIY,
+  二维码: MediaParamType.DIY
 }
 
 /** 滤镜参数 */

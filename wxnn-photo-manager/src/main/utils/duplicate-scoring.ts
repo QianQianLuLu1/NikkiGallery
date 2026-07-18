@@ -62,13 +62,10 @@ export function scoreGroup<T extends ScoreInput>(group: T[]): ScoredItem<T>[] {
       const fileSizeNorm = maxFileSize > 0 ? item.file_size / maxFileSize : 0
       const ts = new Date(item.modified_at).getTime()
       const recencyNorm =
-        Number.isFinite(ts) && timestampRange > 0
-          ? (ts - minTimestamp) / timestampRange
-          : 1
+        Number.isFinite(ts) && timestampRange > 0 ? (ts - minTimestamp) / timestampRange : 1
       const favoriteNorm = item.is_favorite || item.rating > 0 ? 1 : 0
 
-      const score =
-        resolutionNorm * 40 + fileSizeNorm * 30 + recencyNorm * 20 + favoriteNorm * 10
+      const score = resolutionNorm * 40 + fileSizeNorm * 30 + recencyNorm * 20 + favoriteNorm * 10
 
       return {
         item,

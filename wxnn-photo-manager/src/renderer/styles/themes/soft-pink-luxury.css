@@ -185,8 +185,19 @@
 }
 
 @keyframes searchGlowPink {
-  0%, 100% { box-shadow: 0 0 0 1px rgba(226, 164, 188, 0.45), 0 0 18px rgba(226, 164, 188, 0.2), inset 0 0 12px rgba(226, 164, 188, 0.04); }
-  50% { box-shadow: 0 0 0 1px rgba(226, 164, 188, 0.65), 0 0 26px rgba(226, 164, 188, 0.32), inset 0 0 16px rgba(226, 164, 188, 0.06); }
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(226, 164, 188, 0.45),
+      0 0 18px rgba(226, 164, 188, 0.2),
+      inset 0 0 12px rgba(226, 164, 188, 0.04);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(226, 164, 188, 0.65),
+      0 0 26px rgba(226, 164, 188, 0.32),
+      inset 0 0 16px rgba(226, 164, 188, 0.06);
+  }
 }
 
 /* 导航菜单 */
@@ -248,13 +259,18 @@
 }
 
 @keyframes pinkPulse {
-  0%, 100% { opacity: 0.55; }
-  50% { opacity: 0.9; }
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.9;
+  }
 }
 
 /* 弹窗、右键菜单：奶白半透明毛玻璃 + 淡粉描边 */
-.soft-pink-luxury [role="dialog"] .glass-card,
-.soft-pink-luxury [role="menu"] {
+.soft-pink-luxury [role='dialog'] .glass-card,
+.soft-pink-luxury [role='menu'] {
   background: rgba(255, 253, 254, 0.88);
   /* P0-1：弹窗用局部 --glass-blur 覆盖，backdrop-filter 自动引用 */
   --glass-blur: 16px;
@@ -294,11 +310,11 @@
 }
 
 /* 开关 / checkbox：开启时烟粉色填充 + 微光 */
-.soft-pink-luxury input[type="checkbox"] {
+.soft-pink-luxury input[type='checkbox'] {
   accent-color: var(--accent);
 }
 
-.soft-pink-luxury input[type="checkbox"]:checked {
+.soft-pink-luxury input[type='checkbox']:checked {
   filter: drop-shadow(0 0 4px rgba(226, 164, 188, 0.5));
 }
 
@@ -314,7 +330,9 @@
 
 .soft-pink-luxury select:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(226, 164, 188, 0.1), 0 0 12px rgba(226, 164, 188, 0.16);
+  box-shadow:
+    0 0 0 3px rgba(226, 164, 188, 0.1),
+    0 0 12px rgba(226, 164, 188, 0.16);
   outline: none;
 }
 

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useMemo, useState, useLayoutEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 
 export interface ContextMenuItem {
@@ -100,7 +101,9 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose }
   // 原 useEffect 依赖 [onClose, items, focusableIndices, activeIndex]，activeIndex 频繁变化导致
   // 监听器反复解绑/重绑，且每次重绑都会强制把焦点拉回第一项，破坏键盘导航体验
   const activeIndexRef = React.useRef(0)
-  useEffect(() => { activeIndexRef.current = activeIndex }, [activeIndex])
+  useEffect(() => {
+    activeIndexRef.current = activeIndex
+  }, [activeIndex])
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -159,7 +162,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose }
     }
   }, [onClose, items, focusableIndices])
 
-  return (
+  return createPortal(
     <>
       <div
         ref={ref}
@@ -175,11 +178,18 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose }
       >
         {items.map((item, index) =>
           item.divider ? (
-            <div key={item.id} role="separator" className="my-1 h-px" style={{ background: 'var(--divider)' }} />
+            <div
+              key={item.id}
+              role="separator"
+              className="my-1 h-px"
+              style={{ background: 'var(--divider)' }}
+            />
           ) : (
             <button
               key={item.id}
-              ref={(el) => { itemRefs.current[index] = el }}
+              ref={(el) => {
+                itemRefs.current[index] = el
+              }}
               role="menuitem"
               tabIndex={-1}
               disabled={item.disabled}
@@ -206,9 +216,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose }
             >
               {item.icon && <span className="flex-shrink-0">{item.icon}</span>}
               <span className="flex-1 min-w-0 truncate">{item.label}</span>
-              {item.submenu && (
-                <span className="flex-shrink-0 text-xs opacity-60">▶</span>
-              )}
+              {item.submenu && <span className="flex-shrink-0 text-xs opacity-60">▶</span>}
             </button>
           )
         )}
@@ -219,7 +227,9 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose }
         <div
           ref={submenuRef}
           role="menu"
-          aria-label={t('common.contextMenu.submenuAriaLabel', { label: items[submenuIndex].label })}
+          aria-label={t('common.contextMenu.submenuAriaLabel', {
+            label: items[submenuIndex].label
+          })}
           className="fixed z-[91] glass-panel py-1 min-w-[220px] overflow-y-auto"
           style={{
             left: submenuPos.left,
@@ -254,6 +264,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose }
           ))}
         </div>
       )}
-    </>
+    </>,
+    document.body
   )
 }

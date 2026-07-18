@@ -113,9 +113,9 @@ export function registerLogHandlers(ctx: HandlerContext): void {
       if (payload.stack) err.stack = payload.stack
       // 根据 source 映射到对应的 FaultType
       const faultTypeMap = {
-        'ErrorBoundary': 'rendererComponent',
+        ErrorBoundary: 'rendererComponent',
         'window.onerror': 'rendererResource',
-        'unhandledrejection': 'rendererPromise'
+        unhandledrejection: 'rendererPromise'
       } as const
       const faultType = faultTypeMap[payload.source as keyof typeof faultTypeMap] || 'rendererError'
       const context: Record<string, unknown> = { source: payload.source }

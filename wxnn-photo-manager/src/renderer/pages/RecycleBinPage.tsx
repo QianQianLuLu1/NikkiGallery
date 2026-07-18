@@ -1,13 +1,28 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useMediaStore, loadRecycleBin, loadMediaFromDatabase, toFileUrl, type MediaFile } from '../stores/mediaStore'
+import {
+  useMediaStore,
+  loadRecycleBin,
+  loadMediaFromDatabase,
+  toFileUrl,
+  type MediaFile
+} from '../stores/mediaStore'
 import { useUIStore } from '../stores/uiStore'
 import { useGlobalToast } from './settings/sections'
 import { ConfirmDialog } from '../components/common/ConfirmDialog'
 import { EmptyState } from '../components/common/EmptyState'
 import { formatFileSize } from '../utils/format'
 import { formatDateTime } from '../utils/date'
-import { IconTrash, IconRestore, IconClose, IconImage, IconVideo, IconSelectAll, IconInvertSelection, IconCheck } from '../icons'
+import {
+  IconTrash,
+  IconRestore,
+  IconClose,
+  IconImage,
+  IconVideo,
+  IconSelectAll,
+  IconInvertSelection,
+  IconCheck
+} from '../icons'
 
 export const RecycleBinPage: React.FC = () => {
   const { t } = useTranslation()
@@ -16,7 +31,10 @@ export const RecycleBinPage: React.FC = () => {
   const showMessage = useGlobalToast()
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [operating, setOperating] = useState(false)
-  const [confirm, setConfirm] = useState<{ open: boolean; type: 'permanent' | 'empty' | null }>({ open: false, type: null })
+  const [confirm, setConfirm] = useState<{ open: boolean; type: 'permanent' | 'empty' | null }>({
+    open: false,
+    type: null
+  })
   // F-B1：记录失败的操作类型，用于显示重试按钮
   const [failedAction, setFailedAction] = useState<'restore' | 'permanent' | 'empty' | null>(null)
 
@@ -146,23 +164,37 @@ export const RecycleBinPage: React.FC = () => {
     else if (type === 'empty') handleEmptyRecycleBin()
   }, [confirm.type, handlePermanentDelete, handleEmptyRecycleBin])
 
-  const totalSize = useMemo(() => recycleBinFiles.reduce((sum, f) => sum + f.file_size, 0), [recycleBinFiles])
+  const totalSize = useMemo(
+    () => recycleBinFiles.reduce((sum, f) => sum + f.file_size, 0),
+    [recycleBinFiles]
+  )
 
   // P1-I：formatDate 已统一到 utils/date.ts，调用 formatDateTime 处理 null/空值
-  const formatDate = (dateStr?: string | null) => dateStr ? formatDateTime(dateStr) : '—'
+  const formatDate = (dateStr?: string | null) => (dateStr ? formatDateTime(dateStr) : '—')
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
       {/* 顶部标题栏 */}
-      <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: '1px solid var(--divider)' }}>
+      <div
+        className="flex items-center justify-between px-6 py-4"
+        style={{ borderBottom: '1px solid var(--divider)' }}
+      >
         <div className="flex items-center gap-3">
           <IconTrash size={22} />
           <div>
-            <h2 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>{t('recycleBin.title')}</h2>
+            <h2 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
+              {t('recycleBin.title')}
+            </h2>
             <p className="text-xs mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
               {recycleBinFiles.length > 0
-                ? t('recycleBin.summaryWithHint', { count: recycleBinFiles.length, size: formatFileSize(totalSize) })
-                : t('recycleBin.summary', { count: recycleBinFiles.length, size: formatFileSize(totalSize) })}
+                ? t('recycleBin.summaryWithHint', {
+                    count: recycleBinFiles.length,
+                    size: formatFileSize(totalSize)
+                  })
+                : t('recycleBin.summary', {
+                    count: recycleBinFiles.length,
+                    size: formatFileSize(totalSize)
+                  })}
             </p>
           </div>
         </div>
@@ -196,7 +228,10 @@ export const RecycleBinPage: React.FC = () => {
       <div className="flex-1 overflow-auto p-6">
         {recycleBinLoading && (
           <div className="flex items-center justify-center h-32">
-            <div className="w-8 h-8 border-2 border-current border-t-transparent rounded-full animate-spin" style={{ color: 'var(--accent)' }} />
+            <div
+              className="w-8 h-8 border-2 border-current border-t-transparent rounded-full animate-spin"
+              style={{ color: 'var(--accent)' }}
+            />
           </div>
         )}
 
@@ -210,7 +245,10 @@ export const RecycleBinPage: React.FC = () => {
         )}
 
         {!recycleBinLoading && recycleBinFiles.length > 0 && (
-          <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
+          <div
+            className="grid gap-3"
+            style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}
+          >
             {recycleBinFiles.map((file) => (
               <RecycleBinItem
                 key={file.id}
@@ -272,22 +310,31 @@ export const RecycleBinPage: React.FC = () => {
             </>
           )}
           <div className="w-px h-5 mx-1" style={{ background: 'var(--divider)' }} />
-          <button className="icon-btn" onClick={clearSelection} aria-label={t('recycleBin.clearSelection')}>
+          <button
+            className="icon-btn"
+            onClick={clearSelection}
+            aria-label={t('recycleBin.clearSelection')}
+          >
             <IconClose size={14} />
           </button>
         </div>
       )}
 
-
       <ConfirmDialog
         open={confirm.open}
-        title={confirm.type === 'empty' ? t('recycleBin.emptyConfirmTitle') : t('recycleBin.permanentConfirmTitle')}
+        title={
+          confirm.type === 'empty'
+            ? t('recycleBin.emptyConfirmTitle')
+            : t('recycleBin.permanentConfirmTitle')
+        }
         message={
           confirm.type === 'empty'
             ? t('recycleBin.emptyConfirm', { count: recycleBinFiles.length })
             : t('recycleBin.permanentConfirm', { count: selectedIds.size })
         }
-        confirmText={confirm.type === 'empty' ? t('recycleBin.confirmEmpty') : t('recycleBin.permanentDelete')}
+        confirmText={
+          confirm.type === 'empty' ? t('recycleBin.confirmEmpty') : t('recycleBin.permanentDelete')
+        }
         confirmVariant="danger"
         onConfirm={handleConfirm}
         onCancel={() => setConfirm({ open: false, type: null })}
@@ -303,7 +350,12 @@ interface RecycleBinItemProps {
   formatDate: (dateStr?: string | null) => string
 }
 
-const RecycleBinItem: React.FC<RecycleBinItemProps> = ({ file, selected, onToggle, formatDate }) => {
+const RecycleBinItem: React.FC<RecycleBinItemProps> = ({
+  file,
+  selected,
+  onToggle,
+  formatDate
+}) => {
   const { t } = useTranslation()
   const thumbUrl = useMemo(() => {
     if (file.thumbnail) {
@@ -336,9 +388,18 @@ const RecycleBinItem: React.FC<RecycleBinItemProps> = ({ file, selected, onToggl
         }
       }}
     >
-      <div className="relative aspect-square flex items-center justify-center" style={{ background: 'var(--bg-tertiary)' }}>
+      <div
+        className="relative aspect-square flex items-center justify-center"
+        style={{ background: 'var(--bg-tertiary)' }}
+      >
         {thumbUrl ? (
-          <img src={thumbUrl} alt={file.file_name} className="w-full h-full object-cover" loading="lazy" draggable={false} />
+          <img
+            src={thumbUrl}
+            alt={file.file_name}
+            className="w-full h-full object-cover"
+            loading="lazy"
+            draggable={false}
+          />
         ) : (
           <div style={{ color: 'var(--text-tertiary)' }}>
             {file.file_type === 'video' ? <IconVideo size={32} /> : <IconImage size={32} />}
@@ -352,22 +413,30 @@ const RecycleBinItem: React.FC<RecycleBinItemProps> = ({ file, selected, onToggl
             border: selected ? 'none' : '2px solid var(--divider)'
           }}
         >
-          {selected && (
-            <IconCheck size={14} strokeWidth={3} stroke="white" />
-          )}
+          {selected && <IconCheck size={14} strokeWidth={3} stroke="white" />}
         </div>
         {/* 文件类型角标 */}
         {file.file_type === 'video' && (
-          <div className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded text-xs" style={{ background: 'rgba(0,0,0,0.6)', color: '#fff' }}>
+          <div
+            className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded text-xs"
+            style={{ background: 'rgba(0,0,0,0.6)', color: '#fff' }}
+          >
             {t('recycleBin.videoBadge')}
           </div>
         )}
       </div>
       <div className="p-3">
-        <p className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }} title={file.file_name}>
+        <p
+          className="text-sm font-medium truncate"
+          style={{ color: 'var(--text-primary)' }}
+          title={file.file_name}
+        >
           {file.file_name}
         </p>
-        <div className="flex items-center justify-between mt-1.5 text-xs" style={{ color: 'var(--text-tertiary)' }}>
+        <div
+          className="flex items-center justify-between mt-1.5 text-xs"
+          style={{ color: 'var(--text-tertiary)' }}
+        >
           <span>{formatFileSize(file.file_size)}</span>
           <span>{formatDate(file.deleted_at)}</span>
         </div>

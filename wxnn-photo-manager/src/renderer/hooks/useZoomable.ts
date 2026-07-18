@@ -59,35 +59,44 @@ export function useZoomable(options: UseZoomableOptions = {}): UseZoomableResult
     setPosition({ x: 0, y: 0 })
   }, [])
 
-  const handleWheel = useCallback((e: React.WheelEvent) => {
-    e.preventDefault()
-    setScale((prev) => {
-      const delta = e.deltaY > 0 ? -zoomStep : zoomStep
-      return Math.max(1, Math.min(prev + delta, maxZoom))
-    })
-  }, [maxZoom, zoomStep])
+  const handleWheel = useCallback(
+    (e: React.WheelEvent) => {
+      e.preventDefault()
+      setScale((prev) => {
+        const delta = e.deltaY > 0 ? -zoomStep : zoomStep
+        return Math.max(1, Math.min(prev + delta, maxZoom))
+      })
+    },
+    [maxZoom, zoomStep]
+  )
 
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    dragStartPos.current = { x: e.clientX, y: e.clientY }
-    dragMovedRef.current = false
-    setDragMoved(false)
-    // 仅在已缩放（scale > 1）时启用拖拽平移
-    if (scale <= 1) return
-    e.preventDefault()
-    setDragging(true)
-    dragStartRef.current = { x: e.clientX, y: e.clientY, px: position.x, py: position.y }
-  }, [scale, position])
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      dragStartPos.current = { x: e.clientX, y: e.clientY }
+      dragMovedRef.current = false
+      setDragMoved(false)
+      // 仅在已缩放（scale > 1）时启用拖拽平移
+      if (scale <= 1) return
+      e.preventDefault()
+      setDragging(true)
+      dragStartRef.current = { x: e.clientX, y: e.clientY, px: position.x, py: position.y }
+    },
+    [scale, position]
+  )
 
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!dragging) return
-    const dx = e.clientX - dragStartRef.current.x
-    const dy = e.clientY - dragStartRef.current.y
-    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-      dragMovedRef.current = true
-      setDragMoved(true)
-    }
-    setPosition({ x: dragStartRef.current.px + dx, y: dragStartRef.current.py + dy })
-  }, [dragging])
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (!dragging) return
+      const dx = e.clientX - dragStartRef.current.x
+      const dy = e.clientY - dragStartRef.current.y
+      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+        dragMovedRef.current = true
+        setDragMoved(true)
+      }
+      setPosition({ x: dragStartRef.current.px + dx, y: dragStartRef.current.py + dy })
+    },
+    [dragging]
+  )
 
   const handleMouseUp = useCallback(() => {
     setDragging(false)

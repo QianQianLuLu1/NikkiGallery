@@ -35,7 +35,11 @@ interface UseImageProcessorReturn {
   setParams: (params: FilterParams) => void
   updateParam: <K extends keyof FilterParams>(key: K, value: FilterParams[K]) => void
   updateCurve: (channel: 'rgb' | 'r' | 'g' | 'b', points: CurvePoint[]) => void
-  updateHSL: (key: HSLColorKey, field: keyof FilterParams['hsl'][HSLColorKey], value: number) => void
+  updateHSL: (
+    key: HSLColorKey,
+    field: keyof FilterParams['hsl'][HSLColorKey],
+    value: number
+  ) => void
   filter: FilterPreset | null
   setFilter: (filter: FilterPreset | null) => void
   applyFilterPreset: (preset: FilterPreset) => void
@@ -49,7 +53,10 @@ interface UseImageProcessorReturn {
   exportDataUrl: (fullSize?: boolean, mimeTypeOverride?: string) => Promise<string | null>
 }
 
-export function useImageProcessor({ source, maxPreviewSize = DEFAULT_MAX_PREVIEW_SIZE }: UseImageProcessorOptions): UseImageProcessorReturn {
+export function useImageProcessor({
+  source,
+  maxPreviewSize = DEFAULT_MAX_PREVIEW_SIZE
+}: UseImageProcessorOptions): UseImageProcessorReturn {
   const [loading, setLoading] = useState(false)
   // C-O15：暴露错误状态给 UI，便于显示加载/渲染失败提示
   const [error, setError] = useState<string | null>(null)
@@ -79,7 +86,10 @@ export function useImageProcessor({ source, maxPreviewSize = DEFAULT_MAX_PREVIEW
     debounceTimerRef.current = setTimeout(async () => {
       const token = ++pendingRef.current
       try {
-        const imageData = await processImageData(img, mergedParams, { maxSize: maxPreviewSize, watermark })
+        const imageData = await processImageData(img, mergedParams, {
+          maxSize: maxPreviewSize,
+          watermark
+        })
         if (token !== pendingRef.current) return
         const dataUrl = await imageToDataUrl(imageData, 'image/jpeg', PREVIEW_JPEG_QUALITY)
         if (token !== pendingRef.current) return
@@ -160,9 +170,12 @@ export function useImageProcessor({ source, maxPreviewSize = DEFAULT_MAX_PREVIEW
     }
   }, [])
 
-  const updateParam = useCallback(<K extends keyof FilterParams>(key: K, value: FilterParams[K]) => {
-    setParams((prev) => ({ ...prev, [key]: value }))
-  }, [])
+  const updateParam = useCallback(
+    <K extends keyof FilterParams>(key: K, value: FilterParams[K]) => {
+      setParams((prev) => ({ ...prev, [key]: value }))
+    },
+    []
+  )
 
   const updateCurve = useCallback((channel: 'rgb' | 'r' | 'g' | 'b', points: CurvePoint[]) => {
     setParams((prev) => ({
@@ -171,15 +184,18 @@ export function useImageProcessor({ source, maxPreviewSize = DEFAULT_MAX_PREVIEW
     }))
   }, [])
 
-  const updateHSL = useCallback((key: HSLColorKey, field: keyof FilterParams['hsl'][HSLColorKey], value: number) => {
-    setParams((prev) => ({
-      ...prev,
-      hsl: {
-        ...prev.hsl,
-        [key]: { ...prev.hsl[key], [field]: value }
-      }
-    }))
-  }, [])
+  const updateHSL = useCallback(
+    (key: HSLColorKey, field: keyof FilterParams['hsl'][HSLColorKey], value: number) => {
+      setParams((prev) => ({
+        ...prev,
+        hsl: {
+          ...prev.hsl,
+          [key]: { ...prev.hsl[key], [field]: value }
+        }
+      }))
+    },
+    []
+  )
 
   const applyFilterPreset = useCallback((preset: FilterPreset) => {
     setFilter(preset)
@@ -193,38 +209,44 @@ export function useImageProcessor({ source, maxPreviewSize = DEFAULT_MAX_PREVIEW
     setWatermark(null)
   }, [])
 
-  const exportDataUrl = useCallback(async (fullSize = false, mimeTypeOverride?: string): Promise<string | null> => {
-    const img = imageRef.current
-    if (!img) return null
-    try {
-      const imageData = await processImageData(img, mergedParams, { maxSize: fullSize ? MAX_EXPORT_SIZE : maxPreviewSize, watermark })
-      // P2-C11：优先使用调用方传入的 mimeTypeOverride；否则从 source URL 解析扩展名。
-      // blob:/data: URL 无可靠扩展名，解析会误判为 jpeg，调用方可通过 mimeTypeOverride 显式指定
-      type ImageFormat = 'image/jpeg' | 'image/png' | 'image/webp'
-      let mimeType: ImageFormat
-      let quality: number
-      if (mimeTypeOverride) {
-        // 非法值降级为 jpeg，避免 TS 联合类型越界
-        mimeType = (['image/jpeg', 'image/png', 'image/webp'] as const).includes(
-          mimeTypeOverride as ImageFormat
-        )
-          ? (mimeTypeOverride as ImageFormat)
-          : 'image/jpeg'
-        quality = mimeType === 'image/png' ? 1 : EXPORT_JPEG_QUALITY
-      } else {
-        const ext = source ? source.split('.').pop()?.toLowerCase().split('?')[0] : ''
-        mimeType = ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : 'image/jpeg'
-        quality = ext === 'png' ? 1 : EXPORT_JPEG_QUALITY
+  const exportDataUrl = useCallback(
+    async (fullSize = false, mimeTypeOverride?: string): Promise<string | null> => {
+      const img = imageRef.current
+      if (!img) return null
+      try {
+        const imageData = await processImageData(img, mergedParams, {
+          maxSize: fullSize ? MAX_EXPORT_SIZE : maxPreviewSize,
+          watermark
+        })
+        // P2-C11：优先使用调用方传入的 mimeTypeOverride；否则从 source URL 解析扩展名。
+        // blob:/data: URL 无可靠扩展名，解析会误判为 jpeg，调用方可通过 mimeTypeOverride 显式指定
+        type ImageFormat = 'image/jpeg' | 'image/png' | 'image/webp'
+        let mimeType: ImageFormat
+        let quality: number
+        if (mimeTypeOverride) {
+          // 非法值降级为 jpeg，避免 TS 联合类型越界
+          mimeType = (['image/jpeg', 'image/png', 'image/webp'] as const).includes(
+            mimeTypeOverride as ImageFormat
+          )
+            ? (mimeTypeOverride as ImageFormat)
+            : 'image/jpeg'
+          quality = mimeType === 'image/png' ? 1 : EXPORT_JPEG_QUALITY
+        } else {
+          const ext = source ? source.split('.').pop()?.toLowerCase().split('?')[0] : ''
+          mimeType = ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : 'image/jpeg'
+          quality = ext === 'png' ? 1 : EXPORT_JPEG_QUALITY
+        }
+        const dataUrl = await imageToDataUrl(imageData, mimeType, quality)
+        setError(null)
+        return dataUrl
+      } catch (err) {
+        console.error('导出失败:', err)
+        setError(err instanceof Error ? err.message : '导出失败')
+        return null
       }
-      const dataUrl = await imageToDataUrl(imageData, mimeType, quality)
-      setError(null)
-      return dataUrl
-    } catch (err) {
-      console.error('导出失败:', err)
-      setError(err instanceof Error ? err.message : '导出失败')
-      return null
-    }
-  }, [mergedParams, watermark, maxPreviewSize, source])
+    },
+    [mergedParams, watermark, maxPreviewSize, source]
+  )
 
   return {
     loading,

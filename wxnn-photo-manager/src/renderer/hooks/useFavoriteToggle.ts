@@ -14,28 +14,31 @@ export function useFavoriteToggle(onShowMessage?: ShowMessage) {
   const updateMediaFile = useMediaStore((s) => s.updateMediaFile)
   const pushHistory = useOperationHistoryStore((s) => s.push)
 
-  return useCallback(async (file: MediaFile) => {
-    if (!window.electronAPI) {
-      // 预览环境：直接切换本地状态
-      updateMediaFile(file.id, { is_favorite: !file.is_favorite })
-      return
-    }
-    const originalFavorite = file.is_favorite
-    const next = !file.is_favorite
-    updateMediaFile(file.id, { is_favorite: next })
-    try {
-      const result = await window.electronAPI.mediaAction.updateFavorite(Number(file.id), next)
-      if (!result.success) throw new Error(result.message)
-      pushHistory({
-        type: 'favorite_toggle',
-        description: `${next ? '收藏' : '取消收藏'} "${file.file_name}"`,
-        mediaId: file.id,
-        payload: { mediaId: Number(file.id), originalFavorite, newFavorite: next }
-      })
-    } catch (error) {
-      // 失败回滚
-      updateMediaFile(file.id, { is_favorite: file.is_favorite })
-      onShowMessage?.(error instanceof Error ? error.message : '收藏操作失败', 'error')
-    }
-  }, [onShowMessage, updateMediaFile, pushHistory])
+  return useCallback(
+    async (file: MediaFile) => {
+      if (!window.electronAPI) {
+        // 预览环境：直接切换本地状态
+        updateMediaFile(file.id, { is_favorite: !file.is_favorite })
+        return
+      }
+      const originalFavorite = file.is_favorite
+      const next = !file.is_favorite
+      updateMediaFile(file.id, { is_favorite: next })
+      try {
+        const result = await window.electronAPI.mediaAction.updateFavorite(Number(file.id), next)
+        if (!result.success) throw new Error(result.message)
+        pushHistory({
+          type: 'favorite_toggle',
+          description: `${next ? '收藏' : '取消收藏'} "${file.file_name}"`,
+          mediaId: file.id,
+          payload: { mediaId: Number(file.id), originalFavorite, newFavorite: next }
+        })
+      } catch (error) {
+        // 失败回滚
+        updateMediaFile(file.id, { is_favorite: file.is_favorite })
+        onShowMessage?.(error instanceof Error ? error.message : '收藏操作失败', 'error')
+      }
+    },
+    [onShowMessage, updateMediaFile, pushHistory]
+  )
 }

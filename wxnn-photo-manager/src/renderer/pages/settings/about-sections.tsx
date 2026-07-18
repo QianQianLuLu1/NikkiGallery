@@ -1,7 +1,15 @@
 import React, { useState, useContext, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAutoAnimate } from '@formkit/auto-animate/react'
-import { IconDouyin, IconBilibili, IconXiaohongshu, IconRotateCw, IconGithub, IconQQ, IconChevronDown } from '../../icons'
+import {
+  IconDouyin,
+  IconBilibili,
+  IconXiaohongshu,
+  IconRotateCw,
+  IconGithub,
+  IconQQ,
+  IconChevronDown
+} from '../../icons'
 import { SectionShell, GlobalToastContext } from './shared'
 
 // ============ 关于 ============
@@ -15,12 +23,17 @@ export const AboutInfoSection: React.FC = () => {
   const [appVersion, setAppVersion] = useState<string>('')
   useEffect(() => {
     let mounted = true
-    window.electronAPI?.app?.getVersion?.().then((v) => {
-      if (mounted && v) setAppVersion(v)
-    }).catch(() => {
-      if (mounted) setAppVersion('unknown')
-    })
-    return () => { mounted = false }
+    window.electronAPI?.app
+      ?.getVersion?.()
+      .then((v) => {
+        if (mounted && v) setAppVersion(v)
+      })
+      .catch(() => {
+        if (mounted) setAppVersion('unknown')
+      })
+    return () => {
+      mounted = false
+    }
   }, [])
   const handleCheckUpdate = () => {
     window.electronAPI?.shell?.openExternal?.(GITHUB_URL)
@@ -47,7 +60,12 @@ export const AboutInfoSection: React.FC = () => {
         </div>
         <div className="flex justify-between">
           <span style={{ color: 'var(--text-secondary)' }}>{t('settings.about.repo')}</span>
-          <a className="text-xs font-mono" style={{ color: 'var(--accent)' }} title={GITHUB_URL} onClick={handleCheckUpdate}>
+          <a
+            className="text-xs font-mono"
+            style={{ color: 'var(--accent)' }}
+            title={GITHUB_URL}
+            onClick={handleCheckUpdate}
+          >
             NikkiGallery
           </a>
         </div>
@@ -68,8 +86,12 @@ export const AboutInfoSection: React.FC = () => {
 
       <div className="pt-4 flex flex-col items-center space-y-2">
         <div className="text-center">
-          <p className="font-bold text-base" style={{ color: 'var(--text-primary)' }}>{t('settings.about.devCredit')}</p>
-          <p className="font-bold text-base" style={{ color: 'var(--text-primary)' }}>{t('settings.about.alias')}</p>
+          <p className="font-bold text-base" style={{ color: 'var(--text-primary)' }}>
+            {t('settings.about.devCredit')}
+          </p>
+          <p className="font-bold text-base" style={{ color: 'var(--text-primary)' }}>
+            {t('settings.about.alias')}
+          </p>
         </div>
       </div>
       <div className="pt-2 text-xs text-center" style={{ color: 'var(--text-tertiary)' }}>
@@ -93,56 +115,112 @@ export const AboutContactSection: React.FC = () => {
   }
 
   return (
-    <SectionShell title={t('settings.sections.aboutContact')} description={t('settings.about.contactDesc')}>
+    <SectionShell
+      title={t('settings.sections.aboutContact')}
+      description={t('settings.about.contactDesc')}
+    >
       {/* GitHub */}
-      <div className="flex items-center justify-between gap-3 p-3 rounded-lg" style={{ background: 'var(--bg-tertiary)' }}>
+      <div
+        className="flex items-center justify-between gap-3 p-3 rounded-lg"
+        style={{ background: 'var(--bg-tertiary)' }}
+      >
         <div className="flex items-center gap-3">
           <IconGithub size={24} style={{ color: 'var(--text-primary)' }} />
           <div>
-            <div className="text-sm" style={{ color: 'var(--text-primary)' }}>{t('settings.about.githubRepo')}</div>
-            <div className="text-xs font-mono" style={{ color: 'var(--text-tertiary)' }} title={GITHUB_URL}>{GITHUB_URL}</div>
+            <div className="text-sm" style={{ color: 'var(--text-primary)' }}>
+              {t('settings.about.githubRepo')}
+            </div>
+            <div
+              className="text-xs font-mono"
+              style={{ color: 'var(--text-tertiary)' }}
+              title={GITHUB_URL}
+            >
+              {GITHUB_URL}
+            </div>
           </div>
         </div>
-        <button className="btn-secondary text-xs px-3 py-1.5 flex-shrink-0" onClick={() => window.electronAPI?.shell?.openExternal?.(GITHUB_URL)} title={t('settings.about.open')}>
+        <button
+          className="btn-secondary text-xs px-3 py-1.5 flex-shrink-0"
+          onClick={() => window.electronAPI?.shell?.openExternal?.(GITHUB_URL)}
+          title={t('settings.about.open')}
+        >
           {t('settings.about.open')}
         </button>
       </div>
 
       {/* QQ 群 */}
-      <div className="flex items-center justify-between gap-3 p-3 rounded-lg" style={{ background: 'var(--bg-tertiary)' }}>
+      <div
+        className="flex items-center justify-between gap-3 p-3 rounded-lg"
+        style={{ background: 'var(--bg-tertiary)' }}
+      >
         <div className="flex items-center gap-3">
           <IconQQ size={24} style={{ color: '#12B7F5' }} />
           <div>
-            <div className="text-sm" style={{ color: 'var(--text-primary)' }}>{t('settings.about.qqGroup')}</div>
-            <div className="text-xs font-mono" style={{ color: 'var(--text-tertiary)' }}>{QQ_GROUP}</div>
+            <div className="text-sm" style={{ color: 'var(--text-primary)' }}>
+              {t('settings.about.qqGroup')}
+            </div>
+            <div className="text-xs font-mono" style={{ color: 'var(--text-tertiary)' }}>
+              {QQ_GROUP}
+            </div>
           </div>
         </div>
-        <button className="btn-secondary text-xs px-3 py-1.5 flex-shrink-0" onClick={handleCopyQQGroup} title={t('settings.about.copyGroup')}>
+        <button
+          className="btn-secondary text-xs px-3 py-1.5 flex-shrink-0"
+          onClick={handleCopyQQGroup}
+          title={t('settings.about.copyGroup')}
+        >
           {t('settings.about.copyGroup')}
         </button>
       </div>
 
       {/* 社交媒体 */}
       <div className="pt-3 space-y-2" style={{ borderTop: '1px solid var(--divider)' }}>
-        <p className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>{t('settings.about.socialMedia')}</p>
+        <p className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
+          {t('settings.about.socialMedia')}
+        </p>
         <div className="flex gap-4 justify-center pt-2">
           <div className="flex flex-col items-center gap-1">
-            <button className="social-btn" onClick={() => window.electronAPI?.shell?.openExternal?.('https://v.douyin.com/XkTzyJeCFIU/')} title={t('settings.about.douyin')} aria-label={t('settings.about.douyin')}>
+            <button
+              className="social-btn"
+              onClick={() =>
+                window.electronAPI?.shell?.openExternal?.('https://v.douyin.com/XkTzyJeCFIU/')
+              }
+              title={t('settings.about.douyin')}
+              aria-label={t('settings.about.douyin')}
+            >
               <IconDouyin size={20} />
             </button>
-            <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>{t('settings.about.douyin')}</span>
+            <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+              {t('settings.about.douyin')}
+            </span>
           </div>
           <div className="flex flex-col items-center gap-1">
-            <button className="social-btn" onClick={() => window.electronAPI?.shell?.openExternal?.('https://b23.tv/FtjgFrW')} title={t('settings.about.bilibili')} aria-label={t('settings.about.bilibili')}>
+            <button
+              className="social-btn"
+              onClick={() => window.electronAPI?.shell?.openExternal?.('https://b23.tv/FtjgFrW')}
+              title={t('settings.about.bilibili')}
+              aria-label={t('settings.about.bilibili')}
+            >
               <IconBilibili size={20} />
             </button>
-            <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>{t('settings.about.bilibili')}</span>
+            <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+              {t('settings.about.bilibili')}
+            </span>
           </div>
           <div className="flex flex-col items-center gap-1">
-            <button className="social-btn" onClick={() => window.electronAPI?.shell?.openExternal?.('https://xhslink.com/m/AxkdRvT3QsH')} title={t('settings.about.xiaohongshu')} aria-label={t('settings.about.xiaohongshu')}>
+            <button
+              className="social-btn"
+              onClick={() =>
+                window.electronAPI?.shell?.openExternal?.('https://xhslink.com/m/AxkdRvT3QsH')
+              }
+              title={t('settings.about.xiaohongshu')}
+              aria-label={t('settings.about.xiaohongshu')}
+            >
               <IconXiaohongshu size={20} />
             </button>
-            <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>{t('settings.about.xiaohongshu')}</span>
+            <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+              {t('settings.about.xiaohongshu')}
+            </span>
           </div>
         </div>
       </div>
@@ -159,30 +237,113 @@ export const AboutLicenseSection: React.FC = () => {
   const [appVersion, setAppVersion] = useState<string>('')
   useEffect(() => {
     let mounted = true
-    window.electronAPI?.app?.getVersion?.().then((v) => {
-      if (mounted && v) setAppVersion(v)
-    }).catch(() => {
-      if (mounted) setAppVersion('unknown')
-    })
-    return () => { mounted = false }
+    window.electronAPI?.app
+      ?.getVersion?.()
+      .then((v) => {
+        if (mounted && v) setAppVersion(v)
+      })
+      .catch(() => {
+        if (mounted) setAppVersion('unknown')
+      })
+    return () => {
+      mounted = false
+    }
   }, [])
 
   // 运行时核心依赖（直接影响软件功能）
-  const runtimeDeps: { name: string; version: string; license: string; description: string; homepage: string }[] = [
-    { name: 'electron', version: '28.x', license: 'MIT', description: '跨平台桌面应用框架', homepage: 'https://www.electronjs.org/' },
-    { name: 'react', version: '18.x', license: 'MIT', description: 'UI 渲染库', homepage: 'https://react.dev/' },
-    { name: 'react-dom', version: '18.x', license: 'MIT', description: 'React DOM 渲染器', homepage: 'https://react.dev/' },
-    { name: 'zustand', version: '4.x', license: 'MIT', description: '轻量级状态管理', homepage: 'https://github.com/pmndrs/zustand' },
-    { name: 'better-sqlite3', version: '9.x', license: 'MIT', description: '同步 SQLite 数据库驱动', homepage: 'https://github.com/WiseLibs/better-sqlite3' },
-    { name: 'sharp', version: '0.33.x', license: 'Apache-2.0', description: '高性能图像处理（缩略图生成）', homepage: 'https://sharp.pixelplumbing.com/' },
-    { name: 'ffmpeg-static', version: '5.x', license: 'GPL-3.0', description: 'FFmpeg 二进制（视频处理）', homepage: 'https://github.com/eugeneware/ffmpeg-static' },
-    { name: 'ffprobe-static', version: '3.x', license: 'GPL-3.0', description: 'FFprobe 二进制（视频元数据）', homepage: 'https://github.com/eugeneware/ffprobe-static' },
-    { name: 'fluent-ffmpeg', version: '2.x', license: 'MIT', description: 'FFmpeg Node.js 封装', homepage: 'https://github.com/fluent-ffmpeg/node-fluent-ffmpeg' },
-    { name: 'exifr', version: '7.x', license: 'MIT', description: 'EXIF 元数据解析', homepage: 'https://github.com/MikeKovchina/exifr' },
+  const runtimeDeps: {
+    name: string
+    version: string
+    license: string
+    description: string
+    homepage: string
+  }[] = [
+    {
+      name: 'electron',
+      version: '28.x',
+      license: 'MIT',
+      description: '跨平台桌面应用框架',
+      homepage: 'https://www.electronjs.org/'
+    },
+    {
+      name: 'react',
+      version: '18.x',
+      license: 'MIT',
+      description: 'UI 渲染库',
+      homepage: 'https://react.dev/'
+    },
+    {
+      name: 'react-dom',
+      version: '18.x',
+      license: 'MIT',
+      description: 'React DOM 渲染器',
+      homepage: 'https://react.dev/'
+    },
+    {
+      name: 'zustand',
+      version: '4.x',
+      license: 'MIT',
+      description: '轻量级状态管理',
+      homepage: 'https://github.com/pmndrs/zustand'
+    },
+    {
+      name: 'better-sqlite3',
+      version: '9.x',
+      license: 'MIT',
+      description: '同步 SQLite 数据库驱动',
+      homepage: 'https://github.com/WiseLibs/better-sqlite3'
+    },
+    {
+      name: 'sharp',
+      version: '0.33.x',
+      license: 'Apache-2.0',
+      description: '高性能图像处理（缩略图生成）',
+      homepage: 'https://sharp.pixelplumbing.com/'
+    },
+    {
+      name: 'ffmpeg-static',
+      version: '5.x',
+      license: 'GPL-3.0',
+      description: 'FFmpeg 二进制（视频处理）',
+      homepage: 'https://github.com/eugeneware/ffmpeg-static'
+    },
+    {
+      name: 'ffprobe-static',
+      version: '3.x',
+      license: 'GPL-3.0',
+      description: 'FFprobe 二进制（视频元数据）',
+      homepage: 'https://github.com/eugeneware/ffprobe-static'
+    },
+    {
+      name: 'fluent-ffmpeg',
+      version: '2.x',
+      license: 'MIT',
+      description: 'FFmpeg Node.js 封装',
+      homepage: 'https://github.com/fluent-ffmpeg/node-fluent-ffmpeg'
+    },
+    {
+      name: 'exifr',
+      version: '7.x',
+      license: 'MIT',
+      description: 'EXIF 元数据解析',
+      homepage: 'https://github.com/MikeKovchina/exifr'
+    },
     // P1-1：动画库
-    { name: 'motion', version: '12.x', license: 'MIT', description: 'React 动画库（弹簧物理、退出动画、布局动画）', homepage: 'https://motion.dev/' },
+    {
+      name: 'motion',
+      version: '12.x',
+      license: 'MIT',
+      description: 'React 动画库（弹簧物理、退出动画、布局动画）',
+      homepage: 'https://motion.dev/'
+    },
     // P2-1：列表 FLIP 动画库
-    { name: '@formkit/auto-animate', version: '0.9.x', license: 'MIT', description: '列表 FLIP 动画库（零侵入增删重排过渡）', homepage: 'https://auto-animate.formkit.com/' }
+    {
+      name: '@formkit/auto-animate',
+      version: '0.9.x',
+      license: 'MIT',
+      description: '列表 FLIP 动画库（零侵入增删重排过渡）',
+      homepage: 'https://auto-animate.formkit.com/'
+    }
   ]
 
   // 构建工具链（开发依赖）
@@ -200,14 +361,20 @@ export const AboutLicenseSection: React.FC = () => {
   }
 
   return (
-    <SectionShell title={t('settings.sections.aboutLicense')} description={t('settings.about.licenseDesc')}>
+    <SectionShell
+      title={t('settings.sections.aboutLicense')}
+      description={t('settings.about.licenseDesc')}
+    >
       {/* 项目信息 */}
       <div className="p-4 rounded-lg" style={{ background: 'var(--bg-tertiary)' }}>
-        <div className="text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>{t('settings.about.appValue')}</div>
+        <div className="text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
+          {t('settings.about.appValue')}
+        </div>
         <div className="text-xs space-y-1" style={{ color: 'var(--text-secondary)' }}>
           <div>{t('settings.about.versionLabel', { version: appVersion || '—' })}</div>
           <div>{t('settings.about.authorLabel')}</div>
-          <div>{t('settings.about.repoLabel')}
+          <div>
+            {t('settings.about.repoLabel')}
             <button
               onClick={() => openUrl('https://github.com/QianQianLuLu1/NikkiGallery')}
               className="ml-1 hover:underline"
@@ -224,25 +391,53 @@ export const AboutLicenseSection: React.FC = () => {
 
       {/* 运行时依赖 */}
       <div className="space-y-2">
-        <div className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{t('settings.about.runtimeDeps')}</div>
+        <div className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+          {t('settings.about.runtimeDeps')}
+        </div>
         <div ref={licenseListRef} className="space-y-1">
           {runtimeDeps.map((dep) => (
-            <div key={dep.name} className="rounded-lg overflow-hidden" style={{ background: 'var(--bg-tertiary)' }}>
+            <div
+              key={dep.name}
+              className="rounded-lg overflow-hidden"
+              style={{ background: 'var(--bg-tertiary)' }}
+            >
               <button
                 onClick={() => setExpanded(expanded === dep.name ? null : dep.name)}
                 className="w-full flex items-center justify-between gap-3 p-3 text-left hover:bg-opacity-80 transition-colors"
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-sm" style={{ color: 'var(--text-primary)' }}>{dep.name}</span>
-                    <span className="text-xs px-1.5 py-0.5 rounded" style={{ background: 'var(--accent)', color: 'var(--text-on-accent)' }}>{dep.version}</span>
-                    <span className="text-xs px-1.5 py-0.5 rounded" style={{ background: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}>{dep.license}</span>
+                    <span className="font-mono text-sm" style={{ color: 'var(--text-primary)' }}>
+                      {dep.name}
+                    </span>
+                    <span
+                      className="text-xs px-1.5 py-0.5 rounded"
+                      style={{ background: 'var(--accent)', color: 'var(--text-on-accent)' }}
+                    >
+                      {dep.version}
+                    </span>
+                    <span
+                      className="text-xs px-1.5 py-0.5 rounded"
+                      style={{ background: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}
+                    >
+                      {dep.license}
+                    </span>
                   </div>
                 </div>
-                <IconChevronDown size={16} style={{ color: 'var(--text-tertiary)', transform: expanded === dep.name ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                <IconChevronDown
+                  size={16}
+                  style={{
+                    color: 'var(--text-tertiary)',
+                    transform: expanded === dep.name ? 'rotate(180deg)' : 'none',
+                    transition: 'transform 0.2s'
+                  }}
+                />
               </button>
               {expanded === dep.name && (
-                <div className="px-3 pb-3 text-xs space-y-1" style={{ color: 'var(--text-secondary)' }}>
+                <div
+                  className="px-3 pb-3 text-xs space-y-1"
+                  style={{ color: 'var(--text-secondary)' }}
+                >
                   <div>{dep.description}</div>
                   <button
                     onClick={() => openUrl(dep.homepage)}
@@ -260,7 +455,9 @@ export const AboutLicenseSection: React.FC = () => {
 
       {/* 构建工具 */}
       <div className="space-y-2">
-        <div className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{t('settings.about.buildTools')}</div>
+        <div className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+          {t('settings.about.buildTools')}
+        </div>
         <div className="flex flex-wrap gap-2">
           {buildTools.map((tool) => (
             <div
@@ -269,16 +466,25 @@ export const AboutLicenseSection: React.FC = () => {
               style={{ background: 'var(--bg-tertiary)' }}
               title={tool.description}
             >
-              <span className="font-mono" style={{ color: 'var(--text-primary)' }}>{tool.name}</span>
-              <span className="ml-2" style={{ color: 'var(--text-tertiary)' }}>{tool.license}</span>
+              <span className="font-mono" style={{ color: 'var(--text-primary)' }}>
+                {tool.name}
+              </span>
+              <span className="ml-2" style={{ color: 'var(--text-tertiary)' }}>
+                {tool.license}
+              </span>
             </div>
           ))}
         </div>
       </div>
 
       {/* License 说明 */}
-      <div className="p-3 rounded-lg text-xs space-y-2" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}>
-        <div className="font-medium" style={{ color: 'var(--text-primary)' }}>{t('settings.about.licenseNote')}</div>
+      <div
+        className="p-3 rounded-lg text-xs space-y-2"
+        style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}
+      >
+        <div className="font-medium" style={{ color: 'var(--text-primary)' }}>
+          {t('settings.about.licenseNote')}
+        </div>
         <div>{t('settings.about.licenseMit')}</div>
         <div>{t('settings.about.licenseApache')}</div>
         <div>{t('settings.about.licenseGpl')}</div>

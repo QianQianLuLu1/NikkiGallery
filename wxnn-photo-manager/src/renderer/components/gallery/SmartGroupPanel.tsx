@@ -36,7 +36,8 @@ interface SmartGroupPanelProps {
 }
 
 export const SmartGroupPanel: React.FC<SmartGroupPanelProps> = ({ onClose }) => {
-  const { groupDimension, selectedGroupKey, setGroupDimension, setSelectedGroupKey, currentView } = useUIStore()
+  const { groupDimension, selectedGroupKey, setGroupDimension, setSelectedGroupKey, currentView } =
+    useUIStore()
   const { mediaFiles, currentProfileUid } = useMediaStore()
   const [remoteGroups, setRemoteGroups] = useState<Array<{ key: string; count: number }>>([])
   const [loading, setLoading] = useState(false)
@@ -53,8 +54,13 @@ export const SmartGroupPanel: React.FC<SmartGroupPanelProps> = ({ onClose }) => 
       if (!window.electronAPI?.media?.getGroupCounts) return
       setLoading(true)
       try {
-        const mediaSource: 'game' | 'launcher' | 'cloud' = currentView === 'launcher-cache' ? 'launcher' : 'game'
-        const result = await window.electronAPI.media.getGroupCounts(groupDimension, currentProfileUid, mediaSource)
+        const mediaSource: 'game' | 'launcher' | 'cloud' =
+          currentView === 'launcher-cache' ? 'launcher' : 'game'
+        const result = await window.electronAPI.media.getGroupCounts(
+          groupDimension,
+          currentProfileUid,
+          mediaSource
+        )
         if (!cancelled && result.success) {
           setRemoteGroups(result.groups)
         }
@@ -89,7 +95,11 @@ export const SmartGroupPanel: React.FC<SmartGroupPanelProps> = ({ onClose }) => 
     if (groupDimension === 'none') return []
     // 远程统计优先
     if (remoteGroups.length > 0) {
-      return remoteGroups.map((g) => ({ key: g.key, count: g.count, label: getGroupLabel(groupDimension, g.key) }))
+      return remoteGroups.map((g) => ({
+        key: g.key,
+        count: g.count,
+        label: getGroupLabel(groupDimension, g.key)
+      }))
     }
     // 本地兜底
     return Array.from(localGroupCounts.entries())
@@ -120,12 +130,7 @@ export const SmartGroupPanel: React.FC<SmartGroupPanelProps> = ({ onClose }) => 
           智能分组
         </h3>
         {onClose && (
-          <button
-            className="icon-btn"
-            onClick={onClose}
-            title="关闭"
-            aria-label="关闭"
-          >
+          <button className="icon-btn" onClick={onClose} title="关闭" aria-label="关闭">
             ×
           </button>
         )}
@@ -206,7 +211,10 @@ export const SmartGroupPanel: React.FC<SmartGroupPanelProps> = ({ onClose }) => 
 
       {/* 维度说明 */}
       {groupDimension !== 'none' && (
-        <div className="text-xs pt-2 border-t" style={{ color: 'var(--text-tertiary)', borderColor: 'var(--divider)' }}>
+        <div
+          className="text-xs pt-2 border-t"
+          style={{ color: 'var(--text-tertiary)', borderColor: 'var(--divider)' }}
+        >
           {getDimensionDescription(groupDimension)}
         </div>
       )}

@@ -3,7 +3,16 @@ import { useUIStore, type SlideshowOrder, type SlideshowTransition } from '../..
 import { toFileUrl, type MediaFile } from '../../stores/mediaStore'
 // DU3：幻灯片播放逻辑统一到 useSlideshow hook
 import { useSlideshow } from '../../hooks/useSlideshow'
-import { IconClose, IconChevronLeft, IconChevronRight, IconSlideshow, IconShuffle, IconSettings, IconPause, IconPlay } from '../../icons'
+import {
+  IconClose,
+  IconChevronLeft,
+  IconChevronRight,
+  IconSlideshow,
+  IconShuffle,
+  IconSettings,
+  IconPause,
+  IconPlay
+} from '../../icons'
 
 interface SlideshowPlayerProps {
   // C-O5：由父组件传入已计算的 filteredFiles，避免与 GalleryPage 重复计算
@@ -62,7 +71,10 @@ export const SlideshowPlayer: React.FC<SlideshowPlayerProps> = ({ filteredFiles 
   // T11：随机模式生成洗牌索引数组；顺序模式直接用 0..n
   const playOrder = useMemo(() => {
     if (config.order === 'shuffle') {
-      return buildShuffledIndices(playableFiles.length, Math.min(startIndex, playableFiles.length - 1))
+      return buildShuffledIndices(
+        playableFiles.length,
+        Math.min(startIndex, playableFiles.length - 1)
+      )
     }
     return Array.from({ length: playableFiles.length }, (_, i) => i)
   }, [config.order, playableFiles.length, startIndex])
@@ -203,11 +215,12 @@ export const SlideshowPlayer: React.FC<SlideshowPlayerProps> = ({ filteredFiles 
   const progressLabel = `${currentPos + 1} / ${playableFiles.length}`
 
   // T11：过渡动画 class
-  const transitionClass = config.transition === 'fade'
-    ? 'slideshow-fade'
-    : config.transition === 'slide'
-      ? 'slideshow-slide'
-      : ''
+  const transitionClass =
+    config.transition === 'fade'
+      ? 'slideshow-fade'
+      : config.transition === 'slide'
+        ? 'slideshow-slide'
+        : ''
 
   const handleVideoEnded = () => {
     if (!config.loop && currentPos >= playableFiles.length - 1) {
@@ -336,11 +349,7 @@ export const SlideshowPlayer: React.FC<SlideshowPlayerProps> = ({ filteredFiles 
               height: '48px'
             }}
           >
-            {slideshow.isPlaying ? (
-              <IconPause size={20} />
-            ) : (
-              <IconPlay size={20} />
-            )}
+            {slideshow.isPlaying ? <IconPause size={20} /> : <IconPlay size={20} />}
           </button>
           <button
             className="icon-btn text-white"
@@ -389,16 +398,19 @@ export const SlideshowPlayer: React.FC<SlideshowPlayerProps> = ({ filteredFiles 
               <div>
                 <label className="text-xs text-white/60 mb-1.5 block">播放顺序</label>
                 <div className="flex gap-1">
-                  {([
+                  {[
                     { id: 'sequence' as SlideshowOrder, label: '顺序' },
                     { id: 'shuffle' as SlideshowOrder, label: '随机' }
-                  ]).map((opt) => (
+                  ].map((opt) => (
                     <button
                       key={opt.id}
                       onClick={() => setSlideshowConfig({ order: opt.id })}
                       className="flex-1 px-3 py-1.5 rounded-lg text-xs transition-colors"
                       style={{
-                        background: config.order === opt.id ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.05)',
+                        background:
+                          config.order === opt.id
+                            ? 'rgba(255,255,255,0.2)'
+                            : 'rgba(255,255,255,0.05)',
                         color: config.order === opt.id ? '#fff' : 'rgba(255,255,255,0.6)',
                         fontWeight: config.order === opt.id ? 600 : 400
                       }}
@@ -418,7 +430,10 @@ export const SlideshowPlayer: React.FC<SlideshowPlayerProps> = ({ filteredFiles 
                       onClick={() => setSlideshowConfig({ interval: opt.value })}
                       className="px-2 py-1.5 rounded-lg text-xs transition-colors"
                       style={{
-                        background: config.interval === opt.value ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.05)',
+                        background:
+                          config.interval === opt.value
+                            ? 'rgba(255,255,255,0.2)'
+                            : 'rgba(255,255,255,0.05)',
                         color: config.interval === opt.value ? '#fff' : 'rgba(255,255,255,0.6)',
                         fontWeight: config.interval === opt.value ? 600 : 400
                       }}
@@ -438,7 +453,10 @@ export const SlideshowPlayer: React.FC<SlideshowPlayerProps> = ({ filteredFiles 
                       onClick={() => setSlideshowConfig({ transition: opt.value })}
                       className="flex-1 px-3 py-1.5 rounded-lg text-xs transition-colors"
                       style={{
-                        background: config.transition === opt.value ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.05)',
+                        background:
+                          config.transition === opt.value
+                            ? 'rgba(255,255,255,0.2)'
+                            : 'rgba(255,255,255,0.05)',
                         color: config.transition === opt.value ? '#fff' : 'rgba(255,255,255,0.6)',
                         fontWeight: config.transition === opt.value ? 600 : 400
                       }}

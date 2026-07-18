@@ -1,6 +1,8 @@
 import type { BrowserWindow } from 'electron'
 import type { DatabaseManager } from '../database/connection'
 import type { ScannerManager } from '../scanner'
+import type { MediaWorkerManager } from '../media-worker/manager'
+import type { TaskScheduler } from '../scheduler/task-scheduler'
 import type { ThumbnailGenerator } from '../thumbnail/generator'
 import type { FileService } from '../services/file-service'
 import type { VideoService } from '../services/video-service'
@@ -13,6 +15,10 @@ import type { WatermarkService } from '../services/watermark-service'
 export interface HandlerContext {
   dbManager: DatabaseManager
   scannerManager: ScannerManager
+  // 缩略图 / pHash / 重复检测批量任务管理器（utilityProcess 薄壳）
+  mediaWorkerManager: MediaWorkerManager
+  // 分级任务调度队列（用户主动触发=高优先级，后台自动触发=低优先级）
+  taskScheduler: TaskScheduler
   thumbnailGen: ThumbnailGenerator
   fileService: FileService
   videoService: VideoService

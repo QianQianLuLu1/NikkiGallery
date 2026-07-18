@@ -1,7 +1,10 @@
 import { useCallback } from 'react'
 import { loadMediaFromDatabase, useMediaStore } from '../stores/mediaStore'
 
-export function useRefreshMedia(options?: { withLoading?: boolean; onError?: (msg: string) => void }): () => Promise<void> {
+export function useRefreshMedia(options?: {
+  withLoading?: boolean
+  onError?: (msg: string) => void
+}): () => Promise<void> {
   const setMediaFiles = useMediaStore((state) => state.setMediaFiles)
   const setCategories = useMediaStore((state) => state.setCategories)
   const setLoading = useMediaStore((state) => state.setLoading)

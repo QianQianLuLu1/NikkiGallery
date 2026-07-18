@@ -10,19 +10,21 @@
 
 /** 图片扩展名集合（含点号前缀，全小写） */
 export const IMAGE_EXTENSIONS = new Set<string>([
-  '.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp', '.tiff', '.tif'
+  '.jpg',
+  '.jpeg',
+  '.png',
+  '.webp',
+  '.gif',
+  '.bmp',
+  '.tiff',
+  '.tif'
 ])
 
 /** 视频扩展名集合（含点号前缀，全小写） */
-export const VIDEO_EXTENSIONS = new Set<string>([
-  '.mp4', '.mov', '.avi', '.mkv', '.webm', '.wmv'
-])
+export const VIDEO_EXTENSIONS = new Set<string>(['.mp4', '.mov', '.avi', '.mkv', '.webm', '.wmv'])
 
 /** 全部媒体扩展名集合（图片 + 视频），用于路径白名单二次校验 */
-export const MEDIA_EXTENSIONS = new Set<string>([
-  ...IMAGE_EXTENSIONS,
-  ...VIDEO_EXTENSIONS
-])
+export const MEDIA_EXTENSIONS = new Set<string>([...IMAGE_EXTENSIONS, ...VIDEO_EXTENSIONS])
 
 /**
  * 视频导出格式白名单（无点号前缀）

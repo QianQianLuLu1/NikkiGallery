@@ -46,10 +46,14 @@ function exifToRows(exif: ExifData | null): ExifRow[] {
 
 // 把所有 EXIF 行格式化为可复制的纯文本
 function formatExifText(rows: ExifRow[]): string {
-  return rows.map(r => `${r.label}: ${r.value}`).join('\n')
+  return rows.map((r) => `${r.label}: ${r.value}`).join('\n')
 }
 
-export const ExifPanel: React.FC<ExifPanelProps> = ({ file, variant = 'light', showTitle = true }) => {
+export const ExifPanel: React.FC<ExifPanelProps> = ({
+  file,
+  variant = 'light',
+  showTitle = true
+}) => {
   // 视频文件不读取 EXIF（exifr 主要面向图片，视频读取无意义）
   const enabled = file.file_type === 'image'
   const { exif, loading, error } = useExif(file.file_path, enabled)
@@ -117,7 +121,10 @@ export const ExifPanel: React.FC<ExifPanelProps> = ({ file, variant = 'light', s
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-1.5">
             <IconCamera size={14} />
-            <span className={`text-xs font-semibold ${themeStyles.title}`} style={!isDark ? { color: 'var(--text-secondary)' } : undefined}>
+            <span
+              className={`text-xs font-semibold ${themeStyles.title}`}
+              style={!isDark ? { color: 'var(--text-secondary)' } : undefined}
+            >
               拍摄参数
             </span>
           </div>
@@ -142,20 +149,29 @@ export const ExifPanel: React.FC<ExifPanelProps> = ({ file, variant = 'light', s
       )}
 
       {loading && (
-        <div className={`text-xs py-3 flex items-center gap-2 ${themeStyles.empty}`} style={!isDark ? { color: 'var(--text-tertiary)' } : undefined}>
+        <div
+          className={`text-xs py-3 flex items-center gap-2 ${themeStyles.empty}`}
+          style={!isDark ? { color: 'var(--text-tertiary)' } : undefined}
+        >
           <div className="w-3 h-3 rounded-full border border-current border-t-transparent animate-spin" />
           正在解析相机参数...
         </div>
       )}
 
       {!loading && error && (
-        <div className={`text-xs py-3 ${themeStyles.empty}`} style={!isDark ? { color: 'var(--text-tertiary)' } : undefined}>
+        <div
+          className={`text-xs py-3 ${themeStyles.empty}`}
+          style={!isDark ? { color: 'var(--text-tertiary)' } : undefined}
+        >
           EXIF 解析失败: {error}
         </div>
       )}
 
       {!loading && !error && rows.length === 0 && (
-        <div className={`text-xs py-3 flex items-center gap-1.5 ${themeStyles.empty}`} style={!isDark ? { color: 'var(--text-tertiary)' } : undefined}>
+        <div
+          className={`text-xs py-3 flex items-center gap-1.5 ${themeStyles.empty}`}
+          style={!isDark ? { color: 'var(--text-tertiary)' } : undefined}
+        >
           <IconInfo size={12} />
           此图片未包含相机参数信息
         </div>

@@ -42,13 +42,16 @@ export const SliderControl: React.FC<SliderControlProps> = ({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>{label}</span>
+        <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+          {label}
+        </span>
         <span
           className="text-xs font-mono w-12 text-right"
           style={{ color: 'var(--text-primary)' }}
           onDoubleClick={handleDoubleClick}
         >
-          {value}{unit}
+          {value}
+          {unit}
         </span>
       </div>
       <input

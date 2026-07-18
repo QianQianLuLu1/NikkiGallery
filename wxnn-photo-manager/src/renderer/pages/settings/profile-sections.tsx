@@ -51,7 +51,8 @@ export const ProfileManageSection: React.FC = () => {
   useEffect(() => {
     if (!window.electronAPI?.profile?.getStats) return
     setLoadingStats(true)
-    window.electronAPI.profile.getStats(selectedUid)
+    window.electronAPI.profile
+      .getStats(selectedUid)
       .then((res) => {
         if (res.success && res.stats) setStats(res.stats)
         else setStats(null)
@@ -77,7 +78,10 @@ export const ProfileManageSection: React.FC = () => {
       showMessage(t('profileAction.uidExists'), 'error')
       return
     }
-    const res = await window.electronAPI.profile.add(newUid.trim(), newNickname.trim() || newUid.trim())
+    const res = await window.electronAPI.profile.add(
+      newUid.trim(),
+      newNickname.trim() || newUid.trim()
+    )
     if (res.success) {
       showMessage(t('profileAction.created'))
       setNewUid('')
@@ -153,7 +157,9 @@ export const ProfileManageSection: React.FC = () => {
     <SectionShell title={t('settings.sections.profileManage')}>
       {/* 新增档案 */}
       <div className="space-y-2 p-3 rounded-lg" style={{ background: 'var(--bg-tertiary)' }}>
-        <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{t('settings.profile.addProfile')}</p>
+        <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+          {t('settings.profile.addProfile')}
+        </p>
         <div className="flex gap-2">
           <input
             type="text"
@@ -171,25 +177,33 @@ export const ProfileManageSection: React.FC = () => {
             className="input-field flex-1 text-sm"
             maxLength={64}
           />
-          <button className="btn-primary text-sm px-4" onClick={handleAddProfile}>{t('settings.profile.add')}</button>
+          <button className="btn-primary text-sm px-4" onClick={handleAddProfile}>
+            {t('settings.profile.add')}
+          </button>
         </div>
       </div>
 
       {/* 档案列表 */}
       <div className="space-y-2">
-        <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{t('settings.profile.list')}</p>
+        <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+          {t('settings.profile.list')}
+        </p>
         {profiles.length === 0 ? (
-          <p className="text-sm text-center py-3" style={{ color: 'var(--text-tertiary)' }}>{t('settings.profile.empty')}</p>
+          <p className="text-sm text-center py-3" style={{ color: 'var(--text-tertiary)' }}>
+            {t('settings.profile.empty')}
+          </p>
         ) : (
           profiles.map((p) => (
             <div
               key={p.uid}
               className={`p-3 rounded-lg cursor-pointer transition-colors ${selectedUid === p.uid ? 'ring-1' : ''}`}
-              style={{
-                background: 'var(--bg-tertiary)',
-                // U9：用类型断言替代 @ts-expect-error，明确告知 TS 这是 CSS 变量属性
-                ['--tw-ring-color' as string]: 'var(--accent)'
-              } as React.CSSProperties}
+              style={
+                {
+                  background: 'var(--bg-tertiary)',
+                  // U9：用类型断言替代 @ts-expect-error，明确告知 TS 这是 CSS 变量属性
+                  ['--tw-ring-color' as string]: 'var(--accent)'
+                } as React.CSSProperties
+              }
               onClick={() => setSelectedUid(p.uid)}
             >
               <div className="flex items-center justify-between gap-2">
@@ -211,15 +225,30 @@ export const ProfileManageSection: React.FC = () => {
                           maxLength={64}
                           autoFocus
                         />
-                        <button className="btn-primary text-xs px-2 py-1" onClick={() => handleUpdateNickname(p.uid)}>{t('settings.profile.save')}</button>
-                        <button className="btn-secondary text-xs px-2 py-1" onClick={() => setEditingUid(null)}>{t('settings.profile.cancel')}</button>
+                        <button
+                          className="btn-primary text-xs px-2 py-1"
+                          onClick={() => handleUpdateNickname(p.uid)}
+                        >
+                          {t('settings.profile.save')}
+                        </button>
+                        <button
+                          className="btn-secondary text-xs px-2 py-1"
+                          onClick={() => setEditingUid(null)}
+                        >
+                          {t('settings.profile.cancel')}
+                        </button>
                       </div>
                     ) : (
                       <>
-                        <p className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>
+                        <p
+                          className="text-sm font-medium truncate"
+                          style={{ color: 'var(--text-primary)' }}
+                        >
                           {p.nickname || p.uid}
                         </p>
-                        <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>UID: {p.uid}</p>
+                        <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                          UID: {p.uid}
+                        </p>
                       </>
                     )}
                   </div>
@@ -229,7 +258,10 @@ export const ProfileManageSection: React.FC = () => {
                     <button
                       className="icon-btn text-xs"
                       title={t('settings.profile.editNickname')}
-                      onClick={() => { setEditingUid(p.uid); setEditNickname(p.nickname) }}
+                      onClick={() => {
+                        setEditingUid(p.uid)
+                        setEditNickname(p.nickname)
+                      }}
                     >
                       <IconEdit size={14} />
                     </button>
@@ -262,38 +294,65 @@ export const ProfileManageSection: React.FC = () => {
       {selectedUid && (
         <div className="pt-3 space-y-3" style={{ borderTop: '1px solid var(--divider)' }}>
           <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
-            {t('settings.profile.stats', { name: profiles.find((p) => p.uid === selectedUid)?.nickname || selectedUid })}
+            {t('settings.profile.stats', {
+              name: profiles.find((p) => p.uid === selectedUid)?.nickname || selectedUid
+            })}
           </p>
           {loadingStats ? (
-            <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>{t('settings.profile.loading')}</p>
+            <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>
+              {t('settings.profile.loading')}
+            </p>
           ) : !stats ? (
-            <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>{t('settings.profile.noData')}</p>
+            <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>
+              {t('settings.profile.noData')}
+            </p>
           ) : (
             <>
               {/* 基础统计网格 */}
               <div className="grid grid-cols-2 gap-2">
                 <div className="p-2 rounded-lg" style={{ background: 'var(--bg-tertiary)' }}>
-                  <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{t('settings.profile.totalFiles')}</p>
-                  <p className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{stats.totalCount}</p>
+                  <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                    {t('settings.profile.totalFiles')}
+                  </p>
+                  <p className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
+                    {stats.totalCount}
+                  </p>
                 </div>
                 <div className="p-2 rounded-lg" style={{ background: 'var(--bg-tertiary)' }}>
-                  <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{t('settings.profile.storageUsage')}</p>
-                  <p className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{formatFileSize(stats.totalSize)}</p>
+                  <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                    {t('settings.profile.storageUsage')}
+                  </p>
+                  <p className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
+                    {formatFileSize(stats.totalSize)}
+                  </p>
                 </div>
                 <div className="p-2 rounded-lg" style={{ background: 'var(--bg-tertiary)' }}>
-                  <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{t('settings.profile.images')}</p>
-                  <p className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{stats.imageCount}</p>
+                  <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                    {t('settings.profile.images')}
+                  </p>
+                  <p className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
+                    {stats.imageCount}
+                  </p>
                 </div>
                 <div className="p-2 rounded-lg" style={{ background: 'var(--bg-tertiary)' }}>
-                  <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{t('settings.profile.videos')}</p>
-                  <p className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{stats.videoCount}</p>
+                  <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                    {t('settings.profile.videos')}
+                  </p>
+                  <p className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
+                    {stats.videoCount}
+                  </p>
                 </div>
               </div>
 
               {/* 拍摄时间范围 */}
               {stats.earliestTime && stats.latestTime && (
-                <div className="p-2 rounded-lg text-xs" style={{ background: 'var(--bg-tertiary)' }}>
-                  <span style={{ color: 'var(--text-tertiary)' }}>{t('settings.profile.shotRange')}</span>
+                <div
+                  className="p-2 rounded-lg text-xs"
+                  style={{ background: 'var(--bg-tertiary)' }}
+                >
+                  <span style={{ color: 'var(--text-tertiary)' }}>
+                    {t('settings.profile.shotRange')}
+                  </span>
                   <span style={{ color: 'var(--text-primary)' }}>
                     {stats.earliestTime.slice(0, 10)} ~ {stats.latestTime.slice(0, 10)}
                   </span>
@@ -303,12 +362,22 @@ export const ProfileManageSection: React.FC = () => {
               {/* 套装偏好 Top 5 */}
               {stats.topOutfits.length > 0 && (
                 <div>
-                  <p className="text-xs mb-1" style={{ color: 'var(--text-tertiary)' }}>{t('settings.profile.outfitTop')}</p>
+                  <p className="text-xs mb-1" style={{ color: 'var(--text-tertiary)' }}>
+                    {t('settings.profile.outfitTop')}
+                  </p>
                   <div className="space-y-1">
                     {stats.topOutfits.map((item, idx) => (
-                      <div key={item.outfit} className="flex items-center justify-between text-xs p-1.5 rounded" style={{ background: 'var(--bg-tertiary)' }}>
-                        <span style={{ color: 'var(--text-primary)' }}>{idx + 1}. {item.outfit}</span>
-                        <span style={{ color: 'var(--text-tertiary)' }}>{t('settings.profile.photos', { count: item.cnt })}</span>
+                      <div
+                        key={item.outfit}
+                        className="flex items-center justify-between text-xs p-1.5 rounded"
+                        style={{ background: 'var(--bg-tertiary)' }}
+                      >
+                        <span style={{ color: 'var(--text-primary)' }}>
+                          {idx + 1}. {item.outfit}
+                        </span>
+                        <span style={{ color: 'var(--text-tertiary)' }}>
+                          {t('settings.profile.photos', { count: item.cnt })}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -318,12 +387,22 @@ export const ProfileManageSection: React.FC = () => {
               {/* 场景偏好 Top 5 */}
               {stats.topScenes.length > 0 && (
                 <div>
-                  <p className="text-xs mb-1" style={{ color: 'var(--text-tertiary)' }}>{t('settings.profile.sceneTop')}</p>
+                  <p className="text-xs mb-1" style={{ color: 'var(--text-tertiary)' }}>
+                    {t('settings.profile.sceneTop')}
+                  </p>
                   <div className="space-y-1">
                     {stats.topScenes.map((item, idx) => (
-                      <div key={item.scene_category} className="flex items-center justify-between text-xs p-1.5 rounded" style={{ background: 'var(--bg-tertiary)' }}>
-                        <span style={{ color: 'var(--text-primary)' }}>{idx + 1}. {getSceneLabel(item.scene_category)}</span>
-                        <span style={{ color: 'var(--text-tertiary)' }}>{t('settings.profile.photos', { count: item.cnt })}</span>
+                      <div
+                        key={item.scene_category}
+                        className="flex items-center justify-between text-xs p-1.5 rounded"
+                        style={{ background: 'var(--bg-tertiary)' }}
+                      >
+                        <span style={{ color: 'var(--text-primary)' }}>
+                          {idx + 1}. {getSceneLabel(item.scene_category)}
+                        </span>
+                        <span style={{ color: 'var(--text-tertiary)' }}>
+                          {t('settings.profile.photos', { count: item.cnt })}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -333,17 +412,30 @@ export const ProfileManageSection: React.FC = () => {
               {/* 时段偏好 */}
               {stats.timeDistribution.length > 0 && totalTimeCount > 0 && (
                 <div>
-                  <p className="text-xs mb-1" style={{ color: 'var(--text-tertiary)' }}>{t('settings.profile.timeTop')}</p>
+                  <p className="text-xs mb-1" style={{ color: 'var(--text-tertiary)' }}>
+                    {t('settings.profile.timeTop')}
+                  </p>
                   <div className="space-y-1">
                     {stats.timeDistribution.map((item) => {
-                      const percent = totalTimeCount > 0 ? Math.round((item.cnt / totalTimeCount) * 100) : 0
+                      const percent =
+                        totalTimeCount > 0 ? Math.round((item.cnt / totalTimeCount) * 100) : 0
                       return (
                         <div key={item.scene_time} className="text-xs">
                           <div className="flex items-center justify-between mb-0.5">
-                            <span style={{ color: 'var(--text-primary)' }}>{getTimeLabel(item.scene_time)}</span>
-                            <span style={{ color: 'var(--text-tertiary)' }}>{t('settings.profile.photosWithPercent', { count: item.cnt, percent })}</span>
+                            <span style={{ color: 'var(--text-primary)' }}>
+                              {getTimeLabel(item.scene_time)}
+                            </span>
+                            <span style={{ color: 'var(--text-tertiary)' }}>
+                              {t('settings.profile.photosWithPercent', {
+                                count: item.cnt,
+                                percent
+                              })}
+                            </span>
                           </div>
-                          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--bg-tertiary)' }}>
+                          <div
+                            className="h-1.5 rounded-full overflow-hidden"
+                            style={{ background: 'var(--bg-tertiary)' }}
+                          >
                             <div
                               className="h-full rounded-full transition-all"
                               style={{ width: `${percent}%`, background: 'var(--accent)' }}

@@ -1,13 +1,28 @@
 import React, { useMemo, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAutoAnimate } from '@formkit/auto-animate/react'
-import { useMediaStore, loadMediaFromDatabase, Category, SCENE_CATEGORIES, SCENE_TIMES, type SceneCategory, type SceneTime } from '../stores/mediaStore'
+import {
+  useMediaStore,
+  loadMediaFromDatabase,
+  Category,
+  SCENE_CATEGORIES,
+  SCENE_TIMES,
+  type SceneCategory,
+  type SceneTime
+} from '../stores/mediaStore'
 import type { SceneCategoryConfig, SceneTimeConfig } from '../../shared/scene-category'
 import { useUIStore } from '../stores/uiStore'
 import { ConfirmDialog } from '../components/common/ConfirmDialog'
 import { useFocusTrap } from '../hooks/useFocusTrap'
 import { useGlobalToast } from './settings/sections'
-import { IconChevronDown, IconChevronUp, IconMove, IconEdit, IconDelete, IconSearch } from '../icons'
+import {
+  IconChevronDown,
+  IconChevronUp,
+  IconMove,
+  IconEdit,
+  IconDelete,
+  IconSearch
+} from '../icons'
 
 interface FlatCategory extends Category {
   depth: number
@@ -58,7 +73,10 @@ export const CategoriesPage: React.FC = () => {
   const [newIcon, setNewIcon] = useState('folder')
   const [newParentId, setNewParentId] = useState<number | ''>('')
   const [editing, setEditing] = useState<Category | null>(null)
-  const [confirm, setConfirm] = useState<{ open: boolean; category: Category | null }>({ open: false, category: null })
+  const [confirm, setConfirm] = useState<{ open: boolean; category: Category | null }>({
+    open: false,
+    category: null
+  })
   const [draggingId, setDraggingId] = useState<number | null>(null)
   const [dragOverId, setDragOverId] = useState<number | null>(null)
   // P3-3：拖拽排序完成后的 FLIP 重排动画
@@ -277,7 +295,9 @@ export const CategoriesPage: React.FC = () => {
     draggedOrder.sort_order = targetOrder.sort_order + 1
 
     // 重新计算同层级排序
-    const siblings = orders.filter((o) => o.parent_id === target.id).sort((a, b) => a.sort_order - b.sort_order)
+    const siblings = orders
+      .filter((o) => o.parent_id === target.id)
+      .sort((a, b) => a.sort_order - b.sort_order)
     siblings.forEach((s, index) => {
       s.sort_order = index + 1
     })
@@ -311,7 +331,10 @@ export const CategoriesPage: React.FC = () => {
         }))
 
       for (const item of updates) {
-        const result = await window.electronAPI.mediaAction.updateCategory(Number(item.id), item.categoryId)
+        const result = await window.electronAPI.mediaAction.updateCategory(
+          Number(item.id),
+          item.categoryId
+        )
         if (!result.success) {
           showMessage(result.message || '归类失败', 'error')
           return
@@ -393,21 +416,27 @@ export const CategoriesPage: React.FC = () => {
     }
   }
 
-  const isAllSceneSelected = SCENE_CATEGORIES.length > 0 &&
+  const isAllSceneSelected =
+    SCENE_CATEGORIES.length > 0 &&
     SCENE_CATEGORIES.every((c: SceneCategoryConfig) => selectedSceneCategories.includes(c.key))
 
   // F-O1：场景时段全选状态
-  const isAllSceneTimeSelected = SCENE_TIMES.length > 0 &&
+  const isAllSceneTimeSelected =
+    SCENE_TIMES.length > 0 &&
     SCENE_TIMES.every((c: SceneTimeConfig) => selectedSceneTimes.includes(c.key))
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto h-full overflow-y-auto">
-      <h2 className="text-2xl font-semibold" style={{ color: 'var(--text-primary)' }}>分类管理</h2>
+      <h2 className="text-2xl font-semibold" style={{ color: 'var(--text-primary)' }}>
+        分类管理
+      </h2>
 
       {/* 游戏内场景分类 */}
       <div className="glass-card p-5 space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>游戏内场景</h3>
+          <h3 className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+            游戏内场景
+          </h3>
           <div className="flex items-center gap-2">
             <button
               className="btn-secondary text-xs px-3 py-1.5"
@@ -416,10 +445,7 @@ export const CategoriesPage: React.FC = () => {
               {isAllSceneSelected ? '取消全选' : '全选游戏分类'}
             </button>
             {selectedSceneCategories.length > 0 && (
-              <button
-                className="btn-secondary text-xs px-3 py-1.5"
-                onClick={clearSceneCategories}
-              >
+              <button className="btn-secondary text-xs px-3 py-1.5" onClick={clearSceneCategories}>
                 清除筛选
               </button>
             )}
@@ -438,7 +464,9 @@ export const CategoriesPage: React.FC = () => {
                 <span>{category.label}</span>
                 <span
                   className="text-xs px-1.5 py-0.5 rounded-full"
-                  style={{ background: isSelected ? 'rgba(255,255,255,0.25)' : 'var(--bg-secondary)' }}
+                  style={{
+                    background: isSelected ? 'rgba(255,255,255,0.25)' : 'var(--bg-secondary)'
+                  }}
                 >
                   {sceneCategoryCounts[category.key] || 0}
                 </span>
@@ -455,7 +483,9 @@ export const CategoriesPage: React.FC = () => {
       <div className="glass-card p-5 space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>场景时段</h3>
+            <h3 className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+              场景时段
+            </h3>
             <p className="text-xs mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
               基于图像亮度自动识别，可在「设置 → 扫描」中触发批量分析
             </p>
@@ -475,10 +505,7 @@ export const CategoriesPage: React.FC = () => {
               {isAllSceneTimeSelected ? '取消全选' : '全选时段'}
             </button>
             {selectedSceneTimes.length > 0 && (
-              <button
-                className="btn-secondary text-xs px-3 py-1.5"
-                onClick={clearSceneTimes}
-              >
+              <button className="btn-secondary text-xs px-3 py-1.5" onClick={clearSceneTimes}>
                 清除筛选
               </button>
             )}
@@ -497,7 +524,9 @@ export const CategoriesPage: React.FC = () => {
                 <span>{time.label}</span>
                 <span
                   className="text-xs px-1.5 py-0.5 rounded-full"
-                  style={{ background: isSelected ? 'rgba(255,255,255,0.25)' : 'var(--bg-secondary)' }}
+                  style={{
+                    background: isSelected ? 'rgba(255,255,255,0.25)' : 'var(--bg-secondary)'
+                  }}
                 >
                   {sceneTimeCounts[time.key] || 0}
                 </span>
@@ -511,7 +540,9 @@ export const CategoriesPage: React.FC = () => {
       </div>
 
       <div className="glass-card p-5 space-y-4">
-        <h3 className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>新建分类</h3>
+        <h3 className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+          新建分类
+        </h3>
         <div className="flex gap-3 flex-wrap">
           <input
             type="text"
@@ -519,7 +550,9 @@ export const CategoriesPage: React.FC = () => {
             onChange={(e) => setNewName(e.target.value)}
             placeholder="分类名称"
             className="input-field flex-1 min-w-[140px]"
-            onKeyDown={(e) => { if (e.key === 'Enter') handleCreate() }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleCreate()
+            }}
           />
           <input
             type="color"
@@ -535,7 +568,9 @@ export const CategoriesPage: React.FC = () => {
             style={{ minWidth: '140px' }}
           >
             {ICON_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.emoji} {t(opt.labelKey)}</option>
+              <option key={opt.value} value={opt.value}>
+                {opt.emoji} {t(opt.labelKey)}
+              </option>
             ))}
           </select>
           <select
@@ -546,136 +581,193 @@ export const CategoriesPage: React.FC = () => {
           >
             <option value="">无父分类</option>
             {flatCategories.map((cat) => (
-              <option key={cat.id} value={cat.id}>{'　'.repeat(cat.depth)}{cat.name}</option>
+              <option key={cat.id} value={cat.id}>
+                {'　'.repeat(cat.depth)}
+                {cat.name}
+              </option>
             ))}
           </select>
-          <button className="btn-primary" onClick={handleCreate}>创建</button>
+          <button className="btn-primary" onClick={handleCreate}>
+            创建
+          </button>
         </div>
       </div>
 
       <div ref={listRef} className="glass-card p-5 space-y-3">
-        <h3 className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>分类列表（拖拽可调整层级，点击箭头折叠/展开）</h3>
+        <h3 className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+          分类列表（拖拽可调整层级，点击箭头折叠/展开）
+        </h3>
         {flatCategories.map((cat) => {
           const hasChildren = !!(cat.children && cat.children.length > 0)
           const isCollapsed = collapsedIds.has(cat.id)
           return (
-          <div
-            key={cat.id}
-            draggable={!cat.is_system}
-            onDragStart={(e) => handleDragStart(e, cat.id)}
-            onDragOver={(e) => handleDragOver(e, cat.id)}
-            onDrop={(e) => handleDrop(e, cat.id)}
-            className={`flex items-center justify-between p-3 rounded-xl transition-all ${draggingId === cat.id ? 'opacity-60 scale-[1.02] shadow-lg' : ''} ${dragOverId === cat.id ? 'ring-2 ring-[var(--accent)]' : ''}`}
-            style={{
-              background: 'var(--bg-tertiary)',
-              marginLeft: `${cat.depth * 24}px`,
-              // U-O9：非根分类添加左侧连接线
-              borderLeft: cat.depth > 0 ? '2px solid var(--divider)' : 'none',
-              paddingLeft: cat.depth > 0 ? '14px' : '12px'
-            }}
-            title={cat.is_system ? '系统分类不支持拖拽' : '拖拽到其他分类上可设置为子分类'}
-          >
-            {editing?.id === cat.id ? (
-              <div className="flex items-center gap-3 flex-1">
-                <input
-                  type="text"
-                  value={editing.name}
-                  onChange={(e) => setEditing({ ...editing, name: e.target.value })}
-                  className="input-field flex-1"
-                  autoFocus
-                  onKeyDown={(e) => { if (e.key === 'Enter') handleUpdate() }}
-                />
-                <input
-                  type="color"
-                  value={editing.color}
-                  onChange={(e) => setEditing({ ...editing, color: e.target.value })}
-                  className="w-10 h-9 rounded cursor-pointer"
-                />
-                <select
-                  value={editing.icon || 'folder'}
-                  onChange={(e) => setEditing({ ...editing, icon: e.target.value })}
-                  className="input-field text-sm"
-                  style={{ minWidth: '120px' }}
-                >
-                  {ICON_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>{opt.emoji} {t(opt.labelKey)}</option>
-                  ))}
-                </select>
-                <button className="btn-primary text-sm" onClick={handleUpdate}>保存</button>
-                <button className="btn-secondary text-sm" onClick={() => setEditing(null)}>取消</button>
-              </div>
-            ) : (
-              <>
-                <div className="flex items-center gap-3 min-w-0">
-                  {/* U-O9：折叠/展开按钮（仅有子分类时显示） */}
-                  {hasChildren ? (
-                    <button
-                      className="icon-btn flex-shrink-0"
-                      style={{ width: '24px', height: '24px' }}
-                      onClick={(e) => { e.stopPropagation(); toggleCollapse(cat.id) }}
-                      title={isCollapsed ? '展开子分类' : '折叠子分类'}
-                      aria-label={isCollapsed ? '展开子分类' : '折叠子分类'}
-                      aria-expanded={!isCollapsed}
-                    >
-                      <IconChevronDown size={14} strokeWidth={2.5} style={{ transform: isCollapsed ? 'rotate(-90deg)' : 'none', transition: 'transform 200ms ease-out' }} />
-                    </button>
-                  ) : (
-                    <span className="flex-shrink-0" style={{ width: '24px', height: '24px' }} />
-                  )}
-                  <span className="text-lg flex-shrink-0" title={`图标: ${cat.icon || 'folder'}`}>{getIconEmoji(cat.icon)}</span>
-                  <div className="w-4 h-4 rounded-full flex-shrink-0" style={{ background: cat.color }} />
-                  <span className="font-medium truncate" style={{ color: 'var(--text-primary)' }}>{cat.name}</span>
-                  {cat.is_system && <span className="text-xs px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: 'var(--bg-secondary)' }}>系统</span>}
-                  <span className="text-xs px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}>
-                    {mediaFiles.filter((m) => m.category_id === cat.id).length} 项
-                  </span>
-                  {hasChildren && isCollapsed && (
-                    <span className="text-xs px-1.5 py-0.5 rounded-full flex-shrink-0" style={{ background: 'var(--hover-bg)', color: 'var(--text-tertiary)' }}>
-                      +{(cat.children?.length || 0)} 子分类
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center gap-1 flex-shrink-0">
-                  {!cat.is_system && (
-                    <>
-                      <button className="icon-btn" onClick={() => handleReorder(cat.id, 'up')} title="上移">
-                        <IconChevronUp size={16} />
-                      </button>
-                      <button className="icon-btn" onClick={() => handleReorder(cat.id, 'down')} title="下移">
-                        <IconChevronDown size={16} />
-                      </button>
-                    </>
-                  )}
-                  <button
-                    className="icon-btn"
-                    onClick={() => {
-                      setAssignCategory(cat)
-                      setSelectedMedia(new Set(mediaFiles.filter((m) => m.category_id === cat.id).map((m) => m.id)))
-                      // U-O10：打开弹窗时重置搜索与分页
-                      setAssignSearch('')
-                      setAssignPage(0)
+            <div
+              key={cat.id}
+              draggable={!cat.is_system}
+              onDragStart={(e) => handleDragStart(e, cat.id)}
+              onDragOver={(e) => handleDragOver(e, cat.id)}
+              onDrop={(e) => handleDrop(e, cat.id)}
+              className={`flex items-center justify-between p-3 rounded-xl transition-all ${draggingId === cat.id ? 'opacity-60 scale-[1.02] shadow-lg' : ''} ${dragOverId === cat.id ? 'ring-2 ring-[var(--accent)]' : ''}`}
+              style={{
+                background: 'var(--bg-tertiary)',
+                marginLeft: `${cat.depth * 24}px`,
+                // U-O9：非根分类添加左侧连接线
+                borderLeft: cat.depth > 0 ? '2px solid var(--divider)' : 'none',
+                paddingLeft: cat.depth > 0 ? '14px' : '12px'
+              }}
+              title={cat.is_system ? '系统分类不支持拖拽' : '拖拽到其他分类上可设置为子分类'}
+            >
+              {editing?.id === cat.id ? (
+                <div className="flex items-center gap-3 flex-1">
+                  <input
+                    type="text"
+                    value={editing.name}
+                    onChange={(e) => setEditing({ ...editing, name: e.target.value })}
+                    className="input-field flex-1"
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleUpdate()
                     }}
-                    title="归类媒体"
+                  />
+                  <input
+                    type="color"
+                    value={editing.color}
+                    onChange={(e) => setEditing({ ...editing, color: e.target.value })}
+                    className="w-10 h-9 rounded cursor-pointer"
+                  />
+                  <select
+                    value={editing.icon || 'folder'}
+                    onChange={(e) => setEditing({ ...editing, icon: e.target.value })}
+                    className="input-field text-sm"
+                    style={{ minWidth: '120px' }}
                   >
-                    <IconMove size={16} />
+                    {ICON_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.emoji} {t(opt.labelKey)}
+                      </option>
+                    ))}
+                  </select>
+                  <button className="btn-primary text-sm" onClick={handleUpdate}>
+                    保存
                   </button>
-                  <button className="icon-btn" onClick={() => setEditing(cat)} title="编辑">
-                    <IconEdit size={16} />
+                  <button className="btn-secondary text-sm" onClick={() => setEditing(null)}>
+                    取消
                   </button>
-                  {!cat.is_system && (
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center gap-3 min-w-0">
+                    {/* U-O9：折叠/展开按钮（仅有子分类时显示） */}
+                    {hasChildren ? (
+                      <button
+                        className="icon-btn flex-shrink-0"
+                        style={{ width: '24px', height: '24px' }}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          toggleCollapse(cat.id)
+                        }}
+                        title={isCollapsed ? '展开子分类' : '折叠子分类'}
+                        aria-label={isCollapsed ? '展开子分类' : '折叠子分类'}
+                        aria-expanded={!isCollapsed}
+                      >
+                        <IconChevronDown
+                          size={14}
+                          strokeWidth={2.5}
+                          style={{
+                            transform: isCollapsed ? 'rotate(-90deg)' : 'none',
+                            transition: 'transform 200ms ease-out'
+                          }}
+                        />
+                      </button>
+                    ) : (
+                      <span className="flex-shrink-0" style={{ width: '24px', height: '24px' }} />
+                    )}
+                    <span className="text-lg flex-shrink-0" title={`图标: ${cat.icon || 'folder'}`}>
+                      {getIconEmoji(cat.icon)}
+                    </span>
+                    <div
+                      className="w-4 h-4 rounded-full flex-shrink-0"
+                      style={{ background: cat.color }}
+                    />
+                    <span className="font-medium truncate" style={{ color: 'var(--text-primary)' }}>
+                      {cat.name}
+                    </span>
+                    {cat.is_system && (
+                      <span
+                        className="text-xs px-2 py-0.5 rounded-full flex-shrink-0"
+                        style={{ background: 'var(--bg-secondary)' }}
+                      >
+                        系统
+                      </span>
+                    )}
+                    <span
+                      className="text-xs px-2 py-0.5 rounded-full flex-shrink-0"
+                      style={{ background: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}
+                    >
+                      {mediaFiles.filter((m) => m.category_id === cat.id).length} 项
+                    </span>
+                    {hasChildren && isCollapsed && (
+                      <span
+                        className="text-xs px-1.5 py-0.5 rounded-full flex-shrink-0"
+                        style={{ background: 'var(--hover-bg)', color: 'var(--text-tertiary)' }}
+                      >
+                        +{cat.children?.length || 0} 子分类
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    {!cat.is_system && (
+                      <>
+                        <button
+                          className="icon-btn"
+                          onClick={() => handleReorder(cat.id, 'up')}
+                          title="上移"
+                        >
+                          <IconChevronUp size={16} />
+                        </button>
+                        <button
+                          className="icon-btn"
+                          onClick={() => handleReorder(cat.id, 'down')}
+                          title="下移"
+                        >
+                          <IconChevronDown size={16} />
+                        </button>
+                      </>
+                    )}
                     <button
                       className="icon-btn"
-                      style={{ color: 'var(--danger)' }}
-                      onClick={() => setConfirm({ open: true, category: cat })}
-                      title="删除"
+                      onClick={() => {
+                        setAssignCategory(cat)
+                        setSelectedMedia(
+                          new Set(
+                            mediaFiles.filter((m) => m.category_id === cat.id).map((m) => m.id)
+                          )
+                        )
+                        // U-O10：打开弹窗时重置搜索与分页
+                        setAssignSearch('')
+                        setAssignPage(0)
+                      }}
+                      title="归类媒体"
                     >
-                      <IconDelete size={16} />
+                      <IconMove size={16} />
                     </button>
-                  )}
-                </div>
-              </>
-            )}
-          </div>
+                    <button className="icon-btn" onClick={() => setEditing(cat)} title="编辑">
+                      <IconEdit size={16} />
+                    </button>
+                    {!cat.is_system && (
+                      <button
+                        className="icon-btn"
+                        style={{ color: 'var(--danger)' }}
+                        onClick={() => setConfirm({ open: true, category: cat })}
+                        title="删除"
+                      >
+                        <IconDelete size={16} />
+                      </button>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
           )
         })}
       </div>
@@ -699,16 +791,34 @@ export const CategoriesPage: React.FC = () => {
           style={{ background: 'var(--overlay-bg)' }}
           onClick={() => setAssignCategory(null)}
         >
-          <div className="glass-card p-5 w-full max-w-lg mx-4 max-h-[80vh] flex flex-col modal-enter" onClick={(e) => e.stopPropagation()}>
-            <h3 id="assign-category-title" className="text-lg font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>归类媒体</h3>
-            <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>选择要归入「{assignCategory.name}」的媒体文件</p>
+          <div
+            className="glass-card p-5 w-full max-w-lg mx-4 max-h-[80vh] flex flex-col modal-enter"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3
+              id="assign-category-title"
+              className="text-lg font-semibold mb-1"
+              style={{ color: 'var(--text-primary)' }}
+            >
+              归类媒体
+            </h3>
+            <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
+              选择要归入「{assignCategory.name}」的媒体文件
+            </p>
             {/* U-O10：搜索框 */}
             <div className="relative mb-3">
-              <IconSearch size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-tertiary)' }} />
+              <IconSearch
+                size={14}
+                className="absolute left-3 top-1/2 -translate-y-1/2"
+                style={{ color: 'var(--text-tertiary)' }}
+              />
               <input
                 type="text"
                 value={assignSearch}
-                onChange={(e) => { setAssignSearch(e.target.value); setAssignPage(0) }}
+                onChange={(e) => {
+                  setAssignSearch(e.target.value)
+                  setAssignPage(0)
+                }}
                 placeholder="搜索文件名..."
                 className="input-field pl-9 text-sm"
               />
@@ -720,7 +830,10 @@ export const CategoriesPage: React.FC = () => {
                 </p>
               ) : (
                 pagedAssignMedia.map((m) => (
-                  <label key={m.id} className="flex items-center gap-3 p-2 rounded-lg cursor-pointer hover:bg-[var(--hover-bg)]">
+                  <label
+                    key={m.id}
+                    className="flex items-center gap-3 p-2 rounded-lg cursor-pointer hover:bg-[var(--hover-bg)]"
+                  >
                     <input
                       type="checkbox"
                       checked={selectedMedia.has(m.id)}
@@ -732,17 +845,29 @@ export const CategoriesPage: React.FC = () => {
                       }}
                       className="w-4 h-4"
                     />
-                    <span className="text-sm truncate flex-1" style={{ color: 'var(--text-primary)' }}>{m.file_name}</span>
-                    <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{m.file_type === 'image' ? '图片' : '视频'}</span>
+                    <span
+                      className="text-sm truncate flex-1"
+                      style={{ color: 'var(--text-primary)' }}
+                    >
+                      {m.file_name}
+                    </span>
+                    <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                      {m.file_type === 'image' ? '图片' : '视频'}
+                    </span>
                   </label>
                 ))
               )}
             </div>
             {/* U-O10：分页控件 */}
             {filteredAssignMedia.length > ASSIGN_PAGE_SIZE && (
-              <div className="flex items-center justify-between mb-3 text-xs" style={{ color: 'var(--text-tertiary)' }}>
+              <div
+                className="flex items-center justify-between mb-3 text-xs"
+                style={{ color: 'var(--text-tertiary)' }}
+              >
                 <span>
-                  第 {assignPage * ASSIGN_PAGE_SIZE + 1}-{Math.min((assignPage + 1) * ASSIGN_PAGE_SIZE, filteredAssignMedia.length)} 项，共 {filteredAssignMedia.length} 项
+                  第 {assignPage * ASSIGN_PAGE_SIZE + 1}-
+                  {Math.min((assignPage + 1) * ASSIGN_PAGE_SIZE, filteredAssignMedia.length)} 项，共{' '}
+                  {filteredAssignMedia.length} 项
                 </span>
                 <div className="flex items-center gap-2">
                   <button
@@ -752,11 +877,22 @@ export const CategoriesPage: React.FC = () => {
                   >
                     上一页
                   </button>
-                  <span>{assignPage + 1} / {Math.ceil(filteredAssignMedia.length / ASSIGN_PAGE_SIZE)}</span>
+                  <span>
+                    {assignPage + 1} / {Math.ceil(filteredAssignMedia.length / ASSIGN_PAGE_SIZE)}
+                  </span>
                   <button
                     className="btn-secondary text-xs px-2 py-1"
-                    onClick={() => setAssignPage((p) => Math.min(Math.ceil(filteredAssignMedia.length / ASSIGN_PAGE_SIZE) - 1, p + 1))}
-                    disabled={assignPage >= Math.ceil(filteredAssignMedia.length / ASSIGN_PAGE_SIZE) - 1}
+                    onClick={() =>
+                      setAssignPage((p) =>
+                        Math.min(
+                          Math.ceil(filteredAssignMedia.length / ASSIGN_PAGE_SIZE) - 1,
+                          p + 1
+                        )
+                      )
+                    }
+                    disabled={
+                      assignPage >= Math.ceil(filteredAssignMedia.length / ASSIGN_PAGE_SIZE) - 1
+                    }
                   >
                     下一页
                   </button>
@@ -764,8 +900,12 @@ export const CategoriesPage: React.FC = () => {
               </div>
             )}
             <div className="flex justify-end gap-3">
-              <button className="btn-secondary" onClick={() => setAssignCategory(null)}>取消</button>
-              <button className="btn-primary" onClick={handleAssignMedia}>保存</button>
+              <button className="btn-secondary" onClick={() => setAssignCategory(null)}>
+                取消
+              </button>
+              <button className="btn-primary" onClick={handleAssignMedia}>
+                保存
+              </button>
             </div>
           </div>
         </div>

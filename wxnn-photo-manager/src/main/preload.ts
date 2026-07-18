@@ -4,18 +4,33 @@ import type { ExportOptions } from './types/file'
 const electronAPI = {
   // 扫描器
   scanner: {
-    start: (options?: { path?: string; incremental?: boolean; customKnownPaths?: string[]; fullScan?: boolean }) => ipcRenderer.invoke('scanner:start', options),
+    start: (options?: {
+      path?: string
+      incremental?: boolean
+      customKnownPaths?: string[]
+      fullScan?: boolean
+    }) => ipcRenderer.invoke('scanner:start', options),
     stop: () => ipcRenderer.invoke('scanner:stop'),
     status: () => ipcRenderer.invoke('scanner:status'),
-    onProgress: (callback: (progress: { scanned: number; found: number; currentPath: string }) => void) => {
-      const handler = (_: unknown, progress: { scanned: number; found: number; currentPath: string }) => callback(progress)
+    onProgress: (
+      callback: (progress: { scanned: number; found: number; currentPath: string }) => void
+    ) => {
+      const handler = (
+        _: unknown,
+        progress: { scanned: number; found: number; currentPath: string }
+      ) => callback(progress)
       ipcRenderer.on('scanner:progress', handler)
       return () => {
         ipcRenderer.removeListener('scanner:progress', handler)
       }
     },
-    onComplete: (callback: (result: { success: boolean; message: string; filesFound?: number }) => void) => {
-      const handler = (_: unknown, result: { success: boolean; message: string; filesFound?: number }) => callback(result)
+    onComplete: (
+      callback: (result: { success: boolean; message: string; filesFound?: number }) => void
+    ) => {
+      const handler = (
+        _: unknown,
+        result: { success: boolean; message: string; filesFound?: number }
+      ) => callback(result)
       ipcRenderer.on('scanner:complete', handler)
       return () => {
         ipcRenderer.removeListener('scanner:complete', handler)
@@ -27,9 +42,12 @@ const electronAPI = {
   file: {
     delete: (filePaths: string[]) => ipcRenderer.invoke('file:delete', filePaths),
     deletePermanent: (filePaths: string[]) => ipcRenderer.invoke('file:deletePermanent', filePaths),
-    copy: (sourcePaths: string[], targetDir: string) => ipcRenderer.invoke('file:copy', sourcePaths, targetDir),
-    move: (sourcePaths: string[], targetDir: string) => ipcRenderer.invoke('file:move', sourcePaths, targetDir),
-    rename: (oldPath: string, newName: string) => ipcRenderer.invoke('file:rename', oldPath, newName),
+    copy: (sourcePaths: string[], targetDir: string) =>
+      ipcRenderer.invoke('file:copy', sourcePaths, targetDir),
+    move: (sourcePaths: string[], targetDir: string) =>
+      ipcRenderer.invoke('file:move', sourcePaths, targetDir),
+    rename: (oldPath: string, newName: string) =>
+      ipcRenderer.invoke('file:rename', oldPath, newName),
     // T12：批量重命名，返回每条操作的详细结果
     batchRename: (operations: { oldPath: string; newName: string }[]) =>
       ipcRenderer.invoke('file:batchRename', operations),
@@ -42,10 +60,15 @@ const electronAPI = {
 
   // 编辑器
   editor: {
-    save: (filePath: string, dataUrl: string, options?: { format?: string; quality?: number; params?: string }) =>
-      ipcRenderer.invoke('editor:save', filePath, dataUrl, options),
-    saveAs: (dataUrl: string, options?: { directory?: string; fileName?: string; format?: string; quality?: number }) =>
-      ipcRenderer.invoke('editor:saveAs', dataUrl, options),
+    save: (
+      filePath: string,
+      dataUrl: string,
+      options?: { format?: string; quality?: number; params?: string }
+    ) => ipcRenderer.invoke('editor:save', filePath, dataUrl, options),
+    saveAs: (
+      dataUrl: string,
+      options?: { directory?: string; fileName?: string; format?: string; quality?: number }
+    ) => ipcRenderer.invoke('editor:saveAs', dataUrl, options),
     exportPreset: (preset: unknown) => ipcRenderer.invoke('editor:exportPreset', preset),
     loadPresets: () => ipcRenderer.invoke('editor:loadPresets'),
     deletePreset: (id: string | number) => ipcRenderer.invoke('editor:deletePreset', id),
@@ -58,11 +81,13 @@ const electronAPI = {
   watermark: {
     apply: (config: unknown, filePaths: string[], targetDir: string) =>
       ipcRenderer.invoke('watermark:apply', config, filePaths, targetDir),
-    saveTemplate: (name: string, config: unknown) => ipcRenderer.invoke('watermark:saveTemplate', name, config),
+    saveTemplate: (name: string, config: unknown) =>
+      ipcRenderer.invoke('watermark:saveTemplate', name, config),
     loadTemplates: () => ipcRenderer.invoke('watermark:loadTemplates'),
     deleteTemplate: (id: number) => ipcRenderer.invoke('watermark:deleteTemplate', id),
     onProgress: (callback: (progress: { current: number; total: number }) => void) => {
-      const handler = (_: unknown, progress: { current: number; total: number }) => callback(progress)
+      const handler = (_: unknown, progress: { current: number; total: number }) =>
+        callback(progress)
       ipcRenderer.on('watermark:progress', handler)
       return () => {
         ipcRenderer.removeListener('watermark:progress', handler)
@@ -74,7 +99,10 @@ const electronAPI = {
   category: {
     create: (name: string, options?: { icon?: string; color?: string; parentId?: number }) =>
       ipcRenderer.invoke('category:create', name, options),
-    update: (id: number, updates: { name?: string; icon?: string; color?: string; parent_id?: number | null }) => ipcRenderer.invoke('category:update', id, updates),
+    update: (
+      id: number,
+      updates: { name?: string; icon?: string; color?: string; parent_id?: number | null }
+    ) => ipcRenderer.invoke('category:update', id, updates),
     delete: (id: number) => ipcRenderer.invoke('category:delete', id),
     reorder: (orders: Array<{ id: number; sort_order: number; parent_id?: number }>) =>
       ipcRenderer.invoke('category:reorder', orders),
@@ -85,16 +113,23 @@ const electronAPI = {
 
   // 媒体操作
   mediaAction: {
-    updateRating: (mediaId: number, rating: number) => ipcRenderer.invoke('media:updateRating', mediaId, rating),
+    updateRating: (mediaId: number, rating: number) =>
+      ipcRenderer.invoke('media:updateRating', mediaId, rating),
     // P0-D：删除 toggleFavorite（已有 updateFavorite 满足需求）
-    updateFavorite: (mediaId: number, isFavorite: boolean) => ipcRenderer.invoke('media:updateFavorite', mediaId, isFavorite),
-    updateTags: (mediaId: number, tags: string[]) => ipcRenderer.invoke('media:updateTags', mediaId, tags),
-    updateNotes: (mediaId: number, notes: string) => ipcRenderer.invoke('media:updateNotes', mediaId, notes),
-    updateCategory: (mediaId: number, categoryId: number | null) => ipcRenderer.invoke('media:updateCategory', mediaId, categoryId),
+    updateFavorite: (mediaId: number, isFavorite: boolean) =>
+      ipcRenderer.invoke('media:updateFavorite', mediaId, isFavorite),
+    updateTags: (mediaId: number, tags: string[]) =>
+      ipcRenderer.invoke('media:updateTags', mediaId, tags),
+    updateNotes: (mediaId: number, notes: string) =>
+      ipcRenderer.invoke('media:updateNotes', mediaId, notes),
+    updateCategory: (mediaId: number, categoryId: number | null) =>
+      ipcRenderer.invoke('media:updateCategory', mediaId, categoryId),
     // F-O1：更新套装标注
-    updateOutfit: (mediaId: number, outfit: string) => ipcRenderer.invoke('media:updateOutfit', mediaId, outfit),
+    updateOutfit: (mediaId: number, outfit: string) =>
+      ipcRenderer.invoke('media:updateOutfit', mediaId, outfit),
     // F-O1：批量分析场景时段
-    analyzeSceneTime: (mediaIds?: number[]) => ipcRenderer.invoke('media:analyzeSceneTime', mediaIds),
+    analyzeSceneTime: (mediaIds?: number[]) =>
+      ipcRenderer.invoke('media:analyzeSceneTime', mediaIds),
     // 物理删除数据库记录（配合文件永久删除场景，与 softDelete 语义不同，不合并）
     delete: (mediaId: number) => ipcRenderer.invoke('media:delete', mediaId),
     // F-S6 回收站：软删除/恢复/彻底删除/清空
@@ -131,31 +166,66 @@ const electronAPI = {
   // 对话框
   dialog: {
     selectDirectory: () => ipcRenderer.invoke('dialog:selectDirectory'),
-    openFile: (options?: { properties?: ('openFile' | 'openDirectory' | 'multiSelections' | 'showHiddenFiles' | 'createDirectory' | 'promptToCreate' | 'noResolveAliases' | 'treatPackageAsDirectory' | 'dontAddToRecent')[]; filters?: { name: string; extensions: string[] }[] }) =>
-      ipcRenderer.invoke('dialog:openFile', options),
-    saveFile: (options?: { defaultPath?: string; filters?: { name: string; extensions: string[] }[] }) =>
-      ipcRenderer.invoke('dialog:saveFile', options),
-    showMessageBox: (options: { type?: 'none' | 'info' | 'error' | 'question' | 'warning'; title?: string; message: string; buttons?: string[] }) =>
-      ipcRenderer.invoke('dialog:showMessageBox', options)
+    openFile: (options?: {
+      properties?: (
+        | 'openFile'
+        | 'openDirectory'
+        | 'multiSelections'
+        | 'showHiddenFiles'
+        | 'createDirectory'
+        | 'promptToCreate'
+        | 'noResolveAliases'
+        | 'treatPackageAsDirectory'
+        | 'dontAddToRecent'
+      )[]
+      filters?: { name: string; extensions: string[] }[]
+    }) => ipcRenderer.invoke('dialog:openFile', options),
+    saveFile: (options?: {
+      defaultPath?: string
+      filters?: { name: string; extensions: string[] }[]
+    }) => ipcRenderer.invoke('dialog:saveFile', options),
+    showMessageBox: (options: {
+      type?: 'none' | 'info' | 'error' | 'question' | 'warning'
+      title?: string
+      message: string
+      buttons?: string[]
+    }) => ipcRenderer.invoke('dialog:showMessageBox', options)
   },
 
   // 缩略图
   thumbnail: {
     // P1-03：quality='low' 返回 64px 低质量缩略图，'standard' 或 undefined 返回标准 320px
-    generate: (filePath: string, quality?: 'low' | 'standard') => ipcRenderer.invoke('thumbnail:generate', filePath, quality)
+    // 高清档位：quality='high' 返回 512px 高清缩略图（高分屏 DPR ≥ 2 时使用）
+    generate: (filePath: string, quality?: 'low' | 'standard' | 'high') =>
+      ipcRenderer.invoke('thumbnail:generate', filePath, quality)
   },
 
   // 媒体列表更新通知
   media: {
-    list: (options?: { page?: number; pageSize?: number; includeDeleted?: boolean; deletedOnly?: boolean; sortBy?: string; sortOrder?: string; accountUid?: string; albumType?: string; hideDuplicates?: boolean }) => ipcRenderer.invoke('media:list', options),
+    list: (options?: {
+      page?: number
+      pageSize?: number
+      includeDeleted?: boolean
+      deletedOnly?: boolean
+      sortBy?: string
+      sortOrder?: string
+      accountUid?: string
+      albumType?: string
+      hideDuplicates?: boolean
+    }) => ipcRenderer.invoke('media:list', options),
     // F-S10：重复文件检测——返回完整 sha256 hash 重复的分组
     findDuplicates: () => ipcRenderer.invoke('media:findDuplicates'),
     // T05：基于 pHash 的相似图检测——返回汉明距离≤threshold 的图片分组
-    findSimilar: (options?: { threshold?: number }) => ipcRenderer.invoke('media:findSimilar', options),
+    findSimilar: (options?: { threshold?: number }) =>
+      ipcRenderer.invoke('media:findSimilar', options),
     // T05：手动触发 phash 补算（用于已入库但 phash 为 NULL 的图片）
     generatePhash: () => ipcRenderer.invoke('media:generatePhash'),
     // P0-03：智能媒体分组——按维度统计分组数量
-    getGroupCounts: (dimension: string, accountUid?: string, mediaSource?: 'game' | 'launcher' | 'cloud' | 'all') => ipcRenderer.invoke('media:getGroupCounts', dimension, accountUid, mediaSource),
+    getGroupCounts: (
+      dimension: string,
+      accountUid?: string,
+      mediaSource?: 'game' | 'launcher' | 'cloud' | 'all'
+    ) => ipcRenderer.invoke('media:getGroupCounts', dimension, accountUid, mediaSource),
     // P1-01：手动触发重复标记（基于 pHash 极严格阈值 + 评分推荐保留）
     markDuplicates: () => ipcRenderer.invoke('media:markDuplicates'),
     // P1-01：查询已标记的重复分组（is_duplicate=1 按 original_id 聚合）
@@ -172,13 +242,16 @@ const electronAPI = {
   // P0-02：角色档案管理
   profile: {
     list: () => ipcRenderer.invoke('profile:list'),
-    add: (uid: string, nickname: string, avatar?: string) => ipcRenderer.invoke('profile:add', uid, nickname, avatar),
-    update: (uid: string, nickname?: string, avatar?: string) => ipcRenderer.invoke('profile:update', uid, nickname, avatar),
+    add: (uid: string, nickname: string, avatar?: string) =>
+      ipcRenderer.invoke('profile:add', uid, nickname, avatar),
+    update: (uid: string, nickname?: string, avatar?: string) =>
+      ipcRenderer.invoke('profile:update', uid, nickname, avatar),
     delete: (uid: string) => ipcRenderer.invoke('profile:delete', uid),
     setCurrent: (uid: string) => ipcRenderer.invoke('profile:setCurrent', uid),
     getStats: (uid: string) => ipcRenderer.invoke('profile:getStats', uid),
     // P1-04：跨档案转移——批量更新 media_files.account_uid
-    transferFiles: (mediaIds: number[], targetUid: string) => ipcRenderer.invoke('profile:transferFiles', mediaIds, targetUid)
+    transferFiles: (mediaIds: number[], targetUid: string) =>
+      ipcRenderer.invoke('profile:transferFiles', mediaIds, targetUid)
   },
 
   // 界面主题（统一主题接口）
@@ -197,7 +270,8 @@ const electronAPI = {
 
   // 应用设置
   settings: {
-    get: (key: string, defaultValue?: unknown) => ipcRenderer.invoke('settings:get', key, defaultValue),
+    get: (key: string, defaultValue?: unknown) =>
+      ipcRenderer.invoke('settings:get', key, defaultValue),
     set: (key: string, value: unknown) => ipcRenderer.invoke('settings:set', key, value)
   },
 
@@ -298,14 +372,19 @@ const electronAPI = {
   // T14：文件导入向导
   import: {
     preview: (sourceDir: string) => ipcRenderer.invoke('import:preview', sourceDir),
-    run: (sourcePaths: string[], targetBaseDir: string, options: {
-      namingRule: 'keep' | 'date' | 'seq'
-      categorize: 'flat' | 'byDate' | 'byMonth'
-      conflictStrategy: 'skip' | 'rename' | 'overwrite'
-      seqStart?: number
-    }) => ipcRenderer.invoke('import:run', sourcePaths, targetBaseDir, options),
+    run: (
+      sourcePaths: string[],
+      targetBaseDir: string,
+      options: {
+        namingRule: 'keep' | 'date' | 'seq'
+        categorize: 'flat' | 'byDate' | 'byMonth'
+        conflictStrategy: 'skip' | 'rename' | 'overwrite'
+        seqStart?: number
+      }
+    ) => ipcRenderer.invoke('import:run', sourcePaths, targetBaseDir, options),
     onProgress: (callback: (progress: { current: number; total: number }) => void) => {
-      const handler = (_: unknown, progress: { current: number; total: number }) => callback(progress)
+      const handler = (_: unknown, progress: { current: number; total: number }) =>
+        callback(progress)
       ipcRenderer.on('import:progress', handler)
       return () => {
         ipcRenderer.removeListener('import:progress', handler)
@@ -315,8 +394,13 @@ const electronAPI = {
 
   // 建议改#9：操作历史持久化（支持跨重启撤销）
   operationHistory: {
-    add: (record: { operationType: string; mediaId?: number; payload: unknown; description: string; createdAt: string }) =>
-      ipcRenderer.invoke('operation-history:add', record),
+    add: (record: {
+      operationType: string
+      mediaId?: number
+      payload: unknown
+      description: string
+      createdAt: string
+    }) => ipcRenderer.invoke('operation-history:add', record),
     list: (limit: number = 50) => ipcRenderer.invoke('operation-history:list', limit),
     remove: (id: number) => ipcRenderer.invoke('operation-history:remove', id),
     clear: () => ipcRenderer.invoke('operation-history:clear')
@@ -330,11 +414,9 @@ const electronAPI = {
     encodeCameraParams: (jsonText: string) =>
       ipcRenderer.invoke('decrypt:encodeCameraParams', jsonText),
     // Group 3: 染色分享码解码
-    decodeClothDiy: (codeStr: string) =>
-      ipcRenderer.invoke('decrypt:decodeClothDiy', codeStr),
+    decodeClothDiy: (codeStr: string) => ipcRenderer.invoke('decrypt:decodeClothDiy', codeStr),
     // Group 4: 家园建造分享码解码
-    decodeHomeBuild: (codeStr: string) =>
-      ipcRenderer.invoke('decrypt:decodeHomeBuild', codeStr),
+    decodeHomeBuild: (codeStr: string) => ipcRenderer.invoke('decrypt:decodeHomeBuild', codeStr)
   }
 }
 

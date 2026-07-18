@@ -37,7 +37,9 @@ export const WifiShareDialog: React.FC<WifiShareDialogProps> = ({ open, filePath
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null)
   // P1-U9：sessionRef 同步最新 session 值，避免 effect 闭包陈旧导致关闭对话框时不停止服务
   const sessionRef = useRef<SessionInfo | null>(null)
-  useEffect(() => { sessionRef.current = session }, [session])
+  useEffect(() => {
+    sessionRef.current = session
+  }, [session])
 
   // 启动分享服务
   const startShare = useCallback(async () => {
@@ -57,7 +59,7 @@ export const WifiShareDialog: React.FC<WifiShareDialogProps> = ({ open, filePath
           active: true,
           url: res.url,
           port: res.port,
-          pin: res.pin,  // P0-C：捕获 PIN 码用于 UI 展示
+          pin: res.pin, // P0-C：捕获 PIN 码用于 UI 展示
           fileCount: res.fileCount,
           startedAt: Date.now(),
           timeoutMs: res.timeoutMs
@@ -154,21 +156,16 @@ export const WifiShareDialog: React.FC<WifiShareDialogProps> = ({ open, filePath
   }
 
   return (
-    <BaseDialog
-      open={open}
-      onClose={onClose}
-      size="md"
-      ariaLabelledby="wifi-share-title"
-    >
+    <BaseDialog open={open} onClose={onClose} size="md" ariaLabelledby="wifi-share-title">
       <div className="flex items-center justify-between">
-        <h3 id="wifi-share-title" className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
+        <h3
+          id="wifi-share-title"
+          className="text-lg font-semibold"
+          style={{ color: 'var(--text-primary)' }}
+        >
           {t('share.wifi.title')}
         </h3>
-        <button
-          className="icon-btn"
-          onClick={onClose}
-          aria-label={t('common.close')}
-        >
+        <button className="icon-btn" onClick={onClose} aria-label={t('common.close')}>
           <IconClose size={16} />
         </button>
       </div>
@@ -179,16 +176,15 @@ export const WifiShareDialog: React.FC<WifiShareDialogProps> = ({ open, filePath
             className="w-10 h-10 border-2 border-current border-t-transparent rounded-full animate-spin mb-3"
             style={{ color: 'var(--accent)' }}
           />
-          <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>{t('share.wifi.starting')}</p>
+          <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>
+            {t('share.wifi.starting')}
+          </p>
         </div>
       )}
 
       {!starting && session?.active && session.url && (
         <>
-          <div
-            className="rounded-xl p-4 text-center"
-            style={{ background: 'var(--bg-tertiary)' }}
-          >
+          <div className="rounded-xl p-4 text-center" style={{ background: 'var(--bg-tertiary)' }}>
             <p className="text-xs mb-2" style={{ color: 'var(--text-tertiary)' }}>
               {t('share.wifi.accessUrl')}
             </p>
@@ -198,10 +194,7 @@ export const WifiShareDialog: React.FC<WifiShareDialogProps> = ({ open, filePath
             >
               {session.url}
             </p>
-            <button
-              className="btn-secondary text-xs mt-3"
-              onClick={copyUrl}
-            >
+            <button className="btn-secondary text-xs mt-3" onClick={copyUrl}>
               {t('share.wifi.copyUrl')}
             </button>
           </div>
@@ -283,10 +276,7 @@ export const WifiShareDialog: React.FC<WifiShareDialogProps> = ({ open, filePath
             >
               <IconRefresh size={14} className="mr-1" /> {t('share.wifi.restart')}
             </button>
-            <button
-              className="btn-danger text-sm"
-              onClick={() => void stopShare()}
-            >
+            <button className="btn-danger text-sm" onClick={() => void stopShare()}>
               {t('share.wifi.stop')}
             </button>
           </div>

@@ -58,7 +58,11 @@ export function formatInteractionsForCopy(d: InteractionParams | null | undefine
   return lines.join('\n')
 }
 
-export const InteractionPanel: React.FC<InteractionPanelProps> = ({ file, variant = 'light', showTitle = true }) => {
+export const InteractionPanel: React.FC<InteractionPanelProps> = ({
+  file,
+  variant = 'light',
+  showTitle = true
+}) => {
   const enabled = file.file_type === 'image' && !!file.album_type
   const { data, loading, error } = useGameParams(
     file.file_path,

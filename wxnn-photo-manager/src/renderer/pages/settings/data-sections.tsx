@@ -1,8 +1,18 @@
 import React, { useEffect, useState, useCallback, useContext, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useMediaStore, loadMediaFromDatabase, type CharacterProfile } from '../../stores/mediaStore'
+import {
+  useMediaStore,
+  loadMediaFromDatabase,
+  type CharacterProfile
+} from '../../stores/mediaStore'
 import { ConfirmDialog } from '../../components/common/ConfirmDialog'
-import { SectionShell, GlobalToastContext, formatTimestamp, formatSize, type BackupRecord } from './shared'
+import {
+  SectionShell,
+  GlobalToastContext,
+  formatTimestamp,
+  formatSize,
+  type BackupRecord
+} from './shared'
 import { IconDelete } from '../../icons'
 
 // ============ 数据管理 ============
@@ -49,7 +59,9 @@ export const DataBackupSection: React.FC = () => {
     }
   }, [])
 
-  useEffect(() => { loadBackups() }, [loadBackups])
+  useEffect(() => {
+    loadBackups()
+  }, [loadBackups])
 
   const handleCreate = async () => {
     if (!window.electronAPI?.backup || creating) return
@@ -60,7 +72,9 @@ export const DataBackupSection: React.FC = () => {
       const res = await window.electronAPI.backup.create(options)
       if (res?.success) {
         const msg = selectedProfileUid
-          ? t('logAction.backupSuccessWithProfile', { name: profileMap.get(selectedProfileUid)?.nickname ?? selectedProfileUid })
+          ? t('logAction.backupSuccessWithProfile', {
+              name: profileMap.get(selectedProfileUid)?.nickname ?? selectedProfileUid
+            })
           : t('logAction.backupSuccess')
         showMessage(msg, 'success')
         await loadBackups()
@@ -129,40 +143,61 @@ export const DataBackupSection: React.FC = () => {
           >
             <option value="">{t('settings.backup.wholeDb')}</option>
             {profiles.map((p) => (
-              <option key={p.uid} value={p.uid}>{p.nickname}（{p.uid}）</option>
+              <option key={p.uid} value={p.uid}>
+                {p.nickname}（{p.uid}）
+              </option>
             ))}
           </select>
         </div>
 
         {/* 备份目录 */}
         {backupDir && (
-          <div className="flex items-center justify-between gap-3 p-3 rounded-lg" style={{ background: 'var(--bg-tertiary)' }}>
+          <div
+            className="flex items-center justify-between gap-3 p-3 rounded-lg"
+            style={{ background: 'var(--bg-tertiary)' }}
+          >
             <div className="flex-1 min-w-0">
-              <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{t('settings.backup.storageLocation')}</div>
-              <div className="text-xs font-mono mt-1 truncate" style={{ color: 'var(--text-primary)' }} title={backupDir}>{backupDir}</div>
+              <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                {t('settings.backup.storageLocation')}
+              </div>
+              <div
+                className="text-xs font-mono mt-1 truncate"
+                style={{ color: 'var(--text-primary)' }}
+                title={backupDir}
+              >
+                {backupDir}
+              </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
-              <button className="btn-secondary text-xs px-3 py-1.5" onClick={async () => {
-                const dir = await window.electronAPI?.dialog?.selectDirectory()
-                if (!dir) return
-                const res = await window.electronAPI?.backup?.setDir(dir)
-                if (res?.success && res.needRestart) {
-                  const confirmed = await window.electronAPI?.dialog?.showMessageBox({
-                    type: 'question',
-                    title: t('settings.backup.restartTitle'),
-                    message: res.message,
-                    buttons: [t('settings.backup.restartNow'), t('settings.backup.restartLater')]
-                  })
-                  if (confirmed === 0) {
-                    await window.electronAPI?.app?.relaunch()
+              <button
+                className="btn-secondary text-xs px-3 py-1.5"
+                onClick={async () => {
+                  const dir = await window.electronAPI?.dialog?.selectDirectory()
+                  if (!dir) return
+                  const res = await window.electronAPI?.backup?.setDir(dir)
+                  if (res?.success && res.needRestart) {
+                    const confirmed = await window.electronAPI?.dialog?.showMessageBox({
+                      type: 'question',
+                      title: t('settings.backup.restartTitle'),
+                      message: res.message,
+                      buttons: [t('settings.backup.restartNow'), t('settings.backup.restartLater')]
+                    })
+                    if (confirmed === 0) {
+                      await window.electronAPI?.app?.relaunch()
+                    }
+                  } else if (!res?.success) {
+                    showMessage(res?.message || t('logAction.settingFailed'), 'error')
                   }
-                } else if (!res?.success) {
-                  showMessage(res?.message || t('logAction.settingFailed'), 'error')
-                }
-              }} title={t('settings.backup.modifyDir')}>
+                }}
+                title={t('settings.backup.modifyDir')}
+              >
                 {t('settings.backup.modifyDir')}
               </button>
-              <button className="btn-secondary text-xs px-3 py-1.5" onClick={() => window.electronAPI?.shell?.openPath?.(backupDir)} title={t('settings.backup.openDir')}>
+              <button
+                className="btn-secondary text-xs px-3 py-1.5"
+                onClick={() => window.electronAPI?.shell?.openPath?.(backupDir)}
+                title={t('settings.backup.openDir')}
+              >
                 {t('settings.backup.openDir')}
               </button>
             </div>
@@ -172,14 +207,27 @@ export const DataBackupSection: React.FC = () => {
         {/* 备份列表 */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>{t('settings.backup.records')}</span>
-            {backups.length > 0 && <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{t('settings.backup.total', { count: backups.length })}</span>}
+            <span className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
+              {t('settings.backup.records')}
+            </span>
+            {backups.length > 0 && (
+              <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                {t('settings.backup.total', { count: backups.length })}
+              </span>
+            )}
           </div>
 
           {backups.length === 0 ? (
-            <div className="py-6 text-center rounded-lg" style={{ background: 'var(--bg-tertiary)' }}>
-              <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>{loading ? t('settings.backup.loading') : t('settings.backup.empty')}</p>
-              <p className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>{t('settings.backup.emptyHint')}</p>
+            <div
+              className="py-6 text-center rounded-lg"
+              style={{ background: 'var(--bg-tertiary)' }}
+            >
+              <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>
+                {loading ? t('settings.backup.loading') : t('settings.backup.empty')}
+              </p>
+              <p className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>
+                {t('settings.backup.emptyHint')}
+              </p>
             </div>
           ) : (
             <div className="space-y-2 max-h-[360px] overflow-y-auto pr-1">
@@ -188,11 +236,26 @@ export const DataBackupSection: React.FC = () => {
                 const uid = parseUidFromBackupFilename(backup.filename)
                 const profileLabel = uid ? (profileMap.get(uid)?.nickname ?? uid) : null
                 return (
-                  <div key={backup.filename} className="flex items-center justify-between gap-3 p-3 rounded-lg" style={{ background: 'var(--bg-tertiary)' }}>
+                  <div
+                    key={backup.filename}
+                    className="flex items-center justify-between gap-3 p-3 rounded-lg"
+                    style={{ background: 'var(--bg-tertiary)' }}
+                  >
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm truncate" style={{ color: 'var(--text-primary)' }} title={backup.filename}>{backup.filename}</div>
-                      <div className="text-xs mt-0.5 flex items-center gap-2 flex-wrap" style={{ color: 'var(--text-tertiary)' }}>
-                        <span>{formatTimestamp(backup.createdAt)} · {formatSize(backup.size)}</span>
+                      <div
+                        className="text-sm truncate"
+                        style={{ color: 'var(--text-primary)' }}
+                        title={backup.filename}
+                      >
+                        {backup.filename}
+                      </div>
+                      <div
+                        className="text-xs mt-0.5 flex items-center gap-2 flex-wrap"
+                        style={{ color: 'var(--text-tertiary)' }}
+                      >
+                        <span>
+                          {formatTimestamp(backup.createdAt)} · {formatSize(backup.size)}
+                        </span>
                         {/* P1-04：档案备份标记 */}
                         {profileLabel && (
                           <span
@@ -206,8 +269,20 @@ export const DataBackupSection: React.FC = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-1 flex-shrink-0">
-                      <button className="btn-secondary text-xs px-2 py-1" onClick={() => setRestoreTarget(backup.filename)} title={t('settings.backup.restore')}>{t('settings.backup.restore')}</button>
-                      <button className="icon-btn" style={{ color: 'var(--danger)' }} onClick={() => handleDelete(backup.filename)} title={t('settings.backup.delete')} aria-label={t('settings.backup.delete')}>
+                      <button
+                        className="btn-secondary text-xs px-2 py-1"
+                        onClick={() => setRestoreTarget(backup.filename)}
+                        title={t('settings.backup.restore')}
+                      >
+                        {t('settings.backup.restore')}
+                      </button>
+                      <button
+                        className="icon-btn"
+                        style={{ color: 'var(--danger)' }}
+                        onClick={() => handleDelete(backup.filename)}
+                        title={t('settings.backup.delete')}
+                        aria-label={t('settings.backup.delete')}
+                      >
                         <IconDelete size={14} />
                       </button>
                     </div>
@@ -228,7 +303,9 @@ export const DataBackupSection: React.FC = () => {
         title={t('settings.backup.restoreTitle')}
         message={t('settings.backup.restoreConfirm')}
         confirmVariant="danger"
-        onConfirm={() => { if (restoreTarget) handleRestore(restoreTarget) }}
+        onConfirm={() => {
+          if (restoreTarget) handleRestore(restoreTarget)
+        }}
         onCancel={() => setRestoreTarget(null)}
       />
     </>
@@ -238,7 +315,12 @@ export const DataBackupSection: React.FC = () => {
 export const DataCacheSection: React.FC = () => {
   const { t } = useTranslation()
   const showMessage = useContext(GlobalToastContext)
-  const [stats, setStats] = useState<{ totalSize: number; fileCount: number; limit: number; cacheDir: string } | null>(null)
+  const [stats, setStats] = useState<{
+    totalSize: number
+    fileCount: number
+    limit: number
+    cacheDir: string
+  } | null>(null)
   const [loading, setLoading] = useState(false)
   const [cleaning, setCleaning] = useState(false)
   const [enforcing, setEnforcing] = useState(false)
@@ -252,8 +334,15 @@ export const DataCacheSection: React.FC = () => {
     try {
       const res = await window.electronAPI.cache.getStats()
       if (res?.success) {
-        setStats({ totalSize: res.totalSize ?? 0, fileCount: res.fileCount ?? 0, limit: res.limit ?? 0, cacheDir: res.cacheDir ?? '' })
-        setLimitGB(Math.max(0.1, Math.round((res.limit ?? 2 * 1024 * 1024 * 1024) / 1024 / 1024 / 1024)))
+        setStats({
+          totalSize: res.totalSize ?? 0,
+          fileCount: res.fileCount ?? 0,
+          limit: res.limit ?? 0,
+          cacheDir: res.cacheDir ?? ''
+        })
+        setLimitGB(
+          Math.max(0.1, Math.round((res.limit ?? 2 * 1024 * 1024 * 1024) / 1024 / 1024 / 1024))
+        )
       } else {
         showMessage(res?.message || t('logAction.loadStatsFailed'), 'error')
       }
@@ -264,7 +353,9 @@ export const DataCacheSection: React.FC = () => {
     }
   }, [showMessage, t])
 
-  useEffect(() => { loadStats() }, [loadStats])
+  useEffect(() => {
+    loadStats()
+  }, [loadStats])
 
   const handleClean = async () => {
     if (!window.electronAPI?.cache || cleaning) return
@@ -273,7 +364,10 @@ export const DataCacheSection: React.FC = () => {
       const res = await window.electronAPI.cache.clean()
       if (res?.success) {
         const sizeText = formatSize(res.clearedSize ?? 0)
-        showMessage(t('logAction.cleanSuccess', { count: res.clearedCount ?? 0, size: sizeText }), 'success')
+        showMessage(
+          t('logAction.cleanSuccess', { count: res.clearedCount ?? 0, size: sizeText }),
+          'success'
+        )
         await loadStats()
       } else {
         showMessage(res?.message || t('logAction.cleanFailed'), 'error')
@@ -330,8 +424,10 @@ export const DataCacheSection: React.FC = () => {
   }
 
   const limitPresets = [1, 2, 3, 5, 10]
-  const usagePercent = stats && stats.limit > 0 ? Math.min(100, (stats.totalSize / stats.limit) * 100) : 0
-  const usageColor = usagePercent > 90 ? 'var(--danger)' : usagePercent > 70 ? '#f59e0b' : 'var(--accent)'
+  const usagePercent =
+    stats && stats.limit > 0 ? Math.min(100, (stats.totalSize / stats.limit) * 100) : 0
+  const usageColor =
+    usagePercent > 90 ? 'var(--danger)' : usagePercent > 70 ? '#f59e0b' : 'var(--accent)'
 
   return (
     <SectionShell title={t('settings.sections.dataCache')}>
@@ -339,18 +435,33 @@ export const DataCacheSection: React.FC = () => {
       {stats ? (
         <div className="grid grid-cols-2 gap-3">
           <div className="p-3 rounded-lg" style={{ background: 'var(--bg-tertiary)' }}>
-            <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{t('settings.cache.currentUsage')}</div>
-            <div className="text-lg font-semibold mt-1" style={{ color: 'var(--text-primary)' }}>{formatSize(stats.totalSize)}</div>
-            <div className="text-xs mt-0.5" style={{ color: 'var(--text-tertiary)' }}>{t('settings.cache.fileCount', { count: stats.fileCount })}</div>
+            <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+              {t('settings.cache.currentUsage')}
+            </div>
+            <div className="text-lg font-semibold mt-1" style={{ color: 'var(--text-primary)' }}>
+              {formatSize(stats.totalSize)}
+            </div>
+            <div className="text-xs mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
+              {t('settings.cache.fileCount', { count: stats.fileCount })}
+            </div>
           </div>
           <div className="p-3 rounded-lg" style={{ background: 'var(--bg-tertiary)' }}>
-            <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{t('settings.cache.limit')}</div>
-            <div className="text-lg font-semibold mt-1" style={{ color: 'var(--text-primary)' }}>{formatSize(stats.limit)}</div>
-            <div className="text-xs mt-0.5" style={{ color: 'var(--text-tertiary)' }}>{t('settings.cache.lruHint')}</div>
+            <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+              {t('settings.cache.limit')}
+            </div>
+            <div className="text-lg font-semibold mt-1" style={{ color: 'var(--text-primary)' }}>
+              {formatSize(stats.limit)}
+            </div>
+            <div className="text-xs mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
+              {t('settings.cache.lruHint')}
+            </div>
           </div>
         </div>
       ) : (
-        <div className="p-3 rounded-lg text-sm" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-tertiary)' }}>
+        <div
+          className="p-3 rounded-lg text-sm"
+          style={{ background: 'var(--bg-tertiary)', color: 'var(--text-tertiary)' }}
+        >
           {loading ? t('settings.backup.loading') : t('settings.cache.noData')}
         </div>
       )}
@@ -362,7 +473,10 @@ export const DataCacheSection: React.FC = () => {
             <span>{t('settings.cache.usage')}</span>
             <span>{usagePercent.toFixed(1)}%</span>
           </div>
-          <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--bg-tertiary)' }}>
+          <div
+            className="h-2 rounded-full overflow-hidden"
+            style={{ background: 'var(--bg-tertiary)' }}
+          >
             <div
               className="h-full transition-all"
               style={{ width: `${usagePercent}%`, background: usageColor }}
@@ -371,9 +485,31 @@ export const DataCacheSection: React.FC = () => {
         </div>
       )}
 
+      {/* 淘汰策略说明卡片 */}
+      <div
+        className="p-3 rounded-lg flex items-start gap-2"
+        style={{ background: 'var(--bg-tertiary)' }}
+      >
+        <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+          ℹ️
+        </span>
+        <div className="flex-1">
+          <div className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
+            {t('settings.cache.strategyTitle', { defaultValue: '淘汰策略' })}
+          </div>
+          <div className="text-xs mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
+            {t('settings.cache.strategyDesc', {
+              defaultValue: '缓存超限时自动删除最久未访问的缩略图，访问记录跨重启保留。'
+            })}
+          </div>
+        </div>
+      </div>
+
       {/* 上限调整 */}
       <div className="space-y-2">
-        <div className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>{t('settings.cache.cacheLimit')}</div>
+        <div className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
+          {t('settings.cache.cacheLimit')}
+        </div>
         <div className="flex gap-2 flex-wrap">
           {limitPresets.map((gb) => (
             <button
@@ -386,6 +522,41 @@ export const DataCacheSection: React.FC = () => {
             </button>
           ))}
         </div>
+        {/* 自定义上限输入框：补足预设之外的自定义值（0.1~100 GB） */}
+        <div className="flex items-center gap-2 mt-2">
+          <input
+            type="number"
+            min={0.1}
+            max={100}
+            step={0.5}
+            className="text-sm px-3 py-1.5 rounded-lg border w-24"
+            style={{
+              background: 'var(--bg-tertiary)',
+              color: 'var(--text-primary)',
+              borderColor: 'var(--divider)'
+            }}
+            placeholder={String(limitGB)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                const val = parseFloat((e.target as HTMLInputElement).value)
+                if (Number.isFinite(val) && val >= 0.1 && val <= 100) {
+                  handleSetLimit(val)
+                  ;(e.target as HTMLInputElement).value = ''
+                } else {
+                  showMessage(
+                    t('settings.cache.invalidLimit', {
+                      defaultValue: '请输入 0.1~100 之间的数值'
+                    }),
+                    'error'
+                  )
+                }
+              }
+            }}
+          />
+          <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+            {t('settings.cache.customLimitHint', { defaultValue: 'GB（按回车应用）' })}
+          </span>
+        </div>
       </div>
 
       {/* 操作按钮 */}
@@ -393,43 +564,70 @@ export const DataCacheSection: React.FC = () => {
         <button className="btn-secondary text-sm" onClick={loadStats} disabled={loading}>
           {loading ? t('settings.backup.loading') : t('settings.cache.refreshStats')}
         </button>
-        <button className="btn-secondary text-sm" onClick={handleEnforceLimit} disabled={enforcing || !stats}>
+        <button
+          className="btn-secondary text-sm"
+          onClick={handleEnforceLimit}
+          disabled={enforcing || !stats}
+        >
           {enforcing ? t('settings.scan.analyzing') : t('settings.cache.enforceLru')}
         </button>
-        <button className="btn-danger text-sm" onClick={() => setShowCleanConfirm(true)} disabled={cleaning || !stats || stats.fileCount === 0}>
+        <button
+          className="btn-danger text-sm"
+          onClick={() => setShowCleanConfirm(true)}
+          disabled={cleaning || !stats || stats.fileCount === 0}
+        >
           {cleaning ? t('settings.clear.cleaning') : t('settings.cache.cleanAll')}
         </button>
       </div>
 
       {/* 缓存目录 */}
       {stats?.cacheDir && (
-        <div className="flex items-center justify-between gap-3 p-3 rounded-lg" style={{ background: 'var(--bg-tertiary)' }}>
+        <div
+          className="flex items-center justify-between gap-3 p-3 rounded-lg"
+          style={{ background: 'var(--bg-tertiary)' }}
+        >
           <div className="flex-1 min-w-0">
-            <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{t('settings.cache.cacheLocation')}</div>
-            <div className="text-xs font-mono mt-1 truncate" style={{ color: 'var(--text-primary)' }} title={stats.cacheDir}>{stats.cacheDir}</div>
+            <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+              {t('settings.cache.cacheLocation')}
+            </div>
+            <div
+              className="text-xs font-mono mt-1 truncate"
+              style={{ color: 'var(--text-primary)' }}
+              title={stats.cacheDir}
+            >
+              {stats.cacheDir}
+            </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <button className="btn-secondary text-xs px-3 py-1.5" onClick={async () => {
-              const dir = await window.electronAPI?.dialog?.selectDirectory()
-              if (!dir) return
-              const res = await window.electronAPI?.cache?.setDir(dir)
-              if (res?.success && res.needRestart) {
-                const confirmed = await window.electronAPI?.dialog?.showMessageBox({
-                  type: 'question',
-                  title: t('settings.backup.restartTitle'),
-                  message: res.message,
-                  buttons: [t('settings.backup.restartNow'), t('settings.backup.restartLater')]
-                })
-                if (confirmed === 0) {
-                  await window.electronAPI?.app?.relaunch()
+            <button
+              className="btn-secondary text-xs px-3 py-1.5"
+              onClick={async () => {
+                const dir = await window.electronAPI?.dialog?.selectDirectory()
+                if (!dir) return
+                const res = await window.electronAPI?.cache?.setDir(dir)
+                if (res?.success && res.needRestart) {
+                  const confirmed = await window.electronAPI?.dialog?.showMessageBox({
+                    type: 'question',
+                    title: t('settings.backup.restartTitle'),
+                    message: res.message,
+                    buttons: [t('settings.backup.restartNow'), t('settings.backup.restartLater')]
+                  })
+                  if (confirmed === 0) {
+                    await window.electronAPI?.app?.relaunch()
+                  }
+                } else if (!res?.success) {
+                  showMessage(res?.message || t('logAction.settingFailed'), 'error')
                 }
-              } else if (!res?.success) {
-                showMessage(res?.message || t('logAction.settingFailed'), 'error')
-              }
-            }} title={t('settings.cache.modifyDir')}>
+              }}
+              title={t('settings.cache.modifyDir')}
+            >
               {t('settings.cache.modifyDir')}
             </button>
-            <button className="btn-secondary text-xs px-3 py-1.5" onClick={() => window.electronAPI?.shell?.openPath?.(stats.cacheDir)} title={t('settings.cache.openDir')}>
+            <button
+              className="btn-secondary text-xs px-3 py-1.5"
+              onClick={() => window.electronAPI?.shell?.openPath?.(stats.cacheDir)}
+              title={t('settings.cache.openDir')}
+            >
               {t('settings.cache.openDir')}
             </button>
           </div>
@@ -443,7 +641,10 @@ export const DataCacheSection: React.FC = () => {
       <ConfirmDialog
         open={showCleanConfirm}
         title={t('settings.cache.cleanTitle')}
-        message={t('settings.cache.cleanConfirm', { count: stats?.fileCount ?? 0, size: formatSize(stats?.totalSize ?? 0) })}
+        message={t('settings.cache.cleanConfirm', {
+          count: stats?.fileCount ?? 0,
+          size: formatSize(stats?.totalSize ?? 0)
+        })}
         confirmText={t('settings.cache.confirmClean')}
         cancelText={t('common.cancel')}
         confirmVariant="danger"
@@ -484,12 +685,18 @@ export const DataClearSection: React.FC = () => {
       if (result.success) {
         const res = await loadMediaFromDatabase()
         if (res) setMediaFiles(res.files)
-        showMessage(result.message || t('logAction.cleanMissingSuccess', { count: result.cleared ?? 0 }), 'success')
+        showMessage(
+          result.message || t('logAction.cleanMissingSuccess', { count: result.cleared ?? 0 }),
+          'success'
+        )
       } else {
         showMessage(result.message || t('logAction.cleanMissingFailed'), 'error')
       }
     } catch (error) {
-      showMessage(error instanceof Error ? error.message : t('logAction.cleanMissingError'), 'error')
+      showMessage(
+        error instanceof Error ? error.message : t('logAction.cleanMissingError'),
+        'error'
+      )
     } finally {
       setMissingCleaning(false)
     }
@@ -502,7 +709,9 @@ export const DataClearSection: React.FC = () => {
         <div className="p-3 rounded-lg" style={{ background: 'var(--bg-tertiary)' }}>
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{t('settings.clear.missingTitle')}</p>
+              <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+                {t('settings.clear.missingTitle')}
+              </p>
               <p className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>
                 {t('settings.clear.missingDesc')}
               </p>
@@ -517,14 +726,19 @@ export const DataClearSection: React.FC = () => {
           </div>
         </div>
 
-        <button className="btn-danger w-full" onClick={() => setShowConfirm(true)}>{t('settings.clear.clearLocal')}</button>
+        <button className="btn-danger w-full" onClick={() => setShowConfirm(true)}>
+          {t('settings.clear.clearLocal')}
+        </button>
       </SectionShell>
       <ConfirmDialog
         open={showConfirm}
         title={t('settings.clear.clearTitle')}
         message={t('settings.clear.clearConfirm')}
         confirmVariant="danger"
-        onConfirm={() => { setShowConfirm(false); clearData() }}
+        onConfirm={() => {
+          setShowConfirm(false)
+          clearData()
+        }}
         onCancel={() => setShowConfirm(false)}
       />
       <ConfirmDialog
@@ -532,7 +746,10 @@ export const DataClearSection: React.FC = () => {
         title={t('settings.clear.missingConfirmTitle')}
         message={t('settings.clear.missingConfirm')}
         confirmVariant="danger"
-        onConfirm={() => { setShowMissingConfirm(false); cleanupMissing() }}
+        onConfirm={() => {
+          setShowMissingConfirm(false)
+          cleanupMissing()
+        }}
         onCancel={() => setShowMissingConfirm(false)}
       />
     </>

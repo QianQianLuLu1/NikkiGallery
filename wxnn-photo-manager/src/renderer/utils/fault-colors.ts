@@ -33,7 +33,11 @@ export const FAULT_TYPE_META: Record<FaultType, FaultMeta> = {
   rendererError: { label: '渲染层错误', color: '#ca8a04', bg: 'rgba(202, 138, 4, 0.12)' },
   ipcError: { label: 'IPC 处理错误', color: '#2563eb', bg: 'rgba(37, 99, 235, 0.12)' },
   manual: { label: '手动记录', color: '#6b7280', bg: 'rgba(107, 114, 128, 0.12)' },
-  rendererComponent: { label: '组件渲染异常', color: 'var(--danger-hover)', bg: 'var(--danger-bg)' },
+  rendererComponent: {
+    label: '组件渲染异常',
+    color: 'var(--danger-hover)',
+    bg: 'var(--danger-bg)'
+  },
   rendererPromise: { label: '渲染层 Promise', color: '#ea580c', bg: 'rgba(234, 88, 12, 0.12)' },
   rendererResource: { label: '资源加载失败', color: '#0891b2', bg: 'rgba(8, 145, 178, 0.12)' },
   exitDiagnosis: { label: '退出诊断', color: '#475569', bg: 'rgba(71, 85, 105, 0.12)' }

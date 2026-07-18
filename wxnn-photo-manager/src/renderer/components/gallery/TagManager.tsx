@@ -53,28 +53,28 @@ export const TagManager: React.FC<TagManagerProps> = ({ mediaId, onClose }) => {
         initialFocusRef={inputRef}
         overlayBackground="var(--overlay-bg-strong)"
       >
-        <h3 id="tag-manager-title" className="text-lg font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>
+        <h3
+          id="tag-manager-title"
+          className="text-lg font-semibold mb-4"
+          style={{ color: 'var(--text-primary)' }}
+        >
           管理标签
         </h3>
 
         {/* 当前标签 */}
         <div className="flex flex-wrap gap-2 mb-4">
           {media?.tags.map((tag) => (
-            <span
-              key={tag}
-              className="category-tag active text-xs flex items-center gap-1"
-            >
+            <span key={tag} className="category-tag active text-xs flex items-center gap-1">
               {tag}
-              <button
-                className="hover:opacity-70"
-                onClick={() => handleRemoveTag(tag)}
-              >
+              <button className="hover:opacity-70" onClick={() => handleRemoveTag(tag)}>
                 <IconClose size={12} />
               </button>
             </span>
           ))}
           {media && media.tags.length === 0 && (
-            <span className="text-sm" style={{ color: 'var(--text-tertiary)' }}>暂无标签</span>
+            <span className="text-sm" style={{ color: 'var(--text-tertiary)' }}>
+              暂无标签
+            </span>
           )}
         </div>
 
@@ -96,7 +96,9 @@ export const TagManager: React.FC<TagManagerProps> = ({ mediaId, onClose }) => {
 
         {/* 常用标签建议 */}
         <div className="mt-4">
-          <p className="text-xs mb-2" style={{ color: 'var(--text-tertiary)' }}>常用标签</p>
+          <p className="text-xs mb-2" style={{ color: 'var(--text-tertiary)' }}>
+            常用标签
+          </p>
           <div className="flex flex-wrap gap-2">
             {['截图', '风景', '人物', '装备', '剧情', '战斗', '探索'].map((tag) => (
               <button

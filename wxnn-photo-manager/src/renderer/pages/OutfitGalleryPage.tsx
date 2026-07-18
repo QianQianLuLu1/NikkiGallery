@@ -9,19 +9,24 @@ import { IconOutfit, IconRefresh, IconImage, IconLock } from '../icons'
 import type { OutfitStat } from '../../shared/scene-category'
 
 // 统计卡片：单个指标展示
-const StatCard: React.FC<{ label: string; value: string | number; hint?: string; accent?: string }> = ({ label, value, hint, accent }) => (
-  <div
-    className="glass-card p-4 flex flex-col gap-1"
-    style={{ borderRadius: 16, minWidth: 0 }}
-  >
-    <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{label}</span>
-    <span
-      className="text-2xl font-semibold"
-      style={{ color: accent || 'var(--text-primary)' }}
-    >
+const StatCard: React.FC<{
+  label: string
+  value: string | number
+  hint?: string
+  accent?: string
+}> = ({ label, value, hint, accent }) => (
+  <div className="glass-card p-4 flex flex-col gap-1" style={{ borderRadius: 16, minWidth: 0 }}>
+    <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+      {label}
+    </span>
+    <span className="text-2xl font-semibold" style={{ color: accent || 'var(--text-primary)' }}>
       {value}
     </span>
-    {hint && <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{hint}</span>}
+    {hint && (
+      <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+        {hint}
+      </span>
+    )}
   </div>
 )
 
@@ -50,7 +55,10 @@ const OutfitCard: React.FC<{ stat: OutfitStat; onClick: () => void }> = ({ stat,
             loading="lazy"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center" style={{ color: 'var(--text-tertiary)' }}>
+          <div
+            className="w-full h-full flex items-center justify-center"
+            style={{ color: 'var(--text-tertiary)' }}
+          >
             <IconImage size={32} />
           </div>
         )}
@@ -183,7 +191,11 @@ export const OutfitGalleryPage: React.FC = () => {
             <p className="text-xs mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
               {loading
                 ? t('outfit.loading')
-                : t('outfit.summary', { collected: totalCollected, presets: totalPresets, progress: progressPercent })}
+                : t('outfit.summary', {
+                    collected: totalCollected,
+                    presets: totalPresets,
+                    progress: progressPercent
+                  })}
             </p>
           </div>
         </div>
@@ -204,8 +216,16 @@ export const OutfitGalleryPage: React.FC = () => {
           className="grid gap-4"
           style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}
         >
-          <StatCard label={t('outfit.collectedLabel')} value={totalCollected} hint={t('outfit.collectedHint')} />
-          <StatCard label={t('outfit.presetTotalLabel')} value={totalPresets} hint={t('outfit.presetTotalHint')} />
+          <StatCard
+            label={t('outfit.collectedLabel')}
+            value={totalCollected}
+            hint={t('outfit.collectedHint')}
+          />
+          <StatCard
+            label={t('outfit.presetTotalLabel')}
+            value={totalPresets}
+            hint={t('outfit.presetTotalHint')}
+          />
           <StatCard
             label={t('outfit.progressLabel')}
             value={`${progressPercent}%`}
@@ -215,7 +235,9 @@ export const OutfitGalleryPage: React.FC = () => {
           <StatCard
             label={t('outfit.topOutfitLabel')}
             value={topOutfit ? topOutfit.outfit : '—'}
-            hint={topOutfit ? t('outfit.photosCount', { count: topOutfit.count }) : t('outfit.noData')}
+            hint={
+              topOutfit ? t('outfit.photosCount', { count: topOutfit.count }) : t('outfit.noData')
+            }
             accent="var(--success)"
           />
         </div>

@@ -31,7 +31,12 @@ export function useToast(duration = 3000): {
   messages: ToastMessage[]
   showMessage: (text: string, type?: ToastType, action?: ToastMessage['action']) => void
   /** F-S8：带动作按钮的便捷方法（默认 info 类型，duration 延长至 6s） */
-  showMessageWithAction: (text: string, actionLabel: string, onAction: () => void | Promise<void>, type?: ToastType) => void
+  showMessageWithAction: (
+    text: string,
+    actionLabel: string,
+    onAction: () => void | Promise<void>,
+    type?: ToastType
+  ) => void
   /** U-G3：手动关闭单条 Toast */
   dismiss: (id: string) => void
   clear: () => void
@@ -47,10 +52,13 @@ export function useToast(duration = 3000): {
     }
   }, [])
 
-  const dismiss = useCallback((id: string) => {
-    clearTimer(id)
-    setMessages((prev) => prev.filter((m) => m.id !== id))
-  }, [clearTimer])
+  const dismiss = useCallback(
+    (id: string) => {
+      clearTimer(id)
+      setMessages((prev) => prev.filter((m) => m.id !== id))
+    },
+    [clearTimer]
+  )
 
   const clear = useCallback(() => {
     timersRef.current.forEach((timer) => clearTimeout(timer))
@@ -58,30 +66,41 @@ export function useToast(duration = 3000): {
     setMessages([])
   }, [])
 
-  const showMessage = useCallback((text: string, type: ToastType = 'success', action?: ToastMessage['action']) => {
-    const id = nextToastId()
-    const msg: ToastMessage = { id, text, type, action }
-    setMessages((prev) => {
-      // U-G3：堆叠支持，最多显示 MAX_VISIBLE 条，FIFO 淘汰最旧的
-      const next = [...prev, msg]
-      while (next.length > MAX_VISIBLE) {
-        const removed = next.shift()
-        if (removed) clearTimer(removed.id)
-      }
-      return next
-    })
-    // 带动作按钮的消息显示时间延长至 6s，给用户足够时间点击
-    const actualDuration = action ? Math.max(duration, 6000) : duration
-    const timer = setTimeout(() => {
-      setMessages((prev) => prev.filter((m) => m.id !== id))
-      timersRef.current.delete(id)
-    }, actualDuration)
-    timersRef.current.set(id, timer)
-  }, [duration, clearTimer])
+  const showMessage = useCallback(
+    (text: string, type: ToastType = 'success', action?: ToastMessage['action']) => {
+      const id = nextToastId()
+      const msg: ToastMessage = { id, text, type, action }
+      setMessages((prev) => {
+        // U-G3：堆叠支持，最多显示 MAX_VISIBLE 条，FIFO 淘汰最旧的
+        const next = [...prev, msg]
+        while (next.length > MAX_VISIBLE) {
+          const removed = next.shift()
+          if (removed) clearTimer(removed.id)
+        }
+        return next
+      })
+      // 带动作按钮的消息显示时间延长至 6s，给用户足够时间点击
+      const actualDuration = action ? Math.max(duration, 6000) : duration
+      const timer = setTimeout(() => {
+        setMessages((prev) => prev.filter((m) => m.id !== id))
+        timersRef.current.delete(id)
+      }, actualDuration)
+      timersRef.current.set(id, timer)
+    },
+    [duration, clearTimer]
+  )
 
-  const showMessageWithAction = useCallback((text: string, actionLabel: string, onAction: () => void | Promise<void>, type: ToastType = 'info') => {
-    showMessage(text, type, { label: actionLabel, onClick: onAction })
-  }, [showMessage])
+  const showMessageWithAction = useCallback(
+    (
+      text: string,
+      actionLabel: string,
+      onAction: () => void | Promise<void>,
+      type: ToastType = 'info'
+    ) => {
+      showMessage(text, type, { label: actionLabel, onClick: onAction })
+    },
+    [showMessage]
+  )
 
   useEffect(() => {
     return () => {

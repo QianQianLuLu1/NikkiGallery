@@ -1,7 +1,19 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { useUIStore, type ViewMode, type FilterType, type SortBy } from '../../stores/uiStore'
 import { ScanButton } from '../scanner/ScanButton'
-import { IconGrid, IconList, IconTimeline, IconMasonry, IconSearch, IconChevronUp, IconStar, IconWarning, IconEvent, IconSlideshow, IconImport } from '../../icons'
+import {
+  IconGrid,
+  IconList,
+  IconTimeline,
+  IconMasonry,
+  IconSearch,
+  IconChevronUp,
+  IconStar,
+  IconWarning,
+  IconEvent,
+  IconSlideshow,
+  IconImport
+} from '../../icons'
 import { ShareMenuButton } from '../common/ShareMenuButton'
 import type { ShareChannelId } from '../common/ShareGuideDialog'
 
@@ -47,7 +59,13 @@ interface GalleryToolbarProps {
   onImport?: () => void
 }
 
-export const GalleryToolbar: React.FC<GalleryToolbarProps> = ({ searchInput, onSearchChange, onShareClipboard, onSlideshow, onImport }) => {
+export const GalleryToolbar: React.FC<GalleryToolbarProps> = ({
+  searchInput,
+  onSearchChange,
+  onShareClipboard,
+  onSlideshow,
+  onImport
+}) => {
   const {
     viewMode,
     sortBy,
@@ -81,10 +99,11 @@ export const GalleryToolbar: React.FC<GalleryToolbarProps> = ({ searchInput, onS
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
-  const formatDate = useCallback((d: Date | null) => d ? d.toISOString().slice(0, 10) : '', [])
-  const dateLabel = (filterDateRange[0] || filterDateRange[1])
-    ? `${formatDate(filterDateRange[0])} ~ ${formatDate(filterDateRange[1])}`
-    : '日期'
+  const formatDate = useCallback((d: Date | null) => (d ? d.toISOString().slice(0, 10) : ''), [])
+  const dateLabel =
+    filterDateRange[0] || filterDateRange[1]
+      ? `${formatDate(filterDateRange[0])} ~ ${formatDate(filterDateRange[1])}`
+      : '日期'
 
   return (
     <div className="gallery-toolbar flex items-center justify-between flex-wrap gap-3">
@@ -123,7 +142,9 @@ export const GalleryToolbar: React.FC<GalleryToolbarProps> = ({ searchInput, onS
                   role="option"
                   aria-selected={filterRating === opt.value}
                   className="w-full px-3 py-1.5 text-sm text-left transition-colors hover:bg-[var(--hover-bg)]"
-                  style={{ color: filterRating === opt.value ? 'var(--accent)' : 'var(--text-primary)' }}
+                  style={{
+                    color: filterRating === opt.value ? 'var(--accent)' : 'var(--text-primary)'
+                  }}
                   onClick={() => {
                     setFilterRating(opt.value)
                     setRatingOpen(false)
@@ -139,7 +160,7 @@ export const GalleryToolbar: React.FC<GalleryToolbarProps> = ({ searchInput, onS
         {/* 日期范围筛选 */}
         <div ref={dateRef} className="relative">
           <button
-            className={`category-tag ${(filterDateRange[0] || filterDateRange[1]) ? 'active' : ''}`}
+            className={`category-tag ${filterDateRange[0] || filterDateRange[1] ? 'active' : ''}`}
             onClick={() => setDateOpen((v) => !v)}
             aria-haspopup="dialog"
             aria-expanded={dateOpen}
@@ -152,7 +173,9 @@ export const GalleryToolbar: React.FC<GalleryToolbarProps> = ({ searchInput, onS
               style={{ animation: 'scaleIn 150ms ease-out', minWidth: '220px' }}
             >
               <div className="flex flex-col gap-1">
-                <label className="text-xs" style={{ color: 'var(--text-tertiary)' }}>开始日期</label>
+                <label className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                  开始日期
+                </label>
                 <input
                   type="date"
                   value={formatDate(filterDateRange[0])}
@@ -164,7 +187,9 @@ export const GalleryToolbar: React.FC<GalleryToolbarProps> = ({ searchInput, onS
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-xs" style={{ color: 'var(--text-tertiary)' }}>结束日期</label>
+                <label className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                  结束日期
+                </label>
                 <input
                   type="date"
                   value={formatDate(filterDateRange[1])}
@@ -192,7 +217,9 @@ export const GalleryToolbar: React.FC<GalleryToolbarProps> = ({ searchInput, onS
         <button
           className={`category-tag ${showMissingOnly ? 'active' : ''}`}
           onClick={() => setShowMissingOnly(!showMissingOnly)}
-          style={showMissingOnly ? { background: 'var(--danger-bg)', color: 'var(--danger-hover)' } : {}}
+          style={
+            showMissingOnly ? { background: 'var(--danger-bg)', color: 'var(--danger-hover)' } : {}
+          }
           title="只显示文件已被外部删除的记录"
           aria-pressed={showMissingOnly}
         >
@@ -218,7 +245,10 @@ export const GalleryToolbar: React.FC<GalleryToolbarProps> = ({ searchInput, onS
               <IconChevronUp
                 size={12}
                 strokeWidth="2.5"
-                style={{ transform: sortOrder === 'desc' ? 'rotate(180deg)' : 'none', transition: 'transform 200ms' }}
+                style={{
+                  transform: sortOrder === 'desc' ? 'rotate(180deg)' : 'none',
+                  transition: 'transform 200ms'
+                }}
               />
             )}
           </button>
@@ -243,17 +273,16 @@ export const GalleryToolbar: React.FC<GalleryToolbarProps> = ({ searchInput, onS
 
       <div className="flex items-center gap-3">
         {onImport && (
-          <button
-            className="icon-btn"
-            onClick={onImport}
-            title="导入文件"
-            aria-label="导入文件"
-          >
+          <button className="icon-btn" onClick={onImport} title="导入文件" aria-label="导入文件">
             <IconImport size={18} />
           </button>
         )}
         {onShareClipboard && (
-          <ShareMenuButton onSelect={onShareClipboard} label="分享" title="复制到剪贴板并分享到微信/QQ/vivo" />
+          <ShareMenuButton
+            onSelect={onShareClipboard}
+            label="分享"
+            title="复制到剪贴板并分享到微信/QQ/vivo"
+          />
         )}
         {onSlideshow && (
           <button
@@ -265,7 +294,10 @@ export const GalleryToolbar: React.FC<GalleryToolbarProps> = ({ searchInput, onS
             <IconSlideshow size={18} />
           </button>
         )}
-        <div className="flex items-center gap-1 p-1 rounded-lg" style={{ background: 'var(--bg-tertiary)' }}>
+        <div
+          className="flex items-center gap-1 p-1 rounded-lg"
+          style={{ background: 'var(--bg-tertiary)' }}
+        >
           {viewModes.map((mode) => (
             <button
               key={mode.id}

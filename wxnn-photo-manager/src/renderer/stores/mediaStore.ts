@@ -98,8 +98,8 @@ interface MediaState {
   recycleBinFiles: MediaFile[]
   recycleBinLoading: boolean
   // P0-02：角色档案管理
-  currentProfileUid: string  // 当前选中的角色档案 UID（'all' 表示全部档案）
-  profiles: CharacterProfile[]  // 所有角色档案列表
+  currentProfileUid: string // 当前选中的角色档案 UID（'all' 表示全部档案）
+  profiles: CharacterProfile[] // 所有角色档案列表
 
   // Actions
   setMediaFiles: (files: MediaFile[]) => void
@@ -137,28 +137,30 @@ export const useMediaStore = create<MediaState>((set, _get) => ({
 
   setMediaFiles: (files) => set({ mediaFiles: files }),
 
-  addMediaFiles: (files) => set((state) => ({
-    mediaFiles: [...state.mediaFiles, ...files]
-  })),
+  addMediaFiles: (files) =>
+    set((state) => ({
+      mediaFiles: [...state.mediaFiles, ...files]
+    })),
 
   // 纯 reducer：仅更新本地状态，不执行任何副作用
-  updateMediaFile: (id, updates) => set((state) => ({
-    mediaFiles: state.mediaFiles.map((file) =>
-      file.id === id ? { ...file, ...updates } : file
-    )
-  })),
+  updateMediaFile: (id, updates) =>
+    set((state) => ({
+      mediaFiles: state.mediaFiles.map((file) => (file.id === id ? { ...file, ...updates } : file))
+    })),
 
-  deleteMediaFiles: (ids) => set((state) => ({
-    mediaFiles: state.mediaFiles.filter((file) => !ids.includes(file.id))
-  })),
+  deleteMediaFiles: (ids) =>
+    set((state) => ({
+      mediaFiles: state.mediaFiles.filter((file) => !ids.includes(file.id))
+    })),
 
   setCategories: (categories) => set({ categories }),
 
   setLoading: (loading) => set({ loading }),
 
-  setScanProgress: (progress) => set((state) => ({
-    scanProgress: { ...state.scanProgress, ...progress }
-  })),
+  setScanProgress: (progress) =>
+    set((state) => ({
+      scanProgress: { ...state.scanProgress, ...progress }
+    })),
 
   setEditingMedia: (media) => set({ editingMedia: media }),
 
@@ -197,8 +199,13 @@ export async function updateMediaFileAndPersist(
     if ('notes' in updates && typeof updates.notes === 'string') {
       promises.push(window.electronAPI.mediaAction.updateNotes(numericId, updates.notes))
     }
-    if ('category_id' in updates && (typeof updates.category_id === 'number' || updates.category_id === undefined)) {
-      promises.push(window.electronAPI.mediaAction.updateCategory(numericId, updates.category_id ?? null))
+    if (
+      'category_id' in updates &&
+      (typeof updates.category_id === 'number' || updates.category_id === undefined)
+    ) {
+      promises.push(
+        window.electronAPI.mediaAction.updateCategory(numericId, updates.category_id ?? null)
+      )
     }
     // F-O1：套装标注持久化
     if ('outfit' in updates && typeof updates.outfit === 'string') {
@@ -221,7 +228,12 @@ export async function updateMediaFileAndPersist(
 // P0-02：按当前选中的角色档案 UID 过滤
 const MEDIA_PAGE_SIZE = 500
 
-export async function loadMediaFromDatabase(): Promise<{ files: MediaFile[]; categories: Category[]; total?: number; hasMore?: boolean } | null> {
+export async function loadMediaFromDatabase(): Promise<{
+  files: MediaFile[]
+  categories: Category[]
+  total?: number
+  hasMore?: boolean
+} | null> {
   if (!window.electronAPI?.media?.list || !window.electronAPI?.category?.list) return null
 
   try {
@@ -234,7 +246,8 @@ export async function loadMediaFromDatabase(): Promise<{ files: MediaFile[]; cat
     // launcher-cache 视图只看启动器缓存；其余视图（gallery/favorites 等）只看游戏内拍摄
     // 注：cloud 类数据由 scanner 正确分类入库，当前无独立 cloud 视图入口（属功能扩展，不在 F3 bug 修复范围）
     const currentView = useUIStore.getState().currentView
-    const mediaSource: 'game' | 'launcher' | 'cloud' = currentView === 'launcher-cache' ? 'launcher' : 'game'
+    const mediaSource: 'game' | 'launcher' | 'cloud' =
+      currentView === 'launcher-cache' ? 'launcher' : 'game'
     const mediaResult = await window.electronAPI.media.list({
       page: 0,
       pageSize: MEDIA_PAGE_SIZE,
@@ -263,7 +276,9 @@ export async function loadMediaFromDatabase(): Promise<{ files: MediaFile[]; cat
 
 // 追加加载更多媒体文件（无限滚动）
 // P0-02：按当前选中的角色档案 UID 过滤
-export async function loadMoreMedia(page: number): Promise<{ files: MediaFile[]; hasMore: boolean } | null> {
+export async function loadMoreMedia(
+  page: number
+): Promise<{ files: MediaFile[]; hasMore: boolean } | null> {
   if (!window.electronAPI?.media?.list) return null
 
   try {
@@ -272,7 +287,8 @@ export async function loadMoreMedia(page: number): Promise<{ files: MediaFile[];
     const showDuplicates = useUIStore.getState().showDuplicates
     // 与 loadMediaFromDatabase 保持一致的 mediaSource 策略
     const currentView = useUIStore.getState().currentView
-    const mediaSource: 'game' | 'launcher' | 'cloud' = currentView === 'launcher-cache' ? 'launcher' : 'game'
+    const mediaSource: 'game' | 'launcher' | 'cloud' =
+      currentView === 'launcher-cache' ? 'launcher' : 'game'
     const mediaResult = await window.electronAPI.media.list({
       page,
       pageSize: MEDIA_PAGE_SIZE,

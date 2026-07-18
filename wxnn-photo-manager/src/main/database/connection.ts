@@ -33,7 +33,7 @@ export class DatabaseManager {
         // 仍失败：抛出原始错误 + 重试错误，方便诊断
         throw new Error(
           `数据库打开失败（已尝试清理 WAL/SHM）：${err instanceof Error ? err.message : String(err)}\n` +
-          `重试错误：${retryErr instanceof Error ? retryErr.message : String(retryErr)}`
+            `重试错误：${retryErr instanceof Error ? retryErr.message : String(retryErr)}`
         )
       }
     }
@@ -50,8 +50,31 @@ export class DatabaseManager {
     this.db.pragma('mmap_size = 268435456')
     // 显式设置 WAL 自动 checkpoint（1000 页 ≈ 4MB），避免 WAL 文件无限膨胀
     // 修复：原实现未设置，进程异常退出时 WAL 残留可能影响下次启动
-    try { this.db.pragma('wal_autocheckpoint = 1000') } catch {}
+    try {
+      this.db.pragma('wal_autocheckpoint = 1000')
+    } catch {}
     await this.runMigrations()
+
+    // 数据库性能优化（2026-07-18）：启用增量自动清理 + 查询计划统计维护
+    // auto_vacuum = INCREMENTAL：删除数据时增量回收空闲页，避免文件无限膨胀
+    // 注意：auto_vacuum 只能在数据库创建时设置；旧库（mode=0）标记为 INCREMENTAL 后，
+    //       需未来某次手动 VACUUM 才能真正切换模式。此处不主动 VACUUM，避免阻塞启动
+    try {
+      const autoVacuumMode = this.db.pragma('auto_vacuum', { simple: true })
+      if (autoVacuumMode === 0) {
+        this.db.pragma('auto_vacuum = INCREMENTAL')
+      }
+    } catch (err) {
+      console.warn('[DB] auto_vacuum 设置失败（已忽略）:', err)
+    }
+
+    // PRAGMA optimize：让 SQLite 自动分析索引使用统计，优化查询计划器
+    // 官方推荐的轻量维护操作，毫秒级完成，不阻塞业务
+    try {
+      this.db.pragma('optimize')
+    } catch (err) {
+      console.warn('[DB] PRAGMA optimize 失败（已忽略）:', err)
+    }
   }
 
   private async runMigrations(): Promise<void> {
@@ -281,7 +304,19 @@ export class DatabaseManager {
       // P1-01：original_id 索引，支持按推荐保留项反查同组重复
       'CREATE INDEX IF NOT EXISTS idx_media_files_original_id ON media_files(original_id)',
       // media_source 索引，支持按来源（game/launcher）快速过滤
-      'CREATE INDEX IF NOT EXISTS idx_media_files_media_source ON media_files(media_source)'
+      'CREATE INDEX IF NOT EXISTS idx_media_files_media_source ON media_files(media_source)',
+      // 数据库性能优化（2026-07-18）：新增 5 个联合索引，覆盖高频 WHERE 组合查询
+      // 依据 media-repository.ts 中实际 SQL 模式设计，与现有单列索引共存互不冲突
+      // 图库默认列表查询：is_deleted=0 AND account_uid=? AND album_type=?
+      'CREATE INDEX IF NOT EXISTS idx_media_files_default_view ON media_files(is_deleted, account_uid, album_type)',
+      // 角色档案统计：account_uid=? AND is_deleted=0 AND file_type=?
+      'CREATE INDEX IF NOT EXISTS idx_media_files_profile_stats ON media_files(account_uid, is_deleted, file_type)',
+      // 重复分组查询：is_duplicate=1 AND is_deleted=0 AND original_id IS NOT NULL
+      'CREATE INDEX IF NOT EXISTS idx_media_files_duplicate_group ON media_files(is_duplicate, is_deleted, original_id)',
+      // 套装聚合统计：is_deleted=0 AND outfit IS NOT NULL AND outfit != ''
+      'CREATE INDEX IF NOT EXISTS idx_media_files_outfit_agg ON media_files(is_deleted, outfit)',
+      // 场景时段分析：scene_time=? AND file_type=? AND is_deleted=0
+      'CREATE INDEX IF NOT EXISTS idx_media_files_scene_analysis ON media_files(scene_time, file_type, is_deleted)'
     ]
     for (const stmt of indexStatements) {
       try {
@@ -289,7 +324,10 @@ export class DatabaseManager {
       } catch (err) {
         // 索引创建失败不应阻塞启动（可能是某列未成功添加，或索引已存在）
         // 仅记录到 stderr，不抛出
-        console.warn(`[DB] 索引创建失败（已忽略）: ${stmt}`, err instanceof Error ? err.message : err)
+        console.warn(
+          `[DB] 索引创建失败（已忽略）: ${stmt}`,
+          err instanceof Error ? err.message : err
+        )
       }
     }
   }
@@ -310,9 +348,11 @@ export class DatabaseManager {
    */
   markMigrationApplied(name: string): void {
     if (!this.db) return
-    this.db.prepare(
-      "INSERT OR IGNORE INTO schema_migrations (name, applied_at) VALUES (?, datetime('now'))"
-    ).run(name)
+    this.db
+      .prepare(
+        "INSERT OR IGNORE INTO schema_migrations (name, applied_at) VALUES (?, datetime('now'))"
+      )
+      .run(name)
   }
 
   /**
@@ -332,7 +372,10 @@ export class DatabaseManager {
       }
       // 其他错误（磁盘满、DB 锁、I/O 错误）记录但不抛出，避免阻塞启动
       // 后续 CREATE INDEX 会跳过该列
-      console.warn(`[DB] 添加列失败（已忽略）: ALTER TABLE ${tableName} ADD COLUMN ${columnDef}`, msg)
+      console.warn(
+        `[DB] 添加列失败（已忽略）: ALTER TABLE ${tableName} ADD COLUMN ${columnDef}`,
+        msg
+      )
     }
   }
 
@@ -416,9 +459,11 @@ export class DatabaseManager {
       CREATE INDEX IF NOT EXISTS idx_character_profiles_nickname ON character_profiles(nickname);
     `)
     // 插入默认档案（若不存在）
-    this.db.prepare(
-      "INSERT OR IGNORE INTO character_profiles (uid, nickname, created_at) VALUES ('default', '默认档案', datetime('now'))"
-    ).run()
+    this.db
+      .prepare(
+        "INSERT OR IGNORE INTO character_profiles (uid, nickname, created_at) VALUES ('default', '默认档案', datetime('now'))"
+      )
+      .run()
   }
 
   /**
@@ -463,17 +508,19 @@ export class DatabaseManager {
       // 仅检测 IS NULL 的记录，避免每次启动都对 'other' 记录重复检测
       // 'other' 既是默认值也是 detectSceneCategory 的合法返回值，重复检测无意义且浪费性能
       const rows = this.db
-        .prepare("SELECT id, file_path FROM media_files WHERE scene_category IS NULL")
+        .prepare('SELECT id, file_path FROM media_files WHERE scene_category IS NULL')
         .all() as Array<{ id: number; file_path: string }>
 
       if (rows.length > 0) {
         const updateStmt = this.db.prepare('UPDATE media_files SET scene_category = ? WHERE id = ?')
-        const updateMany = this.db.transaction((items: Array<{ id: number; file_path: string }>) => {
-          for (const row of items) {
-            const category = detectSceneCategory(row.file_path)
-            updateStmt.run(category, row.id)
+        const updateMany = this.db.transaction(
+          (items: Array<{ id: number; file_path: string }>) => {
+            for (const row of items) {
+              const category = detectSceneCategory(row.file_path)
+              updateStmt.run(category, row.id)
+            }
           }
-        })
+        )
         updateMany(rows)
         console.log(`[Database] 已迁移 ${rows.length} 条记录的 scene_category`)
       }
@@ -506,7 +553,8 @@ export class DatabaseManager {
   getSetting<T>(key: string, defaultValue: T): T {
     if (!this.db) return defaultValue
     try {
-      const row = this.db.prepare('SELECT value FROM app_settings WHERE key = ?').get(key) as { value: string } | undefined
+      const row = this.db.prepare('SELECT value FROM app_settings WHERE key = ?').get(key) as
+        { value: string } | undefined
       if (!row) return defaultValue
       const parsed = JSON.parse(row.value)
       // 运行时类型校验：基于 defaultValue 的类型检查 parsed 是否兼容
@@ -551,7 +599,9 @@ export class DatabaseManager {
 
   setSetting<T>(key: string, value: T): void {
     if (!this.db) return
-    this.db.prepare('INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)').run(key, JSON.stringify(value))
+    this.db
+      .prepare('INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)')
+      .run(key, JSON.stringify(value))
   }
 
   getDatabase(): Database.Database | null {
@@ -560,6 +610,13 @@ export class DatabaseManager {
 
   close(): void {
     if (this.db) {
+      // 数据库性能优化（2026-07-18）：退出时再次执行 optimize，确保本次会话的统计信息落盘
+      // 必须在 WAL checkpoint 之前执行，避免 optimize 触发的写入被 checkpoint 漏掉
+      try {
+        this.db.pragma('optimize')
+      } catch (err) {
+        console.warn('[Database] 退出时 PRAGMA optimize 失败（已忽略）:', err)
+      }
       // 退出前执行 WAL checkpoint，将 WAL 日志写回主数据库文件，防止异常退出丢数据
       // 修复 A-F4/C-S6：原实现直接 close()，WAL 文件未 checkpoint，异常退出可能丢数据
       // P1-A8：wal_checkpoint(TRUNCATE) 会阻塞等待所有读者结束，万级日志下可能超 2s

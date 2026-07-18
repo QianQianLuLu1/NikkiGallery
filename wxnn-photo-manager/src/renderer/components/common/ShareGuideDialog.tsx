@@ -38,13 +38,15 @@ export const ShareGuideDialog: React.FC<ShareGuideDialogProps> = ({
   const [launchMessage, setLaunchMessage] = useState<string | null>(null)
 
   // F4：渠道显示配置走 i18n，文案诚实化（明确告知"复制到剪贴板 + 手动粘贴"机制）
-  const channel = channelId ? {
-    name: t(`share.guide.channels.${channelId}`),
-    icon: CHANNEL_ICONS[channelId],
-    guide: t(`share.guide.guides.${channelId}.running`),
-    notRunning: t(`share.guide.guides.${channelId}.notRunning`),
-    fallback: t(`share.guide.guides.${channelId}.notInstalled`)
-  } : null
+  const channel = channelId
+    ? {
+        name: t(`share.guide.channels.${channelId}`),
+        icon: CHANNEL_ICONS[channelId],
+        guide: t(`share.guide.guides.${channelId}.running`),
+        notRunning: t(`share.guide.guides.${channelId}.notRunning`),
+        fallback: t(`share.guide.guides.${channelId}.notInstalled`)
+      }
+    : null
 
   // 自动关闭策略：
   // - 已安装且运行中：3 秒后自动关闭（用户只需看到引导）
@@ -55,7 +57,7 @@ export const ShareGuideDialog: React.FC<ShareGuideDialogProps> = ({
     if (!open || !channelId) return
     if (copyResult && !copyResult.success) return
     const isRunning = installed && running
-    const delay = isRunning ? 3000 : (!installed ? 5000 : 0)
+    const delay = isRunning ? 3000 : !installed ? 5000 : 0
     if (delay === 0) return
     const timer = setTimeout(() => onClose(), delay)
     return () => clearTimeout(timer)
@@ -85,7 +87,9 @@ export const ShareGuideDialog: React.FC<ShareGuideDialogProps> = ({
           {copyResult.message}
         </p>
         <div className="flex justify-end pt-2">
-          <button ref={closeBtnRef} className="btn-primary" onClick={onClose}>{t('share.guide.known')}</button>
+          <button ref={closeBtnRef} className="btn-primary" onClick={onClose}>
+            {t('share.guide.known')}
+          </button>
         </div>
       </BaseDialog>
     )
@@ -94,7 +98,11 @@ export const ShareGuideDialog: React.FC<ShareGuideDialogProps> = ({
   // 三态文案选择
   const isRunning = installed && !!running
   const text = channel
-    ? (isRunning ? channel.guide : (installed ? channel.notRunning : channel.fallback))
+    ? isRunning
+      ? channel.guide
+      : installed
+        ? channel.notRunning
+        : channel.fallback
     : ''
 
   // 启动目标应用
@@ -110,7 +118,9 @@ export const ShareGuideDialog: React.FC<ShareGuideDialogProps> = ({
         setLaunchMessage(res?.message || t('share.guide.launchFailed'))
       }
     } catch (err) {
-      setLaunchMessage(`${t('share.guide.launchFailed')}: ${err instanceof Error ? err.message : String(err)}`)
+      setLaunchMessage(
+        `${t('share.guide.launchFailed')}: ${err instanceof Error ? err.message : String(err)}`
+      )
     } finally {
       setLaunching(false)
     }
@@ -146,15 +156,15 @@ export const ShareGuideDialog: React.FC<ShareGuideDialogProps> = ({
       <div className="flex justify-end gap-2 pt-2">
         {/* 已安装但未运行：显示"打开 XX"按钮 */}
         {installed && !isRunning && (
-          <button
-            className="btn-secondary"
-            onClick={handleLaunch}
-            disabled={launching}
-          >
-            {launching ? t('share.guide.launching') : t('share.guide.open', { name: channel?.name ?? '' })}
+          <button className="btn-secondary" onClick={handleLaunch} disabled={launching}>
+            {launching
+              ? t('share.guide.launching')
+              : t('share.guide.open', { name: channel?.name ?? '' })}
           </button>
         )}
-        <button ref={closeBtnRef} className="btn-primary" onClick={onClose}>{t('share.guide.known')}</button>
+        <button ref={closeBtnRef} className="btn-primary" onClick={onClose}>
+          {t('share.guide.known')}
+        </button>
       </div>
     </BaseDialog>
   )

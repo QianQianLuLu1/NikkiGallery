@@ -1,6 +1,12 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { useUIStore } from '../stores/uiStore'
-import { useMediaStore, toFileUrl, updateMediaFileAndPersist, OUTFIT_PRESETS, getSceneTimeLabel } from '../stores/mediaStore'
+import {
+  useMediaStore,
+  toFileUrl,
+  updateMediaFileAndPersist,
+  OUTFIT_PRESETS,
+  getSceneTimeLabel
+} from '../stores/mediaStore'
 import { useFilteredMediaFiles } from '../hooks/useFilteredMediaFiles'
 import { ConfirmDialog } from '../components/common/ConfirmDialog'
 import { TagManager } from '../components/gallery/TagManager'
@@ -26,7 +32,13 @@ export const DetailPage: React.FC = () => {
   // U-S6：使用 useExif hook 替代手写 EXIF 加载（删除重复的 ExifData interface 与 useEffect）
   const { exif } = useExif(media?.file_path, !!media)
   // F-G7：视频元数据状态（时长/分辨率/编码/帧率）
-  const [videoMeta, setVideoMeta] = useState<{ duration?: number; width?: number; height?: number; codec?: string; frameRate?: number } | null>(null)
+  const [videoMeta, setVideoMeta] = useState<{
+    duration?: number
+    width?: number
+    height?: number
+    codec?: string
+    frameRate?: number
+  } | null>(null)
   const [confirm, setConfirm] = useState(false)
   const [showTagManager, setShowTagManager] = useState(false)
   // F-O1：套装标注编辑状态
@@ -37,10 +49,13 @@ export const DetailPage: React.FC = () => {
 
   const currentIndex = media ? filteredFiles.findIndex((f) => f.id === media.id) : -1
 
-  const navigateToIndex = useCallback((index: number) => {
-    const file = filteredFiles[index]
-    if (file) useUIStore.setState({ selectedMediaId: file.id })
-  }, [filteredFiles])
+  const navigateToIndex = useCallback(
+    (index: number) => {
+      const file = filteredFiles[index]
+      if (file) useUIStore.setState({ selectedMediaId: file.id })
+    },
+    [filteredFiles]
+  )
 
   // F-G7：视频文件加载元数据（时长/分辨率/编码/帧率），图片不加载
   useEffect(() => {
@@ -100,11 +115,7 @@ export const DetailPage: React.FC = () => {
   if (!media) {
     // U-S6：使用 EmptyState 统一空态
     return (
-      <EmptyState
-        title="未选择媒体文件"
-        ctaLabel="返回图库"
-        onCta={() => navigateTo('gallery')}
-      />
+      <EmptyState title="未选择媒体文件" ctaLabel="返回图库" onCta={() => navigateTo('gallery')} />
     )
   }
 
@@ -237,30 +248,48 @@ export const DetailPage: React.FC = () => {
     <div className="h-full flex gap-5">
       <div className="flex-1 flex flex-col min-w-0">
         <div className="flex items-center justify-between mb-4">
-          <button className="btn-secondary" onClick={() => navigateTo('gallery')}>返回图库</button>
+          <button className="btn-secondary" onClick={() => navigateTo('gallery')}>
+            返回图库
+          </button>
           <div className="flex items-center gap-2">
             {media.file_type === 'image' && (
-              <button className="btn-secondary" onClick={() => navigateTo('editor')}>编辑</button>
+              <button className="btn-secondary" onClick={() => navigateTo('editor')}>
+                编辑
+              </button>
             )}
             <button className="btn-secondary" onClick={() => setShowTagManager(true)}>
               <IconTag size={16} />
               标签
             </button>
-            <button className="btn-secondary" onClick={handleSaveAs}>另存为</button>
-            <button className="btn-danger" onClick={() => setConfirm(true)}>删除</button>
+            <button className="btn-secondary" onClick={handleSaveAs}>
+              另存为
+            </button>
+            <button className="btn-danger" onClick={() => setConfirm(true)}>
+              删除
+            </button>
           </div>
         </div>
 
         {/* T02：丢失文件提示条 */}
         {media.is_missing === true && (
-          <div className="mb-4 p-3 rounded-xl flex items-center justify-between gap-3" style={{ background: 'var(--danger-bg)', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
-            <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--danger-hover)' }}>
+          <div
+            className="mb-4 p-3 rounded-xl flex items-center justify-between gap-3"
+            style={{ background: 'var(--danger-bg)', border: '1px solid rgba(239, 68, 68, 0.3)' }}
+          >
+            <div
+              className="flex items-center gap-2 text-sm"
+              style={{ color: 'var(--danger-hover)' }}
+            >
               <IconWarning size={16} />
               <span>文件已被移动或删除，无法正常显示。建议从库中移除该记录。</span>
             </div>
             <button
               className="btn-secondary text-xs flex-shrink-0"
-              style={{ background: 'var(--danger-hover)', color: 'white', borderColor: 'var(--danger-hover)' }}
+              style={{
+                background: 'var(--danger-hover)',
+                color: 'white',
+                borderColor: 'var(--danger-hover)'
+              }}
               onClick={handleRemoveFromLibrary}
             >
               从库中移除
@@ -306,14 +335,20 @@ export const DetailPage: React.FC = () => {
 
       <div className="w-72 glass-card p-5 space-y-5 overflow-y-auto flex-shrink-0">
         <div>
-          <h3 className="text-lg font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>{media.file_name}</h3>
-          <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{media.file_path}</p>
+          <h3 className="text-lg font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>
+            {media.file_name}
+          </h3>
+          <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+            {media.file_path}
+          </p>
         </div>
 
         <div className="space-y-3 text-sm">
           <div className="flex justify-between">
             <span style={{ color: 'var(--text-secondary)' }}>类型</span>
-            <span style={{ color: 'var(--text-primary)' }}>{media.file_type === 'image' ? '图片' : '视频'} {media.file_ext.toUpperCase()}</span>
+            <span style={{ color: 'var(--text-primary)' }}>
+              {media.file_type === 'image' ? '图片' : '视频'} {media.file_ext.toUpperCase()}
+            </span>
           </div>
           <div className="flex justify-between">
             <span style={{ color: 'var(--text-secondary)' }}>大小</span>
@@ -321,7 +356,9 @@ export const DetailPage: React.FC = () => {
           </div>
           <div className="flex justify-between">
             <span style={{ color: 'var(--text-secondary)' }}>分辨率</span>
-            <span style={{ color: 'var(--text-primary)' }}>{media.width && media.height ? `${media.width}x${media.height}` : '-'}</span>
+            <span style={{ color: 'var(--text-primary)' }}>
+              {media.width && media.height ? `${media.width}x${media.height}` : '-'}
+            </span>
           </div>
           <div className="flex justify-between">
             <span style={{ color: 'var(--text-secondary)' }}>创建时间</span>
@@ -329,20 +366,31 @@ export const DetailPage: React.FC = () => {
           </div>
           <div className="flex justify-between">
             <span style={{ color: 'var(--text-secondary)' }}>收藏</span>
-            <button onClick={toggleFavorite} style={{ color: media.is_favorite ? 'var(--favorite)' : 'var(--text-primary)' }}>
+            <button
+              onClick={toggleFavorite}
+              style={{ color: media.is_favorite ? 'var(--favorite)' : 'var(--text-primary)' }}
+            >
               {media.is_favorite ? '已收藏' : '未收藏'}
             </button>
           </div>
           {media.scene_time && media.scene_time !== 'unknown' && (
             <div className="flex justify-between">
               <span style={{ color: 'var(--text-secondary)' }}>场景时段</span>
-              <span style={{ color: 'var(--text-primary)' }}>{getSceneTimeLabel(media.scene_time)}</span>
+              <span style={{ color: 'var(--text-primary)' }}>
+                {getSceneTimeLabel(media.scene_time)}
+              </span>
             </div>
           )}
           {media.tags.length > 0 && (
             <div className="flex flex-wrap gap-1 pt-1">
               {media.tags.map((tag) => (
-                <span key={tag} className="px-2 py-0.5 rounded-full text-xs" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}>{tag}</span>
+                <span
+                  key={tag}
+                  className="px-2 py-0.5 rounded-full text-xs"
+                  style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}
+                >
+                  {tag}
+                </span>
               ))}
             </div>
           )}
@@ -351,7 +399,9 @@ export const DetailPage: React.FC = () => {
         {/* F-O1：套装标注编辑 */}
         <div className="space-y-3 text-sm pt-4" style={{ borderTop: '1px solid var(--divider)' }}>
           <div className="flex items-center justify-between">
-            <h4 className="font-medium" style={{ color: 'var(--text-secondary)' }}>套装标注</h4>
+            <h4 className="font-medium" style={{ color: 'var(--text-secondary)' }}>
+              套装标注
+            </h4>
             {!editingOutfit && (
               <button
                 className="text-xs px-2 py-1 rounded-md transition-colors hover:opacity-80"
@@ -384,19 +434,34 @@ export const DetailPage: React.FC = () => {
               >
                 <option value="">从预设中选择…</option>
                 {OUTFIT_PRESETS.map((preset) => (
-                  <option key={preset} value={preset}>{preset}</option>
+                  <option key={preset} value={preset}>
+                    {preset}
+                  </option>
                 ))}
               </select>
               <div className="flex items-center gap-2">
-                <button className="btn-primary text-xs flex-1" onClick={handleSaveOutfit}>保存</button>
+                <button className="btn-primary text-xs flex-1" onClick={handleSaveOutfit}>
+                  保存
+                </button>
                 {media.outfit && (
-                  <button className="btn-secondary text-xs" style={{ color: 'var(--danger)' }} onClick={handleClearOutfit}>清除</button>
+                  <button
+                    className="btn-secondary text-xs"
+                    style={{ color: 'var(--danger)' }}
+                    onClick={handleClearOutfit}
+                  >
+                    清除
+                  </button>
                 )}
-                <button className="btn-secondary text-xs" onClick={() => setEditingOutfit(false)}>取消</button>
+                <button className="btn-secondary text-xs" onClick={() => setEditingOutfit(false)}>
+                  取消
+                </button>
               </div>
             </div>
           ) : (
-            <p className="text-sm" style={{ color: media.outfit ? 'var(--text-primary)' : 'var(--text-tertiary)' }}>
+            <p
+              className="text-sm"
+              style={{ color: media.outfit ? 'var(--text-primary)' : 'var(--text-tertiary)' }}
+            >
               {media.outfit || '未标注套装'}
             </p>
           )}
@@ -404,14 +469,53 @@ export const DetailPage: React.FC = () => {
 
         {exif && (
           <div className="space-y-3 text-sm pt-4" style={{ borderTop: '1px solid var(--divider)' }}>
-            <h4 className="font-medium" style={{ color: 'var(--text-secondary)' }}>EXIF 信息</h4>
-            {exif.camera && <div className="flex justify-between"><span style={{ color: 'var(--text-secondary)' }}>相机</span><span style={{ color: 'var(--text-primary)' }}>{exif.camera}</span></div>}
-            {exif.lens && <div className="flex justify-between"><span style={{ color: 'var(--text-secondary)' }}>镜头</span><span style={{ color: 'var(--text-primary)' }}>{exif.lens}</span></div>}
-            {exif.aperture && <div className="flex justify-between"><span style={{ color: 'var(--text-secondary)' }}>光圈</span><span style={{ color: 'var(--text-primary)' }}>{exif.aperture}</span></div>}
-            {exif.shutter && <div className="flex justify-between"><span style={{ color: 'var(--text-secondary)' }}>快门</span><span style={{ color: 'var(--text-primary)' }}>{exif.shutter}</span></div>}
-            {exif.iso && <div className="flex justify-between"><span style={{ color: 'var(--text-secondary)' }}>ISO</span><span style={{ color: 'var(--text-primary)' }}>{exif.iso}</span></div>}
-            {exif.focalLength && <div className="flex justify-between"><span style={{ color: 'var(--text-secondary)' }}>焦距</span><span style={{ color: 'var(--text-primary)' }}>{exif.focalLength}</span></div>}
-            {exif.dateTaken && <div className="flex justify-between"><span style={{ color: 'var(--text-secondary)' }}>拍摄时间</span><span style={{ color: 'var(--text-primary)' }}>{formatDateTime(exif.dateTaken)}</span></div>}
+            <h4 className="font-medium" style={{ color: 'var(--text-secondary)' }}>
+              EXIF 信息
+            </h4>
+            {exif.camera && (
+              <div className="flex justify-between">
+                <span style={{ color: 'var(--text-secondary)' }}>相机</span>
+                <span style={{ color: 'var(--text-primary)' }}>{exif.camera}</span>
+              </div>
+            )}
+            {exif.lens && (
+              <div className="flex justify-between">
+                <span style={{ color: 'var(--text-secondary)' }}>镜头</span>
+                <span style={{ color: 'var(--text-primary)' }}>{exif.lens}</span>
+              </div>
+            )}
+            {exif.aperture && (
+              <div className="flex justify-between">
+                <span style={{ color: 'var(--text-secondary)' }}>光圈</span>
+                <span style={{ color: 'var(--text-primary)' }}>{exif.aperture}</span>
+              </div>
+            )}
+            {exif.shutter && (
+              <div className="flex justify-between">
+                <span style={{ color: 'var(--text-secondary)' }}>快门</span>
+                <span style={{ color: 'var(--text-primary)' }}>{exif.shutter}</span>
+              </div>
+            )}
+            {exif.iso && (
+              <div className="flex justify-between">
+                <span style={{ color: 'var(--text-secondary)' }}>ISO</span>
+                <span style={{ color: 'var(--text-primary)' }}>{exif.iso}</span>
+              </div>
+            )}
+            {exif.focalLength && (
+              <div className="flex justify-between">
+                <span style={{ color: 'var(--text-secondary)' }}>焦距</span>
+                <span style={{ color: 'var(--text-primary)' }}>{exif.focalLength}</span>
+              </div>
+            )}
+            {exif.dateTaken && (
+              <div className="flex justify-between">
+                <span style={{ color: 'var(--text-secondary)' }}>拍摄时间</span>
+                <span style={{ color: 'var(--text-primary)' }}>
+                  {formatDateTime(exif.dateTaken)}
+                </span>
+              </div>
+            )}
             {exif.gps && (
               <div className="flex justify-between items-center">
                 <span style={{ color: 'var(--text-secondary)' }}>拍摄位置</span>
@@ -444,19 +548,24 @@ export const DetailPage: React.FC = () => {
         {/* F-G7：视频元数据展示（时长/分辨率/编码/帧率） */}
         {videoMeta && (
           <div className="space-y-3 text-sm pt-4" style={{ borderTop: '1px solid var(--divider)' }}>
-            <h4 className="font-medium" style={{ color: 'var(--text-secondary)' }}>视频信息</h4>
+            <h4 className="font-medium" style={{ color: 'var(--text-secondary)' }}>
+              视频信息
+            </h4>
             {videoMeta.duration ? (
               <div className="flex justify-between">
                 <span style={{ color: 'var(--text-secondary)' }}>时长</span>
                 <span style={{ color: 'var(--text-primary)' }}>
-                  {Math.floor(videoMeta.duration / 60)}:{String(Math.round(videoMeta.duration % 60)).padStart(2, '0')}
+                  {Math.floor(videoMeta.duration / 60)}:
+                  {String(Math.round(videoMeta.duration % 60)).padStart(2, '0')}
                 </span>
               </div>
             ) : null}
             {videoMeta.width && videoMeta.height ? (
               <div className="flex justify-between">
                 <span style={{ color: 'var(--text-secondary)' }}>分辨率</span>
-                <span style={{ color: 'var(--text-primary)' }}>{videoMeta.width} × {videoMeta.height}</span>
+                <span style={{ color: 'var(--text-primary)' }}>
+                  {videoMeta.width} × {videoMeta.height}
+                </span>
               </div>
             ) : null}
             {videoMeta.codec ? (
@@ -468,7 +577,9 @@ export const DetailPage: React.FC = () => {
             {videoMeta.frameRate ? (
               <div className="flex justify-between">
                 <span style={{ color: 'var(--text-secondary)' }}>帧率</span>
-                <span style={{ color: 'var(--text-primary)' }}>{Math.round(videoMeta.frameRate)} fps</span>
+                <span style={{ color: 'var(--text-primary)' }}>
+                  {Math.round(videoMeta.frameRate)} fps
+                </span>
               </div>
             ) : null}
           </div>
@@ -519,7 +630,12 @@ const ZoomableImage: React.FC<ZoomableImageProps> = ({ src, alt, isVideo, onClic
       {isVideo ? (
         <VideoPlayer src={src} controls className="max-w-full max-h-full" />
       ) : (
-        <img src={src || undefined} alt={alt} className="max-w-full max-h-full object-contain" draggable={false} />
+        <img
+          src={src || undefined}
+          alt={alt}
+          className="max-w-full max-h-full object-contain"
+          draggable={false}
+        />
       )}
     </ZoomableContainer>
   )

@@ -111,13 +111,12 @@ export async function migrateDirFiles(
       try {
         await fsp.copyFile(srcPath, dstPath)
         // P1-C7：copy 后校验大小一致，避免崩溃导致的不完整 dst 覆盖完整 src
-        const [srcStat, dstStat] = await Promise.all([
-          fsp.stat(srcPath),
-          fsp.stat(dstPath)
-        ])
+        const [srcStat, dstStat] = await Promise.all([fsp.stat(srcPath), fsp.stat(dstPath)])
         if (srcStat.size !== dstStat.size) {
           // dst 不完整：删除 dst 保留 src，下次重试可恢复
-          await fsp.unlink(dstPath).catch(() => { /* dst 可能未创建 */ })
+          await fsp.unlink(dstPath).catch(() => {
+            /* dst 可能未创建 */
+          })
           throw new Error(`copy 校验失败：源 ${srcStat.size}B 与目标 ${dstStat.size}B 大小不一致`)
         }
         // 一致才删除源文件；unlink 失败仅 warn 不视作迁移失败（dst 已完整）

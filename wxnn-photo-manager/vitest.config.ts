@@ -24,15 +24,20 @@ export default defineConfig({
         'src/main/utils/phash.ts',
         'src/main/utils/concurrency.ts',
         'src/main/utils/file-utils.ts',
+        'src/main/utils/duplicate-scoring.ts',
+        'src/main/database/media-repository.ts',
         'src/renderer/stores/operationHistoryStore.ts',
-        'src/renderer/stores/mediaStore.ts'
+        'src/renderer/stores/mediaStore.ts',
+        'src/renderer/utils/lut.ts',
+        'src/renderer/utils/imageProcessor.ts'
       ]
     }
   },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src/renderer'),
-      '@main': path.resolve(__dirname, 'src/main')
+      '@main': path.resolve(__dirname, 'src/main'),
+      '@common': path.resolve(__dirname, 'src/common')
     }
   }
 })

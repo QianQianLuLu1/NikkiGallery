@@ -18,7 +18,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src/renderer'),
-      '@main': path.resolve(__dirname, './src/main')
+      '@main': path.resolve(__dirname, './src/main'),
+      '@common': path.resolve(__dirname, './src/common')
     }
   },
   server: {

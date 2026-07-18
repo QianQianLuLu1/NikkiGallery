@@ -56,8 +56,8 @@ export const WORLD_LOCATIONS: WorldDimension[] = [
                 nameZh: '纪念山地',
                 subareas: [
                   { name: 'OldFlorawishMemorial', nameZh: '古花愿镇纪念公园' },
-                  { name: 'StylistGuildMemorial', nameZh: '搭配师协会纪念旧址' },
-                ],
+                  { name: 'StylistGuildMemorial', nameZh: '搭配师协会纪念旧址' }
+                ]
               },
               {
                 name: 'Florawish',
@@ -67,8 +67,8 @@ export const WORLD_LOCATIONS: WorldDimension[] = [
                   { name: 'FortuneFalls', nameZh: '福鸣瀑布' },
                   { name: 'GreatWishtreeSquare', nameZh: '大许愿树广场' },
                   { name: 'LakesideDistrict', nameZh: '湖畔街区' },
-                  { name: 'OutskirtsForest', nameZh: '镇郊林区' },
-                ],
+                  { name: 'OutskirtsForest', nameZh: '镇郊林区' }
+                ]
               },
               {
                 name: 'BreezyMeadow',
@@ -84,8 +84,8 @@ export const WORLD_LOCATIONS: WorldDimension[] = [
                   { name: 'QueenPalaceRuins', nameZh: '女王行宫遗迹' },
                   { name: 'RelicHill', nameZh: '遗迹山坡' },
                   { name: 'SleepyFishHills', nameZh: '悠悠草坡' },
-                  { name: 'SwanGazebo', nameZh: '天鹅羽亭' },
-                ],
+                  { name: 'SwanGazebo', nameZh: '天鹅羽亭' }
+                ]
               },
               {
                 name: 'Stoneville',
@@ -94,8 +94,8 @@ export const WORLD_LOCATIONS: WorldDimension[] = [
                   { name: 'DyeWorkshop', nameZh: '染织工坊' },
                   { name: 'FlowerFieldsResidence', nameZh: '花田民居' },
                   { name: 'RockfallValley', nameZh: '落石谷' },
-                  { name: 'StonevilleMarket', nameZh: '村口集市' },
-                ],
+                  { name: 'StonevilleMarket', nameZh: '村口集市' }
+                ]
               },
               {
                 name: 'AbandonedDistrict',
@@ -108,8 +108,8 @@ export const WORLD_LOCATIONS: WorldDimension[] = [
                   { name: 'RippleEstate', nameZh: '涟漪庄园' },
                   { name: 'StellarFishingGround', nameZh: '星空钓场' },
                   { name: 'Stonecrown', nameZh: '石之冠' },
-                  { name: 'WindriderMill', nameZh: '乘风磨坊' },
-                ],
+                  { name: 'WindriderMill', nameZh: '乘风磨坊' }
+                ]
               },
               {
                 name: 'WishingWoods',
@@ -120,8 +120,8 @@ export const WORLD_LOCATIONS: WorldDimension[] = [
                   { name: 'FallenWishHighlands', nameZh: '殒愿山岭' },
                   { name: 'GrandTreeValley', nameZh: '大树谷' },
                   { name: 'SacredMountains', nameZh: '圣山' },
-                  { name: 'ValleyOfBlossoms', nameZh: '圣地花谷' },
-                ],
+                  { name: 'ValleyOfBlossoms', nameZh: '圣地花谷' }
+                ]
               },
               {
                 name: 'FireworkIsles',
@@ -132,8 +132,8 @@ export const WORLD_LOCATIONS: WorldDimension[] = [
                   { name: 'FlamingForest', nameZh: '焰光森林' },
                   { name: 'RelicIsles', nameZh: '遗迹群岛' },
                   { name: 'SongbreezeHighland', nameZh: '聆风高地' },
-                  { name: 'SparkheartIsland', nameZh: '焰心岛' },
-                ],
+                  { name: 'SparkheartIsland', nameZh: '焰心岛' }
+                ]
               },
               {
                 name: 'SerenityIsland',
@@ -142,8 +142,8 @@ export const WORLD_LOCATIONS: WorldDimension[] = [
                   { name: 'OldRuins', nameZh: '古老的废墟' },
                   { name: 'Soakville', nameZh: '布露村' },
                   { name: 'SoakvilleOutskirts', nameZh: '布露村郊外' },
-                  { name: 'Steamville', nameZh: '蒸汽维尔' },
-                ],
+                  { name: 'Steamville', nameZh: '蒸汽维尔' }
+                ]
               },
               {
                 name: 'DanqingIsland',
@@ -155,8 +155,8 @@ export const WORLD_LOCATIONS: WorldDimension[] = [
                   { name: 'InkwashStream', nameZh: '洗墨涧' },
                   { name: 'LoongPagoda', nameZh: '奉龙塔' },
                   { name: 'LoongPeak', nameZh: '栖龙峰' },
-                  { name: 'ReedblossomShore', nameZh: '芦花水畔' },
-                ],
+                  { name: 'ReedblossomShore', nameZh: '芦花水畔' }
+                ]
               },
               {
                 name: 'DanqingRealm',
@@ -166,12 +166,12 @@ export const WORLD_LOCATIONS: WorldDimension[] = [
                   { name: 'InkPool', nameZh: '墨池' },
                   { name: 'InkshorePlain', nameZh: '临墨坪' },
                   { name: 'Inkville', nameZh: '墨缘乡' },
-                  { name: 'WildfieldWaterside', nameZh: '野郊水畔' },
-                ],
-              },
-            ],
-          },
-        ],
+                  { name: 'WildfieldWaterside', nameZh: '野郊水畔' }
+                ]
+              }
+            ]
+          }
+        ]
       },
       {
         name: 'TerraAlliance',
@@ -184,7 +184,7 @@ export const WORLD_LOCATIONS: WorldDimension[] = [
               {
                 name: 'ItzalandCanyon',
                 nameZh: '伊地峡谷',
-                subareas: [],
+                subareas: []
               },
               {
                 name: 'ElderwoodForest',
@@ -207,8 +207,8 @@ export const WORLD_LOCATIONS: WorldDimension[] = [
                   { name: 'SnailRanch', nameZh: '蜗牛农场' },
                   { name: 'SpiraWaterfall', nameZh: '蜗牛城瀑布' },
                   { name: 'TitanGraveyard', nameZh: '大拉姆居落' },
-                  { name: 'TitansOutpostRuins', nameZh: '巨兽前哨废墟' },
-                ],
+                  { name: 'TitansOutpostRuins', nameZh: '巨兽前哨废墟' }
+                ]
               },
               {
                 name: 'Spira',
@@ -217,8 +217,8 @@ export const WORLD_LOCATIONS: WorldDimension[] = [
                   { name: 'Spira1F', nameZh: '蜗牛城一层' },
                   { name: 'Spira2F', nameZh: '蜗牛城二层' },
                   { name: 'Spira3F', nameZh: '蜗牛城三层' },
-                  { name: 'SpiraShelldome', nameZh: '蜗牛城壳顶' },
-                ],
+                  { name: 'SpiraShelldome', nameZh: '蜗牛城壳顶' }
+                ]
               },
               {
                 name: 'Boneyard',
@@ -233,8 +233,8 @@ export const WORLD_LOCATIONS: WorldDimension[] = [
                   { name: 'HealingGround', nameZh: '疗愈地' },
                   { name: 'HollowbreathPassage', nameZh: '幽息廊道' },
                   { name: 'LonestoneShore', nameZh: '孤石滩' },
-                  { name: 'SoulSpring', nameZh: '甜泉' },
-                ],
+                  { name: 'SoulSpring', nameZh: '甜泉' }
+                ]
               },
               {
                 name: 'WanxiangRealm',
@@ -248,44 +248,44 @@ export const WORLD_LOCATIONS: WorldDimension[] = [
                   { name: 'JiuhuaPavilion', nameZh: '九华阙' },
                   { name: 'JiuhuaPenitentiary', nameZh: '九华监' },
                   { name: 'ValleyPath', nameZh: '峡谷山径' },
-                  { name: 'WhereWoodEchoes', nameZh: '悲木空鸣地' },
-                ],
-              },
-            ],
-          },
-        ],
+                  { name: 'WhereWoodEchoes', nameZh: '悲木空鸣地' }
+                ]
+              }
+            ]
+          }
+        ]
       },
       {
         name: 'EmpireOfLight',
         nameZh: '光芒帝国',
-        regions: [],
+        regions: []
       },
       {
         name: 'StarhailFederation',
         nameZh: '慕星联邦',
-        regions: [],
+        regions: []
       },
       {
         name: 'LinlangEmpire',
         nameZh: '琳琅帝国',
-        regions: [],
+        regions: []
       },
       {
         name: 'TwinmoonKingdom',
         nameZh: '双月王国',
-        regions: [],
+        regions: []
       },
       {
         name: 'WhalePort',
         nameZh: '孤鲸港',
-        regions: [],
+        regions: []
       },
       {
         name: 'Umbraso',
         nameZh: '影谷议会国',
-        regions: [],
-      },
-    ],
+        regions: []
+      }
+    ]
   },
   {
     name: 'SeaOfStars',
@@ -294,16 +294,14 @@ export const WORLD_LOCATIONS: WorldDimension[] = [
       { name: 'Crystalvale', nameZh: '晶簇之谷' },
       { name: 'DreamStarIsles', nameZh: '梦幻星岛' },
       { name: 'Starshore', nameZh: '繁星之滨' },
-      { name: 'UnboundWharf', nameZh: '无界码头' },
-    ],
+      { name: 'UnboundWharf', nameZh: '无界码头' }
+    ]
   },
   {
     name: 'Home',
     nameZh: '家园',
-    subareas: [
-      { name: 'DockArea', nameZh: '码头区域' },
-    ],
-  },
+    subareas: [{ name: 'DockArea', nameZh: '码头区域' }]
+  }
 ]
 
 /** 扁平化所有地点名（中文名），供搜索使用 */
@@ -344,9 +342,11 @@ export function findLocationPath(nameZh: string): string | null {
         for (const region of nation.regions) {
           if (region.nameZh === nameZh) return `${dim.nameZh} > ${nation.nameZh} > ${region.nameZh}`
           for (const area of region.areas) {
-            if (area.nameZh === nameZh) return `${dim.nameZh} > ${nation.nameZh} > ${region.nameZh} > ${area.nameZh}`
+            if (area.nameZh === nameZh)
+              return `${dim.nameZh} > ${nation.nameZh} > ${region.nameZh} > ${area.nameZh}`
             for (const sub of area.subareas) {
-              if (sub.nameZh === nameZh) return `${dim.nameZh} > ${nation.nameZh} > ${region.nameZh} > ${area.nameZh} > ${sub.nameZh}`
+              if (sub.nameZh === nameZh)
+                return `${dim.nameZh} > ${nation.nameZh} > ${region.nameZh} > ${area.nameZh} > ${sub.nameZh}`
             }
           }
         }

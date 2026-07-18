@@ -21,6 +21,7 @@ import { backupService } from './backup-service'
 import { parseDataUrlToBuffer } from '../utils/file-utils'
 import { getExtFromMime } from '../utils/media-constants'
 import type { DatabaseManager } from '../database/connection'
+import type { TaskScheduler } from '../scheduler/task-scheduler'
 
 // P1-A6：编辑器备份 LRU 上限（原实现无清理，频繁编辑导致磁盘隐性泄漏）
 const MAX_EDITOR_SNAPSHOTS = 50
@@ -41,6 +42,8 @@ export class EditorService {
   private dbManager: DatabaseManager | null = null
   // P1-A6：独立子目录路径缓存，init 时计算一次
   private snapshotDir: string = ''
+  // 分级调度器（可选）：注入后 pruneOldSnapshots 通过低优先级队列执行，避免与用户操作争抢 IO
+  private scheduler: TaskScheduler | null = null
 
   /** 初始化：注入 dbManager 实例（在 Application.initialize 中调用） */
   init(dbManager: DatabaseManager): void {
@@ -51,6 +54,14 @@ export class EditorService {
     this.snapshotDir = path.join(backupService.getBackupDirectory(), 'editor-snapshots')
   }
 
+  /**
+   * 注入分级调度器。注入后 pruneOldSnapshots 会通过低优先级队列执行。
+   * 不注入则保持原有直接执行行为（向后兼容）。
+   */
+  setScheduler(scheduler: TaskScheduler): void {
+    this.scheduler = scheduler
+  }
+
   private getDb(): Database.Database | null {
     return this.dbManager?.getDatabase() ?? null
   }
@@ -59,6 +70,8 @@ export class EditorService {
    * P1-A6：清理超出上限的旧编辑器快照（LRU by mtime）
    * 保存成功后调用，避免频繁编辑导致磁盘空间隐性泄漏
    * 失败时仅记录日志，不影响主流程
+   *
+   * 分级调度改造：若已注入 scheduler，通过低优先级队列入队，避免与用户操作争抢 IO。
    */
   private async pruneOldSnapshots(): Promise<void> {
     try {
@@ -87,7 +100,9 @@ export class EditorService {
           // 单个删除失败不阻塞整体清理
         }
       }
-      console.log(`[Editor] 清理 ${toDelete.length} 个旧快照，剩余 ${snapshots.length - toDelete.length} 个`)
+      console.log(
+        `[Editor] 清理 ${toDelete.length} 个旧快照，剩余 ${snapshots.length - toDelete.length} 个`
+      )
     } catch (err) {
       console.warn('[Editor] 清理旧快照失败:', err)
     }
@@ -99,13 +114,19 @@ export class EditorService {
    * @param dataUrl 编辑后的图片数据（data:image/...;base64,...）
    * @param options 格式/质量/参数
    */
-  async save(filePath: string, dataUrl: string, options?: EditorSaveOptions): Promise<EditorSaveResult> {
+  async save(
+    filePath: string,
+    dataUrl: string,
+    options?: EditorSaveOptions
+  ): Promise<EditorSaveResult> {
     const normalizedFilePath = path.resolve(filePath)
     const db = this.getDb()
     if (!db) return { success: false, message: '数据库未初始化' }
 
     // 安全校验：filePath 必须是数据库中已索引的媒体文件路径，防止任意文件写入
-    const mediaRow = db.prepare('SELECT id FROM media_files WHERE file_path = ? LIMIT 1').get(normalizedFilePath) as { id: number } | undefined
+    const mediaRow = db
+      .prepare('SELECT id FROM media_files WHERE file_path = ? LIMIT 1')
+      .get(normalizedFilePath) as { id: number } | undefined
     if (!mediaRow) {
       return { success: false, message: '安全限制：只能保存到已索引的媒体文件路径' }
     }
@@ -128,7 +149,9 @@ export class EditorService {
       // 校验备份完整性：备份文件大小必须与原文件一致
       const backupSize = (await fs.promises.stat(backupPath)).size
       if (backupSize !== originalSize) {
-        console.warn(`[Editor] 备份大小不匹配（原 ${originalSize} vs 备份 ${backupSize}），删除不完整备份`)
+        console.warn(
+          `[Editor] 备份大小不匹配（原 ${originalSize} vs 备份 ${backupSize}），删除不完整备份`
+        )
         await fs.promises.unlink(backupPath).catch(() => {})
         backupCreated = false
       } else {
@@ -155,7 +178,9 @@ export class EditorService {
         try {
           const backupSize = (await fs.promises.stat(backupPath)).size
           if (backupSize !== originalSize) {
-            console.error(`[Editor] 备份大小已变化（原 ${originalSize} vs 当前 ${backupSize}），拒绝恢复以避免原图损坏`)
+            console.error(
+              `[Editor] 备份大小已变化（原 ${originalSize} vs 当前 ${backupSize}），拒绝恢复以避免原图损坏`
+            )
           } else {
             await fs.promises.copyFile(backupPath, normalizedFilePath)
             console.log('[Editor] 写入失败，已从备份恢复原图')
@@ -168,7 +193,14 @@ export class EditorService {
     }
 
     // P1-A6：保存成功后异步清理超出上限的旧快照（不阻塞主流程）
-    void this.pruneOldSnapshots()
+    // 分级调度改造：通过低优先级队列入队，避免与用户操作争抢 IO
+    if (this.scheduler) {
+      void this.scheduler.enqueueLow(() => this.pruneOldSnapshots(), {
+        id: 'editor-prune-snapshots'
+      })
+    } else {
+      void this.pruneOldSnapshots()
+    }
 
     // 记录编辑历史
     try {

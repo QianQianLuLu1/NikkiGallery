@@ -41,7 +41,7 @@ const tabs = [
   { id: 'watermark', labelKey: 'editor.tabs.watermark' }
 ] as const
 
-export type EditorTabId = typeof tabs[number]['id']
+export type EditorTabId = (typeof tabs)[number]['id']
 
 interface EditorTabsProps {
   activeTab: EditorTabId
@@ -49,7 +49,11 @@ interface EditorTabsProps {
   params: FilterParams
   updateParam: <K extends keyof FilterParams>(key: K, value: FilterParams[K]) => void
   updateCurve: (channel: 'rgb' | 'r' | 'g' | 'b', points: { x: number; y: number }[]) => void
-  updateHSL: (key: HSLColorKey, field: keyof FilterParams['hsl'][HSLColorKey], value: number) => void
+  updateHSL: (
+    key: HSLColorKey,
+    field: keyof FilterParams['hsl'][HSLColorKey],
+    value: number
+  ) => void
   pushHistory: () => void
   filter: FilterPreset | null
   filterIntensity: number
@@ -92,7 +96,10 @@ export const EditorTabs: React.FC<EditorTabsProps> = ({
   const onContrastChange = useCallback((v: number) => updateParam('contrast', v), [updateParam])
   const onSaturationChange = useCallback((v: number) => updateParam('saturation', v), [updateParam])
   const onVibranceChange = useCallback((v: number) => updateParam('vibrance', v), [updateParam])
-  const onTemperatureChange = useCallback((v: number) => updateParam('temperature', v), [updateParam])
+  const onTemperatureChange = useCallback(
+    (v: number) => updateParam('temperature', v),
+    [updateParam]
+  )
   const onTintChange = useCallback((v: number) => updateParam('tint', v), [updateParam])
   const onHighlightsChange = useCallback((v: number) => updateParam('highlights', v), [updateParam])
   const onShadowsChange = useCallback((v: number) => updateParam('shadows', v), [updateParam])
@@ -103,11 +110,23 @@ export const EditorTabs: React.FC<EditorTabsProps> = ({
   const onSharpenChange = useCallback((v: number) => updateParam('sharpen', v), [updateParam])
   const onDenoiseChange = useCallback((v: number) => updateParam('denoise', v), [updateParam])
 
-  const onHighlightHueChange = useCallback((v: number) => updateParam('highlightHue', v), [updateParam])
-  const onHighlightSaturationChange = useCallback((v: number) => updateParam('highlightSaturation', v), [updateParam])
+  const onHighlightHueChange = useCallback(
+    (v: number) => updateParam('highlightHue', v),
+    [updateParam]
+  )
+  const onHighlightSaturationChange = useCallback(
+    (v: number) => updateParam('highlightSaturation', v),
+    [updateParam]
+  )
   const onShadowHueChange = useCallback((v: number) => updateParam('shadowHue', v), [updateParam])
-  const onShadowSaturationChange = useCallback((v: number) => updateParam('shadowSaturation', v), [updateParam])
-  const onSplitBalanceChange = useCallback((v: number) => updateParam('splitBalance', v), [updateParam])
+  const onShadowSaturationChange = useCallback(
+    (v: number) => updateParam('shadowSaturation', v),
+    [updateParam]
+  )
+  const onSplitBalanceChange = useCallback(
+    (v: number) => updateParam('splitBalance', v),
+    [updateParam]
+  )
 
   // U-O5：面板折叠状态——窄屏时可收起面板获得更大预览区
   const [collapsed, setCollapsed] = useState(false)
@@ -133,7 +152,10 @@ export const EditorTabs: React.FC<EditorTabsProps> = ({
                 background: activeTab === tab.id ? 'var(--accent)' : 'transparent',
                 color: activeTab === tab.id ? 'white' : 'var(--text-secondary)'
               }}
-              onClick={() => { onTabChange(tab.id); setCollapsed(false) }}
+              onClick={() => {
+                onTabChange(tab.id)
+                setCollapsed(false)
+              }}
               title={label}
               aria-label={label}
             >
@@ -149,7 +171,10 @@ export const EditorTabs: React.FC<EditorTabsProps> = ({
     <div className="w-80 glass-card editor-tabs p-5 space-y-5 overflow-y-auto flex-shrink-0">
       {/* 标签页切换 + 折叠按钮 */}
       <div className="flex items-center gap-2">
-        <div className="flex gap-1 p-1 rounded-lg flex-1" style={{ background: 'var(--bg-tertiary)' }}>
+        <div
+          className="flex gap-1 p-1 rounded-lg flex-1"
+          style={{ background: 'var(--bg-tertiary)' }}
+        >
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -177,20 +202,95 @@ export const EditorTabs: React.FC<EditorTabsProps> = ({
       {/* 基础调整 */}
       {activeTab === 'basic' && (
         <div className="space-y-5">
-          <SliderControl label={t('editor.basic.brightness')} value={params.brightness} onChange={onBrightnessChange} onCommit={pushHistory} />
-          <SliderControl label={t('editor.basic.contrast')} value={params.contrast} onChange={onContrastChange} onCommit={pushHistory} />
-          <SliderControl label={t('editor.basic.saturation')} value={params.saturation} onChange={onSaturationChange} onCommit={pushHistory} />
-          <SliderControl label={t('editor.basic.vibrance')} value={params.vibrance} onChange={onVibranceChange} onCommit={pushHistory} />
-          <SliderControl label={t('editor.basic.temperature')} value={params.temperature} onChange={onTemperatureChange} onCommit={pushHistory} unit="K" />
-          <SliderControl label={t('editor.basic.tint')} value={params.tint} onChange={onTintChange} onCommit={pushHistory} />
-          <SliderControl label={t('editor.basic.highlights')} value={params.highlights} onChange={onHighlightsChange} onCommit={pushHistory} />
-          <SliderControl label={t('editor.basic.shadows')} value={params.shadows} onChange={onShadowsChange} onCommit={pushHistory} />
-          <SliderControl label={t('editor.basic.whites')} value={params.whites} onChange={onWhitesChange} onCommit={pushHistory} />
-          <SliderControl label={t('editor.basic.blacks')} value={params.blacks} onChange={onBlacksChange} onCommit={pushHistory} />
-          <SliderControl label={t('editor.basic.clarity')} value={params.clarity} onChange={onClarityChange} onCommit={pushHistory} />
-          <SliderControl label={t('editor.basic.dehaze')} value={params.dehaze} onChange={onDehazeChange} onCommit={pushHistory} />
-          <SliderControl label={t('editor.basic.sharpen')} value={params.sharpen} min={0} max={100} onChange={onSharpenChange} onCommit={pushHistory} />
-          <SliderControl label={t('editor.basic.denoise')} value={params.denoise} min={0} max={100} onChange={onDenoiseChange} onCommit={pushHistory} />
+          <SliderControl
+            label={t('editor.basic.brightness')}
+            value={params.brightness}
+            onChange={onBrightnessChange}
+            onCommit={pushHistory}
+          />
+          <SliderControl
+            label={t('editor.basic.contrast')}
+            value={params.contrast}
+            onChange={onContrastChange}
+            onCommit={pushHistory}
+          />
+          <SliderControl
+            label={t('editor.basic.saturation')}
+            value={params.saturation}
+            onChange={onSaturationChange}
+            onCommit={pushHistory}
+          />
+          <SliderControl
+            label={t('editor.basic.vibrance')}
+            value={params.vibrance}
+            onChange={onVibranceChange}
+            onCommit={pushHistory}
+          />
+          <SliderControl
+            label={t('editor.basic.temperature')}
+            value={params.temperature}
+            onChange={onTemperatureChange}
+            onCommit={pushHistory}
+            unit="K"
+          />
+          <SliderControl
+            label={t('editor.basic.tint')}
+            value={params.tint}
+            onChange={onTintChange}
+            onCommit={pushHistory}
+          />
+          <SliderControl
+            label={t('editor.basic.highlights')}
+            value={params.highlights}
+            onChange={onHighlightsChange}
+            onCommit={pushHistory}
+          />
+          <SliderControl
+            label={t('editor.basic.shadows')}
+            value={params.shadows}
+            onChange={onShadowsChange}
+            onCommit={pushHistory}
+          />
+          <SliderControl
+            label={t('editor.basic.whites')}
+            value={params.whites}
+            onChange={onWhitesChange}
+            onCommit={pushHistory}
+          />
+          <SliderControl
+            label={t('editor.basic.blacks')}
+            value={params.blacks}
+            onChange={onBlacksChange}
+            onCommit={pushHistory}
+          />
+          <SliderControl
+            label={t('editor.basic.clarity')}
+            value={params.clarity}
+            onChange={onClarityChange}
+            onCommit={pushHistory}
+          />
+          <SliderControl
+            label={t('editor.basic.dehaze')}
+            value={params.dehaze}
+            onChange={onDehazeChange}
+            onCommit={pushHistory}
+          />
+          <SliderControl
+            label={t('editor.basic.sharpen')}
+            value={params.sharpen}
+            min={0}
+            max={100}
+            onChange={onSharpenChange}
+            onCommit={pushHistory}
+          />
+          <SliderControl
+            label={t('editor.basic.denoise')}
+            value={params.denoise}
+            min={0}
+            max={100}
+            onChange={onDenoiseChange}
+            onCommit={pushHistory}
+          />
         </div>
       )}
 
@@ -201,8 +301,14 @@ export const EditorTabs: React.FC<EditorTabsProps> = ({
             const label = t(hslLabelKeys[colorKey])
             const hsl = params.hsl[colorKey]
             return (
-              <div key={colorKey} className="p-3 rounded-lg" style={{ background: 'var(--bg-tertiary)' }}>
-                <div className="text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>{label}</div>
+              <div
+                key={colorKey}
+                className="p-3 rounded-lg"
+                style={{ background: 'var(--bg-tertiary)' }}
+              >
+                <div className="text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
+                  {label}
+                </div>
                 <div className="space-y-2">
                   <SliderControl
                     label={t('editor.hsl.hue')}
@@ -234,10 +340,26 @@ export const EditorTabs: React.FC<EditorTabsProps> = ({
       {/* 色调曲线 */}
       {activeTab === 'curves' && (
         <div className="space-y-4">
-          <ToneCurve channel="rgb" value={params.curves.rgb} onChange={(points) => updateCurve('rgb', points)} />
-          <ToneCurve channel="r" value={params.curves.r} onChange={(points) => updateCurve('r', points)} />
-          <ToneCurve channel="g" value={params.curves.g} onChange={(points) => updateCurve('g', points)} />
-          <ToneCurve channel="b" value={params.curves.b} onChange={(points) => updateCurve('b', points)} />
+          <ToneCurve
+            channel="rgb"
+            value={params.curves.rgb}
+            onChange={(points) => updateCurve('rgb', points)}
+          />
+          <ToneCurve
+            channel="r"
+            value={params.curves.r}
+            onChange={(points) => updateCurve('r', points)}
+          />
+          <ToneCurve
+            channel="g"
+            value={params.curves.g}
+            onChange={(points) => updateCurve('g', points)}
+          />
+          <ToneCurve
+            channel="b"
+            value={params.curves.b}
+            onChange={(points) => updateCurve('b', points)}
+          />
         </div>
       )}
 
@@ -245,16 +367,49 @@ export const EditorTabs: React.FC<EditorTabsProps> = ({
       {activeTab === 'split' && (
         <div className="space-y-4">
           <div className="p-3 rounded-lg" style={{ background: 'var(--bg-tertiary)' }}>
-            <div className="text-sm font-medium mb-3" style={{ color: 'var(--text-primary)' }}>{t('editor.hsl.highlights')}</div>
-            <SliderControl label={t('editor.hsl.hue')} value={params.highlightHue} min={0} max={360} onChange={onHighlightHueChange} onCommit={pushHistory} />
-            <SliderControl label={t('editor.hsl.saturation')} value={params.highlightSaturation} onChange={onHighlightSaturationChange} onCommit={pushHistory} />
+            <div className="text-sm font-medium mb-3" style={{ color: 'var(--text-primary)' }}>
+              {t('editor.hsl.highlights')}
+            </div>
+            <SliderControl
+              label={t('editor.hsl.hue')}
+              value={params.highlightHue}
+              min={0}
+              max={360}
+              onChange={onHighlightHueChange}
+              onCommit={pushHistory}
+            />
+            <SliderControl
+              label={t('editor.hsl.saturation')}
+              value={params.highlightSaturation}
+              onChange={onHighlightSaturationChange}
+              onCommit={pushHistory}
+            />
           </div>
           <div className="p-3 rounded-lg" style={{ background: 'var(--bg-tertiary)' }}>
-            <div className="text-sm font-medium mb-3" style={{ color: 'var(--text-primary)' }}>{t('editor.hsl.shadows')}</div>
-            <SliderControl label={t('editor.hsl.hue')} value={params.shadowHue} min={0} max={360} onChange={onShadowHueChange} onCommit={pushHistory} />
-            <SliderControl label={t('editor.hsl.saturation')} value={params.shadowSaturation} onChange={onShadowSaturationChange} onCommit={pushHistory} />
+            <div className="text-sm font-medium mb-3" style={{ color: 'var(--text-primary)' }}>
+              {t('editor.hsl.shadows')}
+            </div>
+            <SliderControl
+              label={t('editor.hsl.hue')}
+              value={params.shadowHue}
+              min={0}
+              max={360}
+              onChange={onShadowHueChange}
+              onCommit={pushHistory}
+            />
+            <SliderControl
+              label={t('editor.hsl.saturation')}
+              value={params.shadowSaturation}
+              onChange={onShadowSaturationChange}
+              onCommit={pushHistory}
+            />
           </div>
-          <SliderControl label={t('editor.hsl.balance')} value={params.splitBalance} onChange={onSplitBalanceChange} onCommit={pushHistory} />
+          <SliderControl
+            label={t('editor.hsl.balance')}
+            value={params.splitBalance}
+            onChange={onSplitBalanceChange}
+            onCommit={pushHistory}
+          />
         </div>
       )}
 
@@ -265,7 +420,10 @@ export const EditorTabs: React.FC<EditorTabsProps> = ({
           filterIntensity={filterIntensity}
           presetName={presetName}
           sourceUrl={sourceUrl}
-          onApplyPreset={(preset) => { applyFilterPreset(preset); pushHistory() }}
+          onApplyPreset={(preset) => {
+            applyFilterPreset(preset)
+            pushHistory()
+          }}
           onIntensityChange={(v) => setFilterIntensity(v)}
           onIntensityCommit={pushHistory}
           onExportPreset={onExportPreset}
@@ -279,7 +437,10 @@ export const EditorTabs: React.FC<EditorTabsProps> = ({
       {activeTab === 'lut' && (
         <LutPanel
           selectedLutId={params.lut}
-          onSelect={(id) => { updateParam('lut', id); pushHistory() }}
+          onSelect={(id) => {
+            updateParam('lut', id)
+            pushHistory()
+          }}
         />
       )}
 

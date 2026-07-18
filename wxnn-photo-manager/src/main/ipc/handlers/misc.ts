@@ -12,9 +12,7 @@ import {
 } from '../../utils/ipc-validate'
 import { logger } from '../../utils/logger'
 // P1-A1：4 组函数抽取到共享服务模块，启动路径与 IPC 路径共用同一份实现
-import {
-  generateThumbnailsForUnprocessed
-} from '../../services/thumbnail-phash-service'
+import { generateThumbnailsForUnprocessed } from '../../services/thumbnail-phash-service'
 
 /**
  * 复刻 index.ts 中 this.getMainWindow() 的行为：
@@ -33,42 +31,54 @@ function requireMainWindow(ctx: HandlerContext): BrowserWindow {
  */
 export function registerMiscHandlers(ctx: HandlerContext): void {
   // ---- scanner 域 ----
-  ipcMain.handle('scanner:start', async (_, options?: { path?: string; incremental?: boolean; customKnownPaths?: string[]; fullScan?: boolean }) => {
-    // 修复 F1：校验失败也必须发送 scanner:complete，否则 ScanButton 的 onComplete
-    // 兜底监听失效，且 UI 状态会误显示 'completed' 而非 'failed'
-    // 违反"错误必须被处理，不能静默失败"硬约束
-    const sendComplete = (result: { success: boolean; message?: string }) => {
-      ctx.getMainWindow()?.webContents.send('scanner:complete', result)
-    }
-    // A-S9：参数校验——自定义路径必须是绝对路径
-    if (options?.path !== undefined) {
-      const v = validateFilePath(options.path)
-      if (!v.valid) {
-        const fail = { success: false, message: v.message }
-        sendComplete(fail)
-        return fail
+  ipcMain.handle(
+    'scanner:start',
+    async (
+      _,
+      options?: {
+        path?: string
+        incremental?: boolean
+        customKnownPaths?: string[]
+        fullScan?: boolean
       }
-    }
-    // F-O1：校验自定义游戏路径数组
-    if (options?.customKnownPaths) {
-      for (const p of options.customKnownPaths) {
-        const v = validateFilePath(p)
+    ) => {
+      // 修复 F1：校验失败也必须发送 scanner:complete，否则 ScanButton 的 onComplete
+      // 兜底监听失效，且 UI 状态会误显示 'completed' 而非 'failed'
+      // 违反"错误必须被处理，不能静默失败"硬约束
+      const sendComplete = (result: { success: boolean; message?: string }) => {
+        ctx.getMainWindow()?.webContents.send('scanner:complete', result)
+      }
+      // A-S9：参数校验——自定义路径必须是绝对路径
+      if (options?.path !== undefined) {
+        const v = validateFilePath(options.path)
         if (!v.valid) {
-          const fail = { success: false, message: `游戏路径校验失败: ${v.message}` }
+          const fail = { success: false, message: v.message }
           sendComplete(fail)
           return fail
         }
       }
+      // F-O1：校验自定义游戏路径数组
+      if (options?.customKnownPaths) {
+        for (const p of options.customKnownPaths) {
+          const v = validateFilePath(p)
+          if (!v.valid) {
+            const fail = { success: false, message: `游戏路径校验失败: ${v.message}` }
+            sendComplete(fail)
+            return fail
+          }
+        }
+      }
+      const result = await ctx.scannerManager.startScan(options)
+      if (result.success && result.filesFound && result.filesFound > 0) {
+        // 扫描完成后异步生成缩略图并读取尺寸
+        // 分级调度：链式触发的缩略图生成作为低优先级任务入队，避免与用户操作争抢 CPU
+        generateThumbnailsForUnprocessed(ctx, 'low').catch(console.error)
+      }
+      // 通知渲染进程扫描已结束，防止 IPC 返回前 UI 卡在"正在扫描"
+      sendComplete(result)
+      return result
     }
-    const result = await ctx.scannerManager.startScan(options)
-    if (result.success && result.filesFound && result.filesFound > 0) {
-      // 扫描完成后异步生成缩略图并读取尺寸
-      generateThumbnailsForUnprocessed(ctx).catch(console.error)
-    }
-    // 通知渲染进程扫描已结束，防止 IPC 返回前 UI 卡在"正在扫描"
-    sendComplete(result)
-    return result
-  })
+  )
 
   ipcMain.handle('scanner:stop', async () => {
     return ctx.scannerManager.stopScan()
@@ -80,19 +90,22 @@ export function registerMiscHandlers(ctx: HandlerContext): void {
 
   // ---- decrypt 域 ----
   // 游戏参数解密
-  ipcMain.handle('decrypt:decodeFile', async (_event, filePath: string, albumType: string, uid?: string) => {
-    // A4：补齐 filePath 校验
-    const v = validateFilePath(filePath)
-    if (!v.valid) return { success: false, message: v.message }
-    const { decodeFileParams } = await import('../../services/decryption-service')
-    // P0-A3：decodeFileParams 已改为 async（mutex 串行化 + 异步文件读取）
-    const result = await decodeFileParams(filePath, albumType, uid)
-    return {
-      success: !result.error,
-      data: result,
-      message: result.error,
-    } as IpcResult<typeof result>
-  })
+  ipcMain.handle(
+    'decrypt:decodeFile',
+    async (_event, filePath: string, albumType: string, uid?: string) => {
+      // A4：补齐 filePath 校验
+      const v = validateFilePath(filePath)
+      if (!v.valid) return { success: false, message: v.message }
+      const { decodeFileParams } = await import('../../services/decryption-service')
+      // P0-A3：decodeFileParams 已改为 async（mutex 串行化 + 异步文件读取）
+      const result = await decodeFileParams(filePath, albumType, uid)
+      return {
+        success: !result.error,
+        data: result,
+        message: result.error
+      } as IpcResult<typeof result>
+    }
+  )
 
   // Group 2: 相机参数加密（将 JSON 加密为密文）
   ipcMain.handle('decrypt:encodeCameraParams', async (_event, jsonText: string) => {
@@ -105,7 +118,7 @@ export function registerMiscHandlers(ctx: HandlerContext): void {
     return {
       success: result.success,
       data: result.data ? result.data.toString('base64') : undefined,
-      message: result.error,
+      message: result.error
     }
   })
 
@@ -122,9 +135,9 @@ export function registerMiscHandlers(ctx: HandlerContext): void {
       data: {
         timestamp: result.timestamp,
         uidBytes: result.uidBytes ? result.uidBytes.toString('hex') : undefined,
-        networkData: result.networkData,
+        networkData: result.networkData
       },
-      message: result.error,
+      message: result.error
     }
   })
 
@@ -140,20 +153,23 @@ export function registerMiscHandlers(ctx: HandlerContext): void {
       success: result.success,
       data: {
         server: result.server,
-        networkData: result.networkData,
+        networkData: result.networkData
       },
-      message: result.error,
+      message: result.error
     }
   })
 
   // ---- thumbnail 域 ----
   // 缩略图生成
-  ipcMain.handle('thumbnail:generate', async (_, filePath: string, quality?: 'low' | 'standard') => {
-    // A3：与其他 handler 一致返回 { success: false, message } 而非 null
-    const v = validateFilePath(filePath)
-    if (!v.valid) return { success: false, message: v.message }
-    return ctx.thumbnailGen.generate(filePath, quality)
-  })
+  ipcMain.handle(
+    'thumbnail:generate',
+    async (_, filePath: string, quality?: 'low' | 'standard' | 'high') => {
+      // A3：与其他 handler 一致返回 { success: false, message } 而非 null
+      const v = validateFilePath(filePath)
+      if (!v.valid) return { success: false, message: v.message }
+      return ctx.thumbnailGen.generate(filePath, quality)
+    }
+  )
 
   // ---- ui-theme 域 ----
   // 界面主题（统一主题接口，原 theme:get/set 系统亮暗接口已删除——暗色模式由界面主题派生）
@@ -178,7 +194,10 @@ export function registerMiscHandlers(ctx: HandlerContext): void {
       await shell.openExternal(url)
       return { success: true }
     } catch (error) {
-      return { success: false, message: `打开外部链接失败: ${error instanceof Error ? error.message : String(error)}` }
+      return {
+        success: false,
+        message: `打开外部链接失败: ${error instanceof Error ? error.message : String(error)}`
+      }
     }
   })
 
@@ -193,7 +212,10 @@ export function registerMiscHandlers(ctx: HandlerContext): void {
       await shell.openPath(dirPath)
       return { success: true }
     } catch (error) {
-      return { success: false, message: `打开目录失败: ${error instanceof Error ? error.message : String(error)}` }
+      return {
+        success: false,
+        message: `打开目录失败: ${error instanceof Error ? error.message : String(error)}`
+      }
     }
   })
 
@@ -206,7 +228,10 @@ export function registerMiscHandlers(ctx: HandlerContext): void {
       shell.showItemInFolder(filePath)
       return { success: true }
     } catch (error) {
-      return { success: false, message: `打开文件所在位置失败: ${error instanceof Error ? error.message : String(error)}` }
+      return {
+        success: false,
+        message: `打开文件所在位置失败: ${error instanceof Error ? error.message : String(error)}`
+      }
     }
   })
 
@@ -224,7 +249,8 @@ export function registerMiscHandlers(ctx: HandlerContext): void {
     // P1-D：校验 value 大小，防止恶意/异常调用写入超大 JSON
     try {
       const valueStr = JSON.stringify(value)
-      if (valueStr.length > 1024 * 1024) {  // 1MB 上限
+      if (valueStr.length > 1024 * 1024) {
+        // 1MB 上限
         return { success: false, message: '设置值过大（上限 1MB）' }
       }
     } catch {
@@ -243,31 +269,67 @@ export function registerMiscHandlers(ctx: HandlerContext): void {
   })
 
   // 增强对话框
-  ipcMain.handle('dialog:openFile', async (_, options?: { properties?: ('openFile' | 'openDirectory' | 'multiSelections' | 'showHiddenFiles' | 'createDirectory' | 'promptToCreate' | 'noResolveAliases' | 'treatPackageAsDirectory' | 'dontAddToRecent')[]; filters?: { name: string; extensions: string[] }[] }) => {
-    const result = await dialog.showOpenDialog(requireMainWindow(ctx), {
-      properties: options?.properties || ['openFile'],
-      filters: options?.filters
-    })
-    return result.canceled ? null : result.filePaths[0]
-  })
+  ipcMain.handle(
+    'dialog:openFile',
+    async (
+      _,
+      options?: {
+        properties?: (
+          | 'openFile'
+          | 'openDirectory'
+          | 'multiSelections'
+          | 'showHiddenFiles'
+          | 'createDirectory'
+          | 'promptToCreate'
+          | 'noResolveAliases'
+          | 'treatPackageAsDirectory'
+          | 'dontAddToRecent'
+        )[]
+        filters?: { name: string; extensions: string[] }[]
+      }
+    ) => {
+      const result = await dialog.showOpenDialog(requireMainWindow(ctx), {
+        properties: options?.properties || ['openFile'],
+        filters: options?.filters
+      })
+      return result.canceled ? null : result.filePaths[0]
+    }
+  )
 
-  ipcMain.handle('dialog:saveFile', async (_, options?: { defaultPath?: string; filters?: { name: string; extensions: string[] }[] }) => {
-    const result = await dialog.showSaveDialog(requireMainWindow(ctx), {
-      defaultPath: options?.defaultPath,
-      filters: options?.filters
-    })
-    return result.canceled ? null : result.filePath
-  })
+  ipcMain.handle(
+    'dialog:saveFile',
+    async (
+      _,
+      options?: { defaultPath?: string; filters?: { name: string; extensions: string[] }[] }
+    ) => {
+      const result = await dialog.showSaveDialog(requireMainWindow(ctx), {
+        defaultPath: options?.defaultPath,
+        filters: options?.filters
+      })
+      return result.canceled ? null : result.filePath
+    }
+  )
 
-  ipcMain.handle('dialog:showMessageBox', async (_, options: { type?: 'none' | 'info' | 'error' | 'question' | 'warning'; title?: string; message: string; buttons?: string[] }) => {
-    const result = await dialog.showMessageBox(requireMainWindow(ctx), {
-      type: options.type || 'info',
-      title: options.title,
-      message: options.message,
-      buttons: options.buttons || ['确定']
-    })
-    return result.response
-  })
+  ipcMain.handle(
+    'dialog:showMessageBox',
+    async (
+      _,
+      options: {
+        type?: 'none' | 'info' | 'error' | 'question' | 'warning'
+        title?: string
+        message: string
+        buttons?: string[]
+      }
+    ) => {
+      const result = await dialog.showMessageBox(requireMainWindow(ctx), {
+        type: options.type || 'info',
+        title: options.title,
+        message: options.message,
+        buttons: options.buttons || ['确定']
+      })
+      return result.response
+    }
+  )
 
   // ---- data 域 ----
   // 数据管理
@@ -304,7 +366,9 @@ export function registerMiscHandlers(ctx: HandlerContext): void {
       try {
         const entries = await fs.promises.readdir(thumbnailDir)
         await Promise.all(
-          entries.map((entry) => fs.promises.rm(path.join(thumbnailDir, entry), { recursive: true, force: true }))
+          entries.map((entry) =>
+            fs.promises.rm(path.join(thumbnailDir, entry), { recursive: true, force: true })
+          )
         )
       } catch {
         // 目录不存在时忽略
@@ -314,7 +378,10 @@ export function registerMiscHandlers(ctx: HandlerContext): void {
       return { success: true, message: '本地数据已清除' }
     } catch (error) {
       console.error('[Data] 清除数据失败:', error)
-      return { success: false, message: `清除数据失败: ${error instanceof Error ? error.message : String(error)}` }
+      return {
+        success: false,
+        message: `清除数据失败: ${error instanceof Error ? error.message : String(error)}`
+      }
     }
   })
 
@@ -328,36 +395,48 @@ export function registerMiscHandlers(ctx: HandlerContext): void {
   })
 
   // 执行批量导入（复制到目标目录，支持命名规则与分类策略）
-  ipcMain.handle('import:run', async (_, sourcePaths: string[], targetBaseDir: string, options: {
-    namingRule: 'keep' | 'date' | 'seq'
-    categorize: 'flat' | 'byDate' | 'byMonth'
-    conflictStrategy: 'skip' | 'rename' | 'overwrite'
-    seqStart?: number
-  }) => {
-    const v1 = validateFilePathArray(sourcePaths)
-    if (!v1.valid) return { success: false, message: v1.message, imported: [], failed: [], skipped: [] }
-    const v2 = validateFilePath(targetBaseDir)
-    if (!v2.valid) return { success: false, message: v2.message, imported: [], failed: [], skipped: [] }
-    try {
-      const result = await ctx.fileService.importFiles(
-        sourcePaths,
-        targetBaseDir,
-        options,
-        (current: number, total: number) => {
-          ctx.getMainWindow()?.webContents.send('import:progress', { current, total })
-        }
-      )
-      if (result.imported.length > 0) {
-        // 通知媒体列表刷新（导入的文件需重新扫描入库）
-        ctx.notifyMediaUpdated()
-        logger.info(`[Import] 导入完成: 成功 ${result.imported.length} 个，跳过 ${result.skipped.length} 个，失败 ${result.failed.length} 个`)
+  ipcMain.handle(
+    'import:run',
+    async (
+      _,
+      sourcePaths: string[],
+      targetBaseDir: string,
+      options: {
+        namingRule: 'keep' | 'date' | 'seq'
+        categorize: 'flat' | 'byDate' | 'byMonth'
+        conflictStrategy: 'skip' | 'rename' | 'overwrite'
+        seqStart?: number
       }
-      return result
-    } catch (error) {
-      logger.error('[Import] 导入失败:', error)
-      return { success: false, message: String(error), imported: [], failed: [], skipped: [] }
+    ) => {
+      const v1 = validateFilePathArray(sourcePaths)
+      if (!v1.valid)
+        return { success: false, message: v1.message, imported: [], failed: [], skipped: [] }
+      const v2 = validateFilePath(targetBaseDir)
+      if (!v2.valid)
+        return { success: false, message: v2.message, imported: [], failed: [], skipped: [] }
+      try {
+        const result = await ctx.fileService.importFiles(
+          sourcePaths,
+          targetBaseDir,
+          options,
+          (current: number, total: number) => {
+            ctx.getMainWindow()?.webContents.send('import:progress', { current, total })
+          }
+        )
+        if (result.imported.length > 0) {
+          // 通知媒体列表刷新（导入的文件需重新扫描入库）
+          ctx.notifyMediaUpdated()
+          logger.info(
+            `[Import] 导入完成: 成功 ${result.imported.length} 个，跳过 ${result.skipped.length} 个，失败 ${result.failed.length} 个`
+          )
+        }
+        return result
+      } catch (error) {
+        logger.error('[Import] 导入失败:', error)
+        return { success: false, message: String(error), imported: [], failed: [], skipped: [] }
+      }
     }
-  })
+  )
 
   // ---- app 域 ----
   // 重启应用（自定义目录切换后调用）
@@ -376,34 +455,42 @@ export function registerMiscHandlers(ctx: HandlerContext): void {
   // ---- operation-history 域 ----
   // 建议改#9：操作历史持久化 IPC（支持跨重启撤销）
   // 新增记录，返回自增 id
-  ipcMain.handle('operation-history:add', async (_, record: {
-    operationType: string
-    mediaId?: number
-    payload: unknown
-    description: string
-    createdAt: string
-  }) => {
-    try {
-      if (!record.operationType || typeof record.operationType !== 'string') {
-        return { success: false, message: 'operationType 无效' }
+  ipcMain.handle(
+    'operation-history:add',
+    async (
+      _,
+      record: {
+        operationType: string
+        mediaId?: number
+        payload: unknown
+        description: string
+        createdAt: string
       }
-      const db = ctx.dbManager.getDatabase()
-      if (!db) throw new Error('数据库未初始化')
-      const result = db.prepare(
-        'INSERT INTO operation_history (operation_type, media_id, payload, description, created_at) VALUES (?, ?, ?, ?, ?)'
-      ).run(
-        record.operationType,
-        record.mediaId ?? null,
-        JSON.stringify(record.payload),
-        record.description,
-        record.createdAt
-      )
-      return { success: true, id: Number(result.lastInsertRowid) }
-    } catch (error) {
-      logger.error('[OperationHistory] 新增记录失败:', error)
-      return { success: false, message: String(error) }
+    ) => {
+      try {
+        if (!record.operationType || typeof record.operationType !== 'string') {
+          return { success: false, message: 'operationType 无效' }
+        }
+        const db = ctx.dbManager.getDatabase()
+        if (!db) throw new Error('数据库未初始化')
+        const result = db
+          .prepare(
+            'INSERT INTO operation_history (operation_type, media_id, payload, description, created_at) VALUES (?, ?, ?, ?, ?)'
+          )
+          .run(
+            record.operationType,
+            record.mediaId ?? null,
+            JSON.stringify(record.payload),
+            record.description,
+            record.createdAt
+          )
+        return { success: true, id: Number(result.lastInsertRowid) }
+      } catch (error) {
+        logger.error('[OperationHistory] 新增记录失败:', error)
+        return { success: false, message: String(error) }
+      }
     }
-  })
+  )
 
   // 查询最近 N 条记录（按时间正序，栈顶在末尾）
   ipcMain.handle('operation-history:list', async (_, limit: number = 50) => {
@@ -411,9 +498,11 @@ export function registerMiscHandlers(ctx: HandlerContext): void {
       const db = ctx.dbManager.getDatabase()
       if (!db) throw new Error('数据库未初始化')
       const safeLimit = Math.min(Math.max(1, Math.floor(limit)), 50)
-      const rows = db.prepare(
-        'SELECT id, operation_type, media_id, payload, description, created_at FROM operation_history ORDER BY created_at DESC LIMIT ?'
-      ).all(safeLimit) as Array<{
+      const rows = db
+        .prepare(
+          'SELECT id, operation_type, media_id, payload, description, created_at FROM operation_history ORDER BY created_at DESC LIMIT ?'
+        )
+        .all(safeLimit) as Array<{
         id: number
         operation_type: string
         media_id: number | null

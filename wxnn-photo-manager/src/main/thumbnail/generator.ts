@@ -29,6 +29,10 @@ export class ThumbnailGenerator {
   private lowMaxWidth = 64
   private lowMaxHeight = 64
   private lowQuality = 30
+  // 高清档位参数（高分屏 DPR ≥ 2 时使用）
+  private highMaxWidth = 512
+  private highMaxHeight = 512
+  private highQuality = 90
   // T10：缓存上限可配置，默认 2GB
   private cacheLimitBytes = DEFAULT_CACHE_LIMIT_BYTES
 
@@ -80,7 +84,12 @@ export class ThumbnailGenerator {
   /**
    * T10：获取缓存统计信息（总大小 / 文件数 / 上限）
    */
-  async getCacheStats(): Promise<{ totalSize: number; fileCount: number; limit: number; cacheDir: string }> {
+  async getCacheStats(): Promise<{
+    totalSize: number
+    fileCount: number
+    limit: number
+    cacheDir: string
+  }> {
     await this.ensureCacheDir()
     let totalSize = 0
     let fileCount = 0
@@ -186,16 +195,24 @@ export class ThumbnailGenerator {
     }
   }
 
-  async generate(filePath: string, quality?: 'low' | 'standard'): Promise<string | null> {
+  async generate(filePath: string, quality?: 'low' | 'standard' | 'high'): Promise<string | null> {
     // F-S4 修复：低质量模式原直接调用 doGenerateLow 不经过 generatingLocks，
     // 多个并发请求同文件会重复生成。现纳入锁，key 区分 ${filePath}:low 与 ${filePath}:standard。
-    const lockKey = quality === 'low' ? `${filePath}:low` : filePath
+    // high 档位同理，锁 key 区分 :high，避免并发重复生成
+    const lockKey =
+      quality === 'low' ? `${filePath}:low` : quality === 'high' ? `${filePath}:high` : filePath
     const existing = this.generatingLocks.get(lockKey)
     if (existing) {
       return existing
     }
 
-    const promise = (quality === 'low' ? this.doGenerateLow(filePath) : this.doGenerate(filePath)).finally(() => {
+    const promise = (
+      quality === 'low'
+        ? this.doGenerateLow(filePath)
+        : quality === 'high'
+          ? this.doGenerateHigh(filePath)
+          : this.doGenerate(filePath)
+    ).finally(() => {
       // 生成完成后（无论成功或失败）清除锁
       this.generatingLocks.delete(lockKey)
     })
@@ -231,6 +248,57 @@ export class ThumbnailGenerator {
       return lowPath
     } catch (error) {
       console.error('[Thumbnail] 低质量缩略图生成失败:', error)
+      return null
+    }
+  }
+
+  // 高清档位生成（512px, q90）
+  // 命名规则：${fileHash}_high.jpg，与 standard(${hash}.jpg) / low(${hash}_low.jpg) 区分
+  // 高分屏（DPR ≥ 2）下使用，优先从原文件生成保证清晰度
+  // 视频文件不生成 high 档位（视频帧提取耗时较高），降级返回 standard 路径
+  private async doGenerateHigh(filePath: string): Promise<string | null> {
+    try {
+      await this.ensureCacheDir()
+      if (!(await pathExists(filePath))) return null
+
+      // 视频降级：直接返回 standard 档位
+      const ext = path.extname(filePath).toLowerCase()
+      if (isVideoExt(ext)) {
+        return this.doGenerate(filePath)
+      }
+
+      const stats = await fsp.stat(filePath)
+      const fileHash = await this.getFileHash(filePath, stats)
+      const highPath = path.join(this.cacheDir, `${fileHash}_high.jpg`)
+
+      // 缓存命中直接返回
+      if (await pathExists(highPath)) return highPath
+
+      // 优先从原文件生成（512px 比原图小时 withoutEnlargement 生效）
+      await sharp(filePath)
+        .resize(this.highMaxWidth, this.highMaxHeight, {
+          fit: 'inside',
+          withoutEnlargement: true
+        })
+        .jpeg({ quality: this.highQuality, progressive: true })
+        .toFile(highPath)
+
+      // 累加缓存大小计数器
+      try {
+        const thumbStat = await fsp.stat(highPath)
+        this.totalCacheSize = Math.max(0, this.totalCacheSize) + thumbStat.size
+      } catch {
+        // stat 失败忽略，enforceCacheLimit 会全扫描校准
+      }
+
+      // 记录访问时间 + 触发 LRU 检查
+      this.accessTimes.set(fileHash, Date.now())
+      this.accessCounter++
+      await this.enforceCacheLimit()
+      await this.maybePersistAccessTimes()
+      return highPath
+    } catch (error) {
+      console.error('[Thumbnail] 高清缩略图生成失败:', error)
       return null
     }
   }
@@ -331,7 +399,10 @@ export class ThumbnailGenerator {
         .seekInput(0)
         .frames(1)
         .output(outputPath)
-        .outputOptions('-vf', `scale=${this.maxWidth}:${this.maxHeight}:force_original_aspect_ratio=decrease`)
+        .outputOptions(
+          '-vf',
+          `scale=${this.maxWidth}:${this.maxHeight}:force_original_aspect_ratio=decrease`
+        )
         // 合并为单一 end/error 监听，避免原实现重复注册导致的清理不一致
         .on('end', () => {
           if (settled) return
@@ -382,7 +453,11 @@ export class ThumbnailGenerator {
     } catch (err) {
       // 读取失败时降级为路径+mtime hash，保证功能可用
       console.warn(`[Thumbnail] 内容 hash 计算失败，降级为路径 hash: ${filePath}`, err)
-      const fallback = crypto.createHash('sha256').update(`${filePath}:${mtime}`).digest('hex').slice(0, 16)
+      const fallback = crypto
+        .createHash('sha256')
+        .update(`${filePath}:${mtime}`)
+        .digest('hex')
+        .slice(0, 16)
       return fallback
     }
   }
@@ -440,12 +515,17 @@ export class ThumbnailGenerator {
    */
   private async enforceCacheLimit(force = false): Promise<void> {
     // F-S5：未强制且未超阈值 10% 时跳过，避免每次生成都全目录扫描
-    if (!force && this.totalCacheSize >= 0 && this.totalCacheSize <= this.cacheLimitBytes * ThumbnailGenerator.LRU_TRIGGER_RATIO) {
+    if (
+      !force &&
+      this.totalCacheSize >= 0 &&
+      this.totalCacheSize <= this.cacheLimitBytes * ThumbnailGenerator.LRU_TRIGGER_RATIO
+    ) {
       return
     }
     try {
       const entries = await fsp.readdir(this.cacheDir, { withFileTypes: true })
-      const filesInfo: Array<{ name: string; fullPath: string; size: number; accessTime: number }> = []
+      const filesInfo: Array<{ name: string; fullPath: string; size: number; accessTime: number }> =
+        []
       let totalSize = 0
 
       for (const entry of entries) {
@@ -453,7 +533,11 @@ export class ThumbnailGenerator {
         if (entry.name === CACHE_METADATA_FILENAME) continue
         const fullPath = path.join(this.cacheDir, entry.name)
         const stat = await fsp.stat(fullPath)
-        const hash = entry.name.replace(/\.jpg$/, '')
+        // 解析 hash：剥离 .jpg 后缀 + _low/_high 档位后缀，三档共享同一 accessTime 记录
+        const hash = entry.name
+          .replace(/\.jpg$/, '')
+          .replace(/_low$/, '')
+          .replace(/_high$/, '')
         // 访问时间优先取内存记录，缺失时降级为文件 mtime
         const accessTime = this.accessTimes.get(hash) ?? stat.mtime.getTime()
         filesInfo.push({ name: entry.name, fullPath, size: stat.size, accessTime })
@@ -470,7 +554,11 @@ export class ThumbnailGenerator {
       for (const f of filesInfo) {
         if (totalSize <= this.cacheLimitBytes) break
         await fsp.unlink(f.fullPath).catch(() => {})
-        const hash = f.name.replace(/\.jpg$/, '')
+        // 解析 hash：与上方统计阶段一致，三档同步淘汰避免孤儿文件
+        const hash = f.name
+          .replace(/\.jpg$/, '')
+          .replace(/_low$/, '')
+          .replace(/_high$/, '')
         this.accessTimes.delete(hash)
         totalSize -= f.size
         console.log(`[Thumbnail] LRU 淘汰: ${f.name}`)

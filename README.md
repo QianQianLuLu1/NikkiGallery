@@ -1,6 +1,5 @@
-[README_v2.5.md](https://github.com/user-attachments/files/29794068/README_v2.5.md)
-<!-- 无限暖暖相册管理工具 v2.5 - GitHub 产品介绍 -->
-<!-- Infinity Nikki Gallery Manager v2.5 - GitHub Product Introduction -->
+<!-- 无限暖暖相册管理工具 v2.3.0 - GitHub 产品介绍 -->
+<!-- Infinity Nikki Gallery Manager v2.3.0 - GitHub Product Introduction -->
 
 <div align="center">
 
@@ -46,20 +45,22 @@
 
 ### 智能全盘扫描
 
-无需手动指定游戏路径，应用通过文件名签名在所有磁盘上进行深度搜索，自动定位《无限暖暖》的媒体目录。支持识别 22 种游戏内专属相册文件夹（游戏截图、高质量照片、杂志照、打卡照、拼图、自定义头像等），自动按账号 UID 归档到对应角色档案。扫描过程智能跳过系统目录，支持并发多盘符扫描，首次全盘扫描在 5 万文件系统上可在 30 秒内完成。
+无需手动指定游戏路径，应用通过文件名签名在所有磁盘上进行深度搜索，自动定位《无限暖暖》的媒体目录。支持识别 22 种游戏内专属相册文件夹（游戏截图、高质量照片、杂志照、打卡照、拼图、自定义头像等），自动按账号 UID 归档到对应角色档案。扫描过程智能跳过系统目录与云同步目录，支持并发多盘符扫描。
 
 - **增量扫描**：基于文件修改时间，仅扫描新增或变更的文件
 - **深度限制**：最大 15 层递归深度，确保完整覆盖游戏目录结构
 - **流式写入**：每 500 条记录批量写入数据库，降低内存峰值
+- **多渠道定位**：用户自定义路径 → 默认路径 → Steam 注册表与 libraryfolders.vdf → Epic Games 注册表 → 全盘签名搜索，多级回退确保命中率
 
 ### 图库浏览
 
-以精美的网格形式呈现所有媒体文件，支持响应式列数自适应（2-6 列）。提供网格视图、列表视图和时间线视图三种浏览模式，支持全屏浏览与键盘导航。底部状态栏实时显示图片、视频数量及存储占用。
+以网格形式呈现所有媒体文件，支持响应式列数自适应（2-6 列）。提供网格视图、列表视图与时间线视图三种浏览模式，支持全屏浏览与键盘导航。底部状态栏实时显示图片、视频数量及存储占用。
 
 - **多选模式**：Ctrl 离散选择、Shift 连续选择
 - **智能筛选**：按文件类型（图片/视频）、收藏状态、角色档案快速过滤
 - **灵活排序**：日期、名称、大小、分辨率、评分多种排序方式
 - **关键词搜索**：快速定位目标截图
+- **收藏夹与启动器缓存视图**：独立入口快速浏览已收藏或启动器缓存目录下的截图
 
 ![图库浏览界面](screenshot-gallery.png)
 
@@ -74,7 +75,7 @@
 - **风格滤镜**：原生、清新、日系、森系、明亮、复古、胶片、怀旧等 8 款一键滤镜
 - **LUT 支持**：可导入 `.cube` 格式 LUT 文件，内置港色、香港电影、暖调复古、冷调戏剧、高对比等专业调色预设
 - **水印工具**：支持文字水印与图片水印，提供拍立得、日期标签、签名水印、版权声明等样式预设，可调节大小、透明度、旋转角度与位置
-- **撤销/重做**：完整历史栈管理，支持全局操作历史持久化
+- **撤销/重做**：完整历史栈管理，支持全局操作历史持久化与跨重启撤销
 
 ![基础调整面板](screenshot-editor-basic.png)
 
@@ -156,13 +157,17 @@
 
 采用分级加载策略优化浏览性能：
 
-- 首次渲染优先加载低质量缩略图（64px），确保 200ms 内显示
-- 滚动停止 300ms 后自动替换为标准质量版本（256px）
-- LRU 缓存淘汰机制，自动管理缩略图缓存空间
+- 首次渲染优先加载低质量缩略图（64px），快速显示占位
+- 滚动停止后自动替换为标准质量版本（320px）
+- LRU 缓存淘汰机制，默认上限 2GB，自动管理缩略图缓存空间
 
 ### 多语言支持
 
-内置国际化框架，支持多语言切换（后续将持续扩展语言包）。
+内置国际化框架，支持 12 种语言切换（简体中文、繁体中文、英语、日语、韩语、法语、德语、西班牙语、葡萄牙语、俄语、泰语、越南语），并支持"跟随系统"自动匹配。
+
+### 分享码解码工具
+
+内置游戏内分享码解码器，方便玩家解析与核对截图对应的分享码信息。
 
 ### 日志与诊断系统
 
@@ -178,16 +183,16 @@
 
 ### 丰富的设置选项
 
-设置页面重构为八大模块，结构清晰：
+设置页面按八大模块组织，结构清晰：
 
-- **通用**：启动行为、默认导出路径、导出命名规则
-- **外观**：默认简约与柔粉轻奢两种主题一键切换，浅色/深色/跟随系统三种模式
-- **语言**：多语言切换
+- **通用**：启动行为、文件操作、导出规则、语言切换
+- **外观**：默认简约与柔粉轻奢两种主题一键切换，浅色/深色/跟随系统三种模式，字号、紧凑模式、动效减弱等显示偏好
+- **扫描**：全盘扫描/增量扫描选项与自定义路径
 - **角色档案**：档案管理与切换
-- **扫描与路径**：全盘扫描/增量扫描选项
 - **数据管理**：数据库备份、缓存清理、数据重置
 - **日志与诊断**：日志查看与崩溃报告管理
-- **关于**：应用信息、一键直达 GitHub 仓库、QQ 群与开发者社交媒体
+- **关于**：应用信息、一键直达 GitHub 仓库、QQ 群与开发者社交媒体、开源协议
+- **工具**：分享码解码工具入口
 
 ![联系方式](screenshot-contact.png)
 
@@ -205,20 +210,22 @@
 
 ### Intelligent Full-Disk Scanning
 
-No need to manually specify game paths—the app performs deep signature-based searches across all drives to automatically locate *Infinity Nikki* media directories. It recognizes 22 in-game album folder types (Screenshots, High Quality Photos, Magazine Photos, Clock-in Photos, Collages, Custom Avatars, etc.) and automatically archives files by account UID into corresponding character profiles. The scan intelligently skips system directories, supports concurrent multi-drive scanning, and completes the first full scan on a 50,000-file system within 30 seconds.
+No need to manually specify game paths—the app performs deep signature-based searches across all drives to automatically locate *Infinity Nikki* media directories. It recognizes 22 in-game album folder types (Screenshots, High Quality Photos, Magazine Photos, Clock-in Photos, Collages, Custom Avatars, etc.) and automatically archives files by account UID into corresponding character profiles. The scan intelligently skips system and cloud-sync directories and supports concurrent multi-drive scanning.
 
 - **Incremental Scanning**: Based on file modification time, only scans new or changed files
 - **Depth Limit**: Up to 15 levels of recursive depth to ensure complete coverage
 - **Streamed Writes**: Batches 500 records per database write to reduce memory peaks
+- **Multi-Source Lookup**: User custom paths → default paths → Steam registry & libraryfolders.vdf → Epic Games registry → full-disk signature search, with multi-level fallback to maximize hit rate
 
 ### Gallery Browsing
 
-Presents all media files in a beautiful grid layout with responsive column adaptation (2-6 columns). Offers three viewing modes: Grid, List, and Timeline, with full-screen browsing and keyboard navigation. The bottom status bar displays real-time stats for image count, video count, and storage usage.
+Presents all media files in a grid layout with responsive column adaptation (2-6 columns). Offers three viewing modes: Grid, List, and Timeline, with full-screen browsing and keyboard navigation. The bottom status bar displays real-time stats for image count, video count, and storage usage.
 
 - **Multi-Select**: Ctrl for discrete selection, Shift for continuous selection
 - **Smart Filtering**: Quickly filter by file type (Image/Video), favorite status, or character profile
 - **Flexible Sorting**: Date, name, size, resolution, or rating
 - **Keyword Search**: Quickly locate target screenshots
+- **Favorites & Launcher Cache Views**: Dedicated entries to quickly browse favorited screenshots or those from the launcher cache directory
 
 ![Gallery Browser](screenshot-gallery.png)
 
@@ -233,7 +240,7 @@ A fully-featured built-in editor lets you retouch screenshots without third-part
 - **Style Filters**: 8 carefully tuned one-click presets including Original, Fresh, Japanese, Forest, Bright, Vintage, Film, and Nostalgic
 - **LUT Support**: Import `.cube` LUT files with built-in professional presets such as Hong Kong Tone, HK Cinema, Warm Vintage, Cold Drama, and High Contrast
 - **Watermark Tool**: Text and image watermarks with presets like Polaroid, Date Tag, Signature, and Copyright. Adjustable size, opacity, rotation, and position
-- **Undo/Redo**: Complete history stack management with persistent global operation history
+- **Undo/Redo**: Complete history stack management with persistent global operation history and cross-restart undo
 
 ![Basic Adjustments Panel](screenshot-editor-basic.png)
 
@@ -315,13 +322,17 @@ Full-screen slideshow playback with automatic photo rotation for an immersive re
 
 Optimized browsing performance through a tiered loading strategy:
 
-- First render prioritizes low-quality thumbnails (64px) to display within 200ms
-- Automatically replaces with standard quality (256px) 300ms after scrolling stops
-- LRU cache eviction to automatically manage thumbnail cache space
+- First render prioritizes low-quality thumbnails (64px) for fast placeholder display
+- Automatically replaces with standard quality (320px) after scrolling stops
+- LRU cache eviction with a default 2GB cap to manage thumbnail cache space
 
 ### Multilingual Support
 
-Built-in internationalization framework with support for language switching (more language packs will be added continuously).
+Built-in internationalization framework with 12 languages (Simplified Chinese, Traditional Chinese, English, Japanese, Korean, French, German, Spanish, Portuguese, Russian, Thai, Vietnamese) plus a "Follow System" auto-match mode.
+
+### Share Code Decoder
+
+A built-in decoder for in-game share codes, making it easy to parse and verify share code information for screenshots.
 
 ### Logs & Diagnostics
 
@@ -337,16 +348,16 @@ Built-in internationalization framework with support for language switching (mor
 
 ### Comprehensive Settings
 
-The Settings page is reorganized into eight modules for clear navigation:
+The Settings page is organized into eight modules for clear navigation:
 
-- **General**: Launch behavior, default export path, export naming rules
-- **Appearance**: Switch between Default Minimal and Soft Pink Luxury themes; Light/Dark/System modes
-- **Language**: Multilingual switching
+- **General**: Launch behavior, file operations, export rules, language switching
+- **Appearance**: Switch between Default Minimal and Soft Pink Luxury themes; Light/Dark/System modes; font size, compact mode, and reduced-motion display preferences
+- **Scan**: Full scan / incremental scan options and custom paths
 - **Character Profiles**: Profile management and switching
-- **Scan & Paths**: Full scan / incremental scan options
 - **Data Management**: Database backup, cache cleanup, data reset
 - **Logs & Diagnostics**: Log viewer and crash report management
-- **About**: App info, one-click access to GitHub repository, QQ group, and developer social media
+- **About**: App info, one-click access to GitHub repository, QQ group, developer social media, and open-source license
+- **Tools**: Entry point for the share code decoder
 
 ![Contact](screenshot-contact.png)
 
@@ -382,18 +393,17 @@ Visit the [Releases](https://github.com/QianQianLuLu/NikkiGallery/releases) page
 ```
 wxnn-photo-manager/
 ├── src/
-│   ├── main/              # Electron 主进程
-│   │   ├── index.ts       # 主入口
-│   │   ├── database/      # SQLite 数据库
-│   │   ├── scanner/       # 智能文件扫描器
-│   │   ├── thumbnail/     # 缩略图生成
-│   │   └── services/      # 业务服务（备份/崩溃/分享/视频/水印等）
-│   └── renderer/          # 渲染进程（前端）
-│       ├── components/    # 组件
-│       ├── pages/         # 页面（图库/编辑器/套装图鉴/回收站等）
-│       ├── stores/        # 状态管理
-│       └── hooks/         # 自定义 Hooks
-├── preview.html           # HTML 预览版
+│   ├── main/              # Electron 主进程 / Main process
+│   │   ├── index.ts       # 主入口 / Entry
+│   │   ├── database/      # SQLite 数据库 / SQLite database
+│   │   ├── scanner/       # 智能文件扫描器 / Scanner
+│   │   ├── thumbnail/     # 缩略图生成 / Thumbnail generator
+│   │   └── services/      # 业务服务 / Services (backup/crash/share/video/watermark...)
+│   └── renderer/          # 渲染进程 / Renderer
+│       ├── components/    # 组件 / Components
+│       ├── pages/         # 页面 / Pages (gallery/editor/outfit/recycle bin...)
+│       ├── stores/        # 状态管理 / State stores
+│       └── hooks/         # 自定义 Hooks / Custom hooks
 ├── package.json
 └── README.md
 ```

@@ -15,7 +15,7 @@ export const ScanOptionsSection: React.FC = () => {
   useEffect(() => {
     const load = async () => {
       if (!window.electronAPI) return
-      const i = await window.electronAPI.settings.get('incrementalScan', true) as boolean
+      const i = (await window.electronAPI.settings.get('incrementalScan', true)) as boolean
       setIncremental(i)
     }
     load()
@@ -33,14 +33,20 @@ export const ScanOptionsSection: React.FC = () => {
     try {
       const result = await window.electronAPI.mediaAction.analyzeSceneTime()
       if (result.success) {
-        showMessage(result.message || t('logAction.sceneAnalyzed', { count: result.analyzed ?? 0 }), 'success')
+        showMessage(
+          result.message || t('logAction.sceneAnalyzed', { count: result.analyzed ?? 0 }),
+          'success'
+        )
         const res = await loadMediaFromDatabase()
         if (res) setMediaFiles(res.files)
       } else {
         showMessage(result.message || t('logAction.sceneAnalyzeFailed'), 'error')
       }
     } catch (error) {
-      showMessage(error instanceof Error ? error.message : t('logAction.sceneAnalyzeFailed'), 'error')
+      showMessage(
+        error instanceof Error ? error.message : t('logAction.sceneAnalyzeFailed'),
+        'error'
+      )
     } finally {
       setAnalyzing(false)
     }
@@ -50,17 +56,28 @@ export const ScanOptionsSection: React.FC = () => {
     <SectionShell title={t('settings.sections.scanOptions')}>
       <label className="flex items-center justify-between cursor-pointer">
         <span style={{ color: 'var(--text-primary)' }}>{t('settings.scan.incremental')}</span>
-        <input type="checkbox" checked={incremental} onChange={(e) => saveIncremental(e.target.checked)} className="w-5 h-5" />
+        <input
+          type="checkbox"
+          checked={incremental}
+          onChange={(e) => saveIncremental(e.target.checked)}
+          className="w-5 h-5"
+        />
       </label>
       <div className="pt-3 space-y-2" style={{ borderTop: '1px solid var(--divider)' }}>
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-sm" style={{ color: 'var(--text-primary)' }}>{t('settings.scan.sceneTimeTitle')}</p>
+            <p className="text-sm" style={{ color: 'var(--text-primary)' }}>
+              {t('settings.scan.sceneTimeTitle')}
+            </p>
             <p className="text-xs mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
               {t('settings.scan.sceneTimeDesc')}
             </p>
           </div>
-          <button className="btn-primary text-sm" onClick={handleAnalyzeSceneTime} disabled={analyzing}>
+          <button
+            className="btn-primary text-sm"
+            onClick={handleAnalyzeSceneTime}
+            disabled={analyzing}
+          >
             {analyzing ? t('settings.scan.analyzing') : t('settings.scan.analyzeNow')}
           </button>
         </div>

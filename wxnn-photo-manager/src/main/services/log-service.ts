@@ -21,12 +21,12 @@ export async function listFaults(): Promise<FaultRecord[]> {
   try {
     const entries = await fs.promises.readdir(dir)
     const faultFiles = entries
-      .filter(name => name.startsWith('faults-') && name.endsWith('.jsonl'))
+      .filter((name) => name.startsWith('faults-') && name.endsWith('.jsonl'))
       .sort()
       .reverse()
     // 构建缓存键：文件名 + mtime + size，任意变化都失效
     const fileStats = await Promise.all(
-      faultFiles.map(async name => {
+      faultFiles.map(async (name) => {
         try {
           const stat = await fs.promises.stat(path.join(dir, name))
           return `${name}:${stat.mtime.getTime()}:${stat.size}`
@@ -55,7 +55,7 @@ export async function listFaults(): Promise<FaultRecord[]> {
 
   // 仅读取 faults-*.jsonl 文件，按文件名降序（最新日期在前）
   const faultFiles = entries
-    .filter(name => name.startsWith('faults-') && name.endsWith('.jsonl'))
+    .filter((name) => name.startsWith('faults-') && name.endsWith('.jsonl'))
     .sort()
     .reverse()
 
@@ -115,7 +115,7 @@ export function invalidateFaultsCache(): void {
 // 获取单个故障详情（按 id 查找）
 export async function getFaultDetail(id: string): Promise<FaultRecord | null> {
   const faults = await listFaults()
-  return faults.find(f => f.id === id) || null
+  return faults.find((f) => f.id === id) || null
 }
 
 // 打开日志目录（系统资源管理器）
@@ -140,7 +140,9 @@ export async function openLogDirectory(): Promise<{ success: boolean; message: s
 //   - system-info.json    自动生成的系统环境信息
 // 业务决策：使用 Windows PowerShell 的 Compress-Archive cmdlet
 // 这是 Windows 系统原生能力，无需引入额外 npm 依赖
-export async function exportLogsAsZip(targetPath: string): Promise<{ success: boolean; message: string }> {
+export async function exportLogsAsZip(
+  targetPath: string
+): Promise<{ success: boolean; message: string }> {
   const logDir = getLogDirectory()
 
   // 安全校验：目标路径必须是 .zip 扩展名
@@ -224,13 +226,11 @@ export async function exportLogsAsZip(targetPath: string): Promise<{ success: bo
     //   2) PowerShell 执行策略在某些系统上会阻止命令执行
     //   3) tar.exe 是系统原生工具，不依赖 PowerShell，更快更可靠
     // tar.exe 命令：--format=zip 指定 zip 格式，-C 切换到源目录，. 打包当前目录所有内容
-    const child = trackProcess(spawn('tar.exe', [
-      '-c',
-      '--format=zip',
-      '-f', targetPath,
-      '-C', sourceDir,
-      '.'
-    ], { windowsHide: true }))
+    const child = trackProcess(
+      spawn('tar.exe', ['-c', '--format=zip', '-f', targetPath, '-C', sourceDir, '.'], {
+        windowsHide: true
+      })
+    )
 
     let stderr = ''
     let stdout = ''
@@ -255,7 +255,10 @@ export async function exportLogsAsZip(targetPath: string): Promise<{ success: bo
           // Bug #08-C6：同步 fs.statSync 改为 await fs.promises.stat，避免阻塞主进程事件循环
           const stats = await fs.promises.stat(targetPath)
           if (stats.size === 0) {
-            resolve({ success: false, message: '导出失败：生成的压缩包为空（可能源目录无可用文件）' })
+            resolve({
+              success: false,
+              message: '导出失败：生成的压缩包为空（可能源目录无可用文件）'
+            })
             return
           }
         } catch {
@@ -382,7 +385,11 @@ async function collectSystemInfo(): Promise<Record<string, unknown>> {
 // 清空所有日志文件
 // 仅删除 .log 和 .jsonl 文件，保留 logs 目录本身
 // P2-3：清空后同步失效故障列表缓存
-export async function clearAllLogs(): Promise<{ success: boolean; message: string; cleared: number }> {
+export async function clearAllLogs(): Promise<{
+  success: boolean
+  message: string
+  cleared: number
+}> {
   const dir = getLogDirectory()
 
   try {
@@ -444,7 +451,7 @@ export async function getLogStats(): Promise<{
           try {
             const content = await fs.promises.readFile(path.join(dir, name), 'utf-8')
             // JSONL 每行一条记录，空行不计
-            const lineCount = content.split('\n').filter(l => l.trim().length > 0).length
+            const lineCount = content.split('\n').filter((l) => l.trim().length > 0).length
             faultCount += lineCount
           } catch {
             // 读取失败时按 size 估算

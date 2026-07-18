@@ -4,6 +4,7 @@ import fs from 'fs'
 import { promises as fsp } from 'fs'
 import { app } from 'electron'
 import type { DatabaseManager } from '../database/connection'
+import type { TaskScheduler } from '../scheduler/task-scheduler'
 import { logger } from '../utils/logger'
 
 // 备份保留份数上限
@@ -25,6 +26,8 @@ class BackupService {
   private backupDir: string = ''
   // 修复：保存启动备份定时器引用，退出时清理，避免定时器回调访问已关闭的数据库
   private startupBackupTimer: NodeJS.Timeout | null = null
+  // 分级调度器（可选）：注入后启动备份通过低优先级队列执行，避免与用户操作争抢 IO
+  private scheduler: TaskScheduler | null = null
 
   init(dbManager: DatabaseManager): void {
     this.dbManager = dbManager
@@ -46,14 +49,32 @@ class BackupService {
     this.backupDir = dir
   }
 
+  /**
+   * 注入分级调度器。注入后启动备份会通过低优先级队列执行。
+   * 不注入则保持原有直接执行行为（向后兼容）。
+   */
+  setScheduler(scheduler: TaskScheduler): void {
+    this.scheduler = scheduler
+  }
+
   // 启动后自动备份（延迟执行 + 间隔检查）
+  // 分级调度改造：若已注入 scheduler，通过 enqueueLow 入队，等空闲时执行
   scheduleStartupBackup(): void {
     if (this.startupBackupTimer) clearTimeout(this.startupBackupTimer)
     this.startupBackupTimer = setTimeout(() => {
       this.startupBackupTimer = null
-      this.autoBackupIfNeeded().catch((err) => {
-        logger.error('[Backup] 启动自动备份失败:', err)
-      })
+      const runBackup = async (): Promise<void> => {
+        try {
+          await this.autoBackupIfNeeded()
+        } catch (err) {
+          logger.error('[Backup] 启动自动备份失败:', err)
+        }
+      }
+      if (this.scheduler) {
+        void this.scheduler.enqueueLow(runBackup, { id: 'startup-backup' })
+      } else {
+        runBackup().catch(() => {})
+      }
     }, STARTUP_BACKUP_DELAY_MS)
   }
 
@@ -72,7 +93,9 @@ class BackupService {
       const latest = records[0] // listBackups 按时间倒序，第一条是最新的
       const elapsed = Date.now() - new Date(latest.createdAt).getTime()
       if (elapsed < AUTO_BACKUP_MIN_INTERVAL_MS) {
-        logger.info(`[Backup] 距上次备份不足 7 天（${Math.floor(elapsed / 86400000)} 天），跳过自动备份`)
+        logger.info(
+          `[Backup] 距上次备份不足 7 天（${Math.floor(elapsed / 86400000)} 天），跳过自动备份`
+        )
         return
       }
     }
@@ -82,7 +105,9 @@ class BackupService {
 
   // 创建数据库备份（使用 better-sqlite3 的 Online Backup API）
   // P1-04：accountUid 可选，提供时文件名加入 UID 后缀以便识别（整库备份，不丢失其他档案数据）
-  async createBackup(accountUid?: string): Promise<{ success: boolean; backup?: BackupRecord; message?: string }> {
+  async createBackup(
+    accountUid?: string
+  ): Promise<{ success: boolean; backup?: BackupRecord; message?: string }> {
     if (!this.dbManager) {
       return { success: false, message: '数据库未初始化' }
     }
@@ -212,7 +237,11 @@ class BackupService {
         fs.renameSync(tmpPath, dbPath)
       } catch (restoreErr) {
         // 恢复失败时清理临时文件，原数据库不受影响
-        try { if (fs.existsSync(tmpPath)) fs.unlinkSync(tmpPath) } catch { /* 忽略清理失败 */ }
+        try {
+          if (fs.existsSync(tmpPath)) fs.unlinkSync(tmpPath)
+        } catch {
+          /* 忽略清理失败 */
+        }
         throw restoreErr
       }
 
@@ -259,7 +288,11 @@ class BackupService {
     } finally {
       // 确保关闭临时连接，避免文件句柄泄漏
       if (probe) {
-        try { probe.close() } catch { /* 忽略关闭失败 */ }
+        try {
+          probe.close()
+        } catch {
+          /* 忽略关闭失败 */
+        }
       }
     }
   }

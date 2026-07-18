@@ -17,10 +17,7 @@ export async function runWithConcurrency<T>(
     }
   }
 
-  const workers = Array.from(
-    { length: Math.min(concurrency, tasks.length) },
-    () => runNext()
-  )
+  const workers = Array.from({ length: Math.min(concurrency, tasks.length) }, () => runNext())
   await Promise.all(workers)
   return results
 }

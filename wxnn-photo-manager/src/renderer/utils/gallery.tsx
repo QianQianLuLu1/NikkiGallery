@@ -62,7 +62,10 @@ function createIcons() {
   }
 }
 
-export function getContextMenuItems(file: MediaFile, actions: GalleryContextMenuActions): ContextMenuItem[] {
+export function getContextMenuItems(
+  file: MediaFile,
+  actions: GalleryContextMenuActions
+): ContextMenuItem[] {
   const icons = createIcons()
   return [
     {
@@ -117,32 +120,34 @@ export function getContextMenuItems(file: MediaFile, actions: GalleryContextMenu
     },
     // T09：分享二级子菜单（微信 / QQ / vivo办公套件）
     ...(actions.onShare
-      ? [{
-          id: 'share',
-          label: '分享',
-          icon: icons.share,
-          onClick: () => {},
-          submenu: [
-            {
-              id: 'share-wechat',
-              label: '分享到微信',
-              icon: icons.wechat,
-              onClick: () => actions.onShare!(file, 'wechat')
-            },
-            {
-              id: 'share-qq',
-              label: '分享到QQ',
-              icon: icons.qq,
-              onClick: () => actions.onShare!(file, 'qq')
-            },
-            {
-              id: 'share-vivo',
-              label: '分享到vivo办公套件',
-              icon: icons.vivo,
-              onClick: () => actions.onShare!(file, 'vivo')
-            }
-          ]
-        }]
+      ? [
+          {
+            id: 'share',
+            label: '分享',
+            icon: icons.share,
+            onClick: () => {},
+            submenu: [
+              {
+                id: 'share-wechat',
+                label: '分享到微信',
+                icon: icons.wechat,
+                onClick: () => actions.onShare!(file, 'wechat')
+              },
+              {
+                id: 'share-qq',
+                label: '分享到QQ',
+                icon: icons.qq,
+                onClick: () => actions.onShare!(file, 'qq')
+              },
+              {
+                id: 'share-vivo',
+                label: '分享到vivo办公套件',
+                icon: icons.vivo,
+                onClick: () => actions.onShare!(file, 'vivo')
+              }
+            ]
+          }
+        ]
       : []),
     { id: 'divider-2', label: '', divider: true },
     {

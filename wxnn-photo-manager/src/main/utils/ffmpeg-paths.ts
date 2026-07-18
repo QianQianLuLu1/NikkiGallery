@@ -24,9 +24,7 @@ export function resolveAsarUnpackedPath(p: string): string {
 }
 
 // ffmpeg-static 在极端环境（打包配置错误）下可能返回 undefined，回退到 PATH 中的 'ffmpeg'
-export const ffmpegPath: string = ffmpegStatic
-  ? resolveAsarUnpackedPath(ffmpegStatic)
-  : 'ffmpeg'
+export const ffmpegPath: string = ffmpegStatic ? resolveAsarUnpackedPath(ffmpegStatic) : 'ffmpeg'
 
 // ffprobe-static 在异常环境下 path 可能为 undefined，回退到 PATH 中的 'ffprobe'（与 ffmpegPath 防御策略一致）
 export const ffprobePath: string = ffprobeStatic?.path

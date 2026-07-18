@@ -104,31 +104,32 @@ export const useOperationHistoryStore = create<OperationHistoryState>((set, get)
     })
     // P1-F5：异步写入数据库，失败时通过回调通知 UI（不静默吞掉）
     // 原实现仅 console.error，违反"错误必须被处理"硬约束
-    void window.electronAPI?.operationHistory?.add({
-      operationType: fullRecord.type,
-      mediaId: fullRecord.mediaId ? Number(fullRecord.mediaId) : undefined,
-      payload: fullRecord.payload,
-      description: fullRecord.description,
-      createdAt: new Date(fullRecord.createdAt).toISOString()
-    }).then((result) => {
-      if (result?.success && result.id != null) {
-        set((state) => ({
-          stack: state.stack.map((r) =>
-            r.localId === localId ? { ...r, dbId: result.id } : r
-          )
-        }))
-      } else if (result && !result.success) {
-        // P1-F5：IPC 返回失败（非异常），通知 UI
-        const msg = result.message || '未知错误'
-        console.error('[OperationHistory] 写入数据库失败:', msg)
-        dbErrorHandlers.forEach(h => h(`操作历史保存失败：${msg}，重启后该操作不可撤销`))
-      }
-    }).catch((err) => {
-      console.error('[OperationHistory] 写入数据库失败:', err)
-      // P1-F5：通过回调通知 UI，避免静默失败
-      const reason = err instanceof Error ? err.message : String(err)
-      dbErrorHandlers.forEach(h => h(`操作历史保存失败：${reason}，重启后该操作不可撤销`))
-    })
+    void window.electronAPI?.operationHistory
+      ?.add({
+        operationType: fullRecord.type,
+        mediaId: fullRecord.mediaId ? Number(fullRecord.mediaId) : undefined,
+        payload: fullRecord.payload,
+        description: fullRecord.description,
+        createdAt: new Date(fullRecord.createdAt).toISOString()
+      })
+      .then((result) => {
+        if (result?.success && result.id != null) {
+          set((state) => ({
+            stack: state.stack.map((r) => (r.localId === localId ? { ...r, dbId: result.id } : r))
+          }))
+        } else if (result && !result.success) {
+          // P1-F5：IPC 返回失败（非异常），通知 UI
+          const msg = result.message || '未知错误'
+          console.error('[OperationHistory] 写入数据库失败:', msg)
+          dbErrorHandlers.forEach((h) => h(`操作历史保存失败：${msg}，重启后该操作不可撤销`))
+        }
+      })
+      .catch((err) => {
+        console.error('[OperationHistory] 写入数据库失败:', err)
+        // P1-F5：通过回调通知 UI，避免静默失败
+        const reason = err instanceof Error ? err.message : String(err)
+        dbErrorHandlers.forEach((h) => h(`操作历史保存失败：${reason}，重启后该操作不可撤销`))
+      })
   },
 
   undo: async () => {

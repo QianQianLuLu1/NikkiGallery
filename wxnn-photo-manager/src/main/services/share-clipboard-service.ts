@@ -109,7 +109,10 @@ function resolveEnv(p: string): string {
     .replace(/%LOCALAPPDATA%/gi, process.env.LOCALAPPDATA || '')
     .replace(/%APPDATA%/gi, process.env.APPDATA || '')
     .replace(/%PROGRAMFILES%/gi, process.env.ProgramFiles || 'C:\\Program Files')
-    .replace(/%PROGRAMFILES\(X86\)%/gi, process.env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)')
+    .replace(
+      /%PROGRAMFILES\(X86\)%/gi,
+      process.env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)'
+    )
     .replace(/%USERPROFILE%/gi, process.env.USERPROFILE || '')
 }
 
@@ -119,14 +122,44 @@ const DETECTION_CONFIGS: Record<string, ChannelDetectionConfig> = {
     // 微信 3.x 注册表 key 是 WeChat，主程序 WeChat.exe
     regQueries: [
       // 4.x 新版：HKCU\Software\Tencent\Weixin
-      { key: 'HKCU\\Software\\Tencent\\Weixin', value: 'InstallPath', parse: 'installPath', exeNames: ['Weixin.exe'] },
+      {
+        key: 'HKCU\\Software\\Tencent\\Weixin',
+        value: 'InstallPath',
+        parse: 'installPath',
+        exeNames: ['Weixin.exe']
+      },
       // 4.x HKLM（管理员安装）
-      { key: 'HKLM\\SOFTWARE\\Tencent\\Weixin', value: 'InstallPath', parse: 'installPath', exeNames: ['Weixin.exe'] },
-      { key: 'HKLM\\SOFTWARE\\WOW6432Node\\Tencent\\Weixin', value: 'InstallPath', parse: 'installPath', exeNames: ['Weixin.exe'] },
+      {
+        key: 'HKLM\\SOFTWARE\\Tencent\\Weixin',
+        value: 'InstallPath',
+        parse: 'installPath',
+        exeNames: ['Weixin.exe']
+      },
+      {
+        key: 'HKLM\\SOFTWARE\\WOW6432Node\\Tencent\\Weixin',
+        value: 'InstallPath',
+        parse: 'installPath',
+        exeNames: ['Weixin.exe']
+      },
       // 3.x 老版：HKCU\Software\Tencent\WeChat
-      { key: 'HKCU\\Software\\Tencent\\WeChat', value: 'InstallPath', parse: 'installPath', exeNames: ['WeChat.exe'] },
-      { key: 'HKLM\\SOFTWARE\\Tencent\\WeChat', value: 'InstallPath', parse: 'installPath', exeNames: ['WeChat.exe'] },
-      { key: 'HKLM\\SOFTWARE\\WOW6432Node\\Tencent\\WeChat', value: 'InstallPath', parse: 'installPath', exeNames: ['WeChat.exe'] },
+      {
+        key: 'HKCU\\Software\\Tencent\\WeChat',
+        value: 'InstallPath',
+        parse: 'installPath',
+        exeNames: ['WeChat.exe']
+      },
+      {
+        key: 'HKLM\\SOFTWARE\\Tencent\\WeChat',
+        value: 'InstallPath',
+        parse: 'installPath',
+        exeNames: ['WeChat.exe']
+      },
+      {
+        key: 'HKLM\\SOFTWARE\\WOW6432Node\\Tencent\\WeChat',
+        value: 'InstallPath',
+        parse: 'installPath',
+        exeNames: ['WeChat.exe']
+      }
     ],
     uninstallKeywords: ['Weixin', '微信', 'WeChat'],
     uninstallExcludeKeywords: ['WeChatMeet', '会议', 'WeMeet', 'QQPCMgr'],
@@ -143,7 +176,7 @@ const DETECTION_CONFIGS: Record<string, ChannelDetectionConfig> = {
       'D:\\Tencent\\Weixin',
       'D:\\Tencent\\WeChat',
       'D:\\Program Files\\Tencent\\Weixin',
-      'E:\\Tencent\\Weixin',
+      'E:\\Tencent\\Weixin'
     ],
     processNames: ['Weixin.exe', 'WeChat.exe']
   },
@@ -152,18 +185,60 @@ const DETECTION_CONFIGS: Record<string, ChannelDetectionConfig> = {
     // 可靠路径来源是卸载项的 DisplayIcon（含完整 exe 路径）
     regQueries: [
       // QQ NT 卸载项（HKLM 32 位 / 64 位 / HKCU）
-      { key: 'HKLM\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\QQ', value: 'DisplayIcon', parse: 'displayIcon' },
-      { key: 'HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\QQ', value: 'DisplayIcon', parse: 'displayIcon' },
-      { key: 'HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\QQ', value: 'DisplayIcon', parse: 'displayIcon' },
+      {
+        key: 'HKLM\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\QQ',
+        value: 'DisplayIcon',
+        parse: 'displayIcon'
+      },
+      {
+        key: 'HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\QQ',
+        value: 'DisplayIcon',
+        parse: 'displayIcon'
+      },
+      {
+        key: 'HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\QQ',
+        value: 'DisplayIcon',
+        parse: 'displayIcon'
+      },
       // QQ NT 直接注册表
-      { key: 'HKCU\\Software\\Tencent\\QQNT', value: 'InstallPath', parse: 'installPath', exeNames: ['QQ.exe'] },
-      { key: 'HKLM\\SOFTWARE\\Tencent\\QQNT', value: 'InstallPath', parse: 'installPath', exeNames: ['QQ.exe'] },
+      {
+        key: 'HKCU\\Software\\Tencent\\QQNT',
+        value: 'InstallPath',
+        parse: 'installPath',
+        exeNames: ['QQ.exe']
+      },
+      {
+        key: 'HKLM\\SOFTWARE\\Tencent\\QQNT',
+        value: 'InstallPath',
+        parse: 'installPath',
+        exeNames: ['QQ.exe']
+      },
       // 老 QQ（QQ2009 注册表项）
-      { key: 'HKLM\\SOFTWARE\\WOW6432Node\\Tencent\\QQ2009', value: 'Install', parse: 'installPath', exeNames: ['Bin\\QQ.exe', 'QQ.exe'] },
-      { key: 'HKLM\\SOFTWARE\\Tencent\\QQ2009', value: 'Install', parse: 'installPath', exeNames: ['Bin\\QQ.exe', 'QQ.exe'] },
+      {
+        key: 'HKLM\\SOFTWARE\\WOW6432Node\\Tencent\\QQ2009',
+        value: 'Install',
+        parse: 'installPath',
+        exeNames: ['Bin\\QQ.exe', 'QQ.exe']
+      },
+      {
+        key: 'HKLM\\SOFTWARE\\Tencent\\QQ2009',
+        value: 'Install',
+        parse: 'installPath',
+        exeNames: ['Bin\\QQ.exe', 'QQ.exe']
+      }
     ],
     uninstallKeywords: ['QQNT', 'QQ NT', 'QQ9', '腾讯QQ'],
-    uninstallExcludeKeywords: ['QQPCMgr', '电脑管家', 'QQBrowser', '浏览器', 'QQMusic', '音乐', 'QQVideo', '腾讯视频', 'Tim'],
+    uninstallExcludeKeywords: [
+      'QQPCMgr',
+      '电脑管家',
+      'QQBrowser',
+      '浏览器',
+      'QQMusic',
+      '音乐',
+      'QQVideo',
+      '腾讯视频',
+      'Tim'
+    ],
     candidateExes: ['QQ.exe', 'Bin\\QQ.exe'],
     commonDirs: [
       '%PROGRAMFILES%\\Tencent\\QQNT',
@@ -176,7 +251,7 @@ const DETECTION_CONFIGS: Record<string, ChannelDetectionConfig> = {
       'C:\\Program Files (x86)\\Tencent\\QQ',
       'D:\\Tencent\\QQNT',
       'D:\\Program Files\\Tencent\\QQNT',
-      'E:\\Tencent\\QQNT',
+      'E:\\Tencent\\QQNT'
     ],
     processNames: ['QQ.exe']
   },
@@ -196,7 +271,7 @@ const DETECTION_CONFIGS: Record<string, ChannelDetectionConfig> = {
       'C:\\Program Files\\vivo\\vivooffice',
       'C:\\Program Files (x86)\\vivo\\vivooffice',
       'D:\\Program Files\\vivo\\vivooffice',
-      'D:\\vivo\\vivooffice',
+      'D:\\vivo\\vivooffice'
     ],
     processNames: ['vivooffice.exe', 'vivo-office.exe', 'VivoClient.exe']
   }
@@ -240,7 +315,9 @@ function buildHdropBuffer(filePaths: string[]): Buffer | null {
  *   - valid: 通过校验的文件路径（存在且是文件）
  *   - skipped: 跳过的数量（不存在 / 是目录 / stat 抛错）
  */
-export async function filterValidPaths(filePaths: string[]): Promise<{ valid: string[]; skipped: number }> {
+export async function filterValidPaths(
+  filePaths: string[]
+): Promise<{ valid: string[]; skipped: number }> {
   const valid: string[] = []
   let skipped = 0
   for (const p of filePaths) {
@@ -289,7 +366,10 @@ export async function copyFilesToClipboard(
       success: true,
       count: valid.length,
       skipped,
-      message: skipped > 0 ? `已复制 ${valid.length} 个文件（跳过 ${skipped} 个不可访问）` : `已复制 ${valid.length} 个文件到剪贴板`
+      message:
+        skipped > 0
+          ? `已复制 ${valid.length} 个文件（跳过 ${skipped} 个不可访问）`
+          : `已复制 ${valid.length} 个文件到剪贴板`
     }
   } catch (err) {
     logger.error('[ShareClipboard] 复制失败:', err)
@@ -313,9 +393,7 @@ function regQuery(key: string, valueName?: string): Promise<string | null> {
       resolve(null)
       return
     }
-    const args = valueName
-      ? ['query', key, '/v', valueName]
-      : ['query', key]
+    const args = valueName ? ['query', key, '/v', valueName] : ['query', key]
     execFile('reg', args, { timeout: 3000, windowsHide: true }, (err, stdout) => {
       if (err) {
         resolve(null)
@@ -344,7 +422,10 @@ function regQuery(key: string, valueName?: string): Promise<string | null> {
 function parseDisplayIcon(s: string): string | null {
   if (!s) return null
   // 去掉末尾 ",数字" 和首尾引号
-  const cleaned = s.replace(/,\s*\d+$/, '').replace(/^"|"$/g, '').trim()
+  const cleaned = s
+    .replace(/,\s*\d+$/, '')
+    .replace(/^"|"$/g, '')
+    .trim()
   if (!cleaned.toLowerCase().endsWith('.exe')) return null
   return cleaned
 }
@@ -436,57 +517,62 @@ function findUninstallEntries(
       if (pending === 0) resolve(results)
     }
 
-    const lowerKeywords = keywords.map(k => k.toLowerCase())
-    const lowerExcludes = excludeKeywords.map(k => k.toLowerCase())
+    const lowerKeywords = keywords.map((k) => k.toLowerCase())
+    const lowerExcludes = excludeKeywords.map((k) => k.toLowerCase())
 
     for (const root of roots) {
       // /s 递归查询所有子键
-      execFile('reg', ['query', root, '/s'], { timeout: 8000, windowsHide: true, maxBuffer: 2 * 1024 * 1024 }, (err, stdout) => {
-        if (err || !stdout) {
+      execFile(
+        'reg',
+        ['query', root, '/s'],
+        { timeout: 8000, windowsHide: true, maxBuffer: 2 * 1024 * 1024 },
+        (err, stdout) => {
+          if (err || !stdout) {
+            check()
+            return
+          }
+          // 解析输出：每个 HKEY_ 开头的子键下含若干 REG_SZ 值
+          const lines = stdout.split(/\r?\n/)
+          let currentDisplayName = ''
+          let currentInstallLoc = ''
+          let currentDisplayIcon = ''
+
+          const flush = () => {
+            if (!currentDisplayName) return
+            const lowerName = currentDisplayName.toLowerCase()
+            // 必须包含任一关键字
+            const matched = lowerKeywords.some((k) => lowerName.includes(k))
+            // 必须不含任何排除词
+            const excluded = lowerExcludes.some((k) => lowerName.includes(k))
+            if (matched && !excluded) {
+              results.push({
+                displayName: currentDisplayName,
+                installLocation: currentInstallLoc || null,
+                displayIcon: currentDisplayIcon || null
+              })
+            }
+            currentDisplayName = ''
+            currentInstallLoc = ''
+            currentDisplayIcon = ''
+          }
+
+          for (const line of lines) {
+            if (line.startsWith('HKEY_')) {
+              // 新子键开始，处理上一个
+              flush()
+            } else {
+              const dm = line.match(/DisplayName\s+REG_SZ\s+(.+)/i)
+              if (dm) currentDisplayName = dm[1].trim()
+              const il = line.match(/InstallLocation\s+REG_SZ\s+(.+)/i)
+              if (il) currentInstallLoc = il[1].trim()
+              const di = line.match(/DisplayIcon\s+REG_SZ\s+(.+)/i)
+              if (di) currentDisplayIcon = di[1].trim()
+            }
+          }
+          flush()
           check()
-          return
         }
-        // 解析输出：每个 HKEY_ 开头的子键下含若干 REG_SZ 值
-        const lines = stdout.split(/\r?\n/)
-        let currentDisplayName = ''
-        let currentInstallLoc = ''
-        let currentDisplayIcon = ''
-
-        const flush = () => {
-          if (!currentDisplayName) return
-          const lowerName = currentDisplayName.toLowerCase()
-          // 必须包含任一关键字
-          const matched = lowerKeywords.some(k => lowerName.includes(k))
-          // 必须不含任何排除词
-          const excluded = lowerExcludes.some(k => lowerName.includes(k))
-          if (matched && !excluded) {
-            results.push({
-              displayName: currentDisplayName,
-              installLocation: currentInstallLoc || null,
-              displayIcon: currentDisplayIcon || null
-            })
-          }
-          currentDisplayName = ''
-          currentInstallLoc = ''
-          currentDisplayIcon = ''
-        }
-
-        for (const line of lines) {
-          if (line.startsWith('HKEY_')) {
-            // 新子键开始，处理上一个
-            flush()
-          } else {
-            const dm = line.match(/DisplayName\s+REG_SZ\s+(.+)/i)
-            if (dm) currentDisplayName = dm[1].trim()
-            const il = line.match(/InstallLocation\s+REG_SZ\s+(.+)/i)
-            if (il) currentInstallLoc = il[1].trim()
-            const di = line.match(/DisplayIcon\s+REG_SZ\s+(.+)/i)
-            if (di) currentDisplayIcon = di[1].trim()
-          }
-        }
-        flush()
-        check()
-      })
+      )
     }
   })
 }
@@ -516,14 +602,16 @@ function getProcessExecutablePath(processName: string): Promise<string | null> {
               // Slice 7a：fs.existsSync → pathExists（异步）
               // Slice 7c-fix：补 .catch() 兜底，pathExists 内部已 try/catch 不会 reject，
               // 此处为防御性兜底，避免未来实现变更时产生 unhandled rejection
-              pathExists(p).then((exists) => {
-                if (exists) {
-                  resolve(p)
-                  return
-                }
-                // 文件不存在，回退到 PowerShell
-                runPowerShellFallback()
-              }).catch(() => runPowerShellFallback())
+              pathExists(p)
+                .then((exists) => {
+                  if (exists) {
+                    resolve(p)
+                    return
+                  }
+                  // 文件不存在，回退到 PowerShell
+                  runPowerShellFallback()
+                })
+                .catch(() => runPowerShellFallback())
               return
             }
           }
@@ -549,9 +637,11 @@ function getProcessExecutablePath(processName: string): Promise<string | null> {
           if (p && p.toLowerCase().endsWith('.exe')) {
             // Slice 7a：fs.existsSync → pathExists（异步）
             // Slice 7c-fix：补 .catch() 兜底，失败时视为路径不存在
-            pathExists(p).then((exists) => {
-              resolve(exists ? p : null)
-            }).catch(() => resolve(null))
+            pathExists(p)
+              .then((exists) => {
+                resolve(exists ? p : null)
+              })
+              .catch(() => resolve(null))
           } else {
             resolve(null)
           }
@@ -569,7 +659,9 @@ const installPathCache: Record<string, { path: string | null; expireAt: number }
  * 通用化检测：依次尝试 4 类来源，任一命中即返回
  * 1) 注册表候选位置 → 2) 卸载项枚举 → 3) 常见安装目录 → 4) 进程路径反查
  */
-async function detectInstalled(channelId: string): Promise<{ installed: boolean; installPath: string | null }> {
+async function detectInstalled(
+  channelId: string
+): Promise<{ installed: boolean; installPath: string | null }> {
   if (process.platform !== 'win32') {
     return { installed: false, installPath: null }
   }
@@ -596,7 +688,7 @@ async function detectInstalled(channelId: string): Promise<{ installed: boolean;
       if (item.parse === 'displayIcon') {
         const exe = parseDisplayIcon(value)
         // Slice 7a：fs.existsSync → await pathExists
-        if (exe && await pathExists(exe)) {
+        if (exe && (await pathExists(exe))) {
           installPath = exe
           break
         }
@@ -613,13 +705,16 @@ async function detectInstalled(channelId: string): Promise<{ installed: boolean;
 
     // 2) 卸载项枚举
     if (!installPath) {
-      const entries = await findUninstallEntries(config.uninstallKeywords, config.uninstallExcludeKeywords)
+      const entries = await findUninstallEntries(
+        config.uninstallKeywords,
+        config.uninstallExcludeKeywords
+      )
       for (const entry of entries) {
         // 优先用 DisplayIcon（含完整 exe 路径）
         if (entry.displayIcon) {
           const exe = parseDisplayIcon(entry.displayIcon)
           // Slice 7a：fs.existsSync → await pathExists
-          if (exe && await pathExists(exe)) {
+          if (exe && (await pathExists(exe))) {
             installPath = exe
             break
           }
@@ -664,7 +759,10 @@ async function detectInstalled(channelId: string): Promise<{ installed: boolean;
     logger.warn(`[ShareClipboard] 检测 ${channelId} 安装路径失败:`, err)
   }
 
-  installPathCache[channelId] = { path: installPath, expireAt: Date.now() + INSTALL_PATH_CACHE_TTL_MS }
+  installPathCache[channelId] = {
+    path: installPath,
+    expireAt: Date.now() + INSTALL_PATH_CACHE_TTL_MS
+  }
   return { installed: !!installPath, installPath }
 }
 
@@ -680,23 +778,28 @@ function detectRunning(processName: string): Promise<boolean> {
     }
     // tasklist /FI "IMAGENAME eq XXX.exe" /NH /FO CSV
     // /FO CSV 输出 CSV 格式便于解析，避免依赖中文输出文本
-    execFile('tasklist', ['/FI', `IMAGENAME eq ${processName}`, '/NH', '/FO', 'CSV'], { timeout: 3000, windowsHide: true }, (err, stdout) => {
-      if (err) {
-        // tasklist 在"无匹配"时也可能返回非零退出码
-        // 通过 stdout 判断
-        if (stdout && !stdout.includes('No tasks') && !stdout.includes('没有运行')) {
-          // 输出非空且非"无任务"提示，按 CSV 解析
-        } else {
-          resolve(false)
-          return
+    execFile(
+      'tasklist',
+      ['/FI', `IMAGENAME eq ${processName}`, '/NH', '/FO', 'CSV'],
+      { timeout: 3000, windowsHide: true },
+      (err, stdout) => {
+        if (err) {
+          // tasklist 在"无匹配"时也可能返回非零退出码
+          // 通过 stdout 判断
+          if (stdout && !stdout.includes('No tasks') && !stdout.includes('没有运行')) {
+            // 输出非空且非"无任务"提示，按 CSV 解析
+          } else {
+            resolve(false)
+            return
+          }
         }
+        // CSV 输出首列即映像名，例如 "WeChat.exe","1234","Console","1","100,000 K"
+        const firstLine = stdout.split(/\r?\n/)[0] || ''
+        const match = firstLine.match(/^"([^"]+)"/)
+        const imgName = match ? match[1].toLowerCase() : ''
+        resolve(imgName === processName.toLowerCase())
       }
-      // CSV 输出首列即映像名，例如 "WeChat.exe","1234","Console","1","100,000 K"
-      const firstLine = stdout.split(/\r?\n/)[0] || ''
-      const match = firstLine.match(/^"([^"]+)"/)
-      const imgName = match ? match[1].toLowerCase() : ''
-      resolve(imgName === processName.toLowerCase())
-    })
+    )
   })
 }
 
@@ -741,14 +844,19 @@ export async function launchApp(channelId: string): Promise<{ success: boolean; 
   return new Promise((resolve) => {
     // F-S2 修复：原实现用 exec(`start "" "${installPath}"`) 通过 shell 解析，存在命令注入风险。
     // 改用 execFile('cmd', ['/c', 'start', '', installPath]) 绕过 shell，参数数组直接传递。
-    execFile('cmd', ['/c', 'start', '', installPath], { timeout: 3000, windowsHide: true }, (err) => {
-      if (err) {
-        logger.error(`[ShareClipboard] 启动 ${channelId} 失败:`, err)
-        resolve({ success: false, message: `启动失败: ${err.message}` })
-      } else {
-        logger.info(`[ShareClipboard] 已启动 ${channelId}: ${installPath}`)
-        resolve({ success: true, message: '已启动' })
+    execFile(
+      'cmd',
+      ['/c', 'start', '', installPath],
+      { timeout: 3000, windowsHide: true },
+      (err) => {
+        if (err) {
+          logger.error(`[ShareClipboard] 启动 ${channelId} 失败:`, err)
+          resolve({ success: false, message: `启动失败: ${err.message}` })
+        } else {
+          logger.info(`[ShareClipboard] 已启动 ${channelId}: ${installPath}`)
+          resolve({ success: true, message: '已启动' })
+        }
       }
-    })
+    )
   })
 }

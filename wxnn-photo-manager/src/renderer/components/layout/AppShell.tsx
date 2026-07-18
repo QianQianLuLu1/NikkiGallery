@@ -49,15 +49,14 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
     switch (currentView) {
       case 'gallery':
         leftText = `共 ${mediaFiles.length} 个文件（图片 ${stats.images} · 视频 ${stats.videos}）`
-        rightText = selectedMediaIds.length > 0
-          ? `已选择 ${selectedMediaIds.length} 项`
-          : `占用 ${formatSize(stats.size)}`
+        rightText =
+          selectedMediaIds.length > 0
+            ? `已选择 ${selectedMediaIds.length} 项`
+            : `占用 ${formatSize(stats.size)}`
         break
       case 'detail': {
         // U-G7：detail 视图显示当前文件索引 / 总数（如 "3 / 128"），而非"已选择 N 项"
-        const idx = selectedMediaId
-          ? mediaFiles.findIndex((f) => f.id === selectedMediaId)
-          : -1
+        const idx = selectedMediaId ? mediaFiles.findIndex((f) => f.id === selectedMediaId) : -1
         rightText = idx >= 0 ? `${idx + 1} / ${mediaFiles.length}` : '准备就绪'
         break
       }
@@ -84,17 +83,26 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
         break
     }
     return { leftText, rightText }
-  }, [currentView, mediaFiles, recycleBinFiles.length, categories.length, selectedMediaIds.length, selectedMediaId, stats])
+  }, [
+    currentView,
+    mediaFiles,
+    recycleBinFiles.length,
+    categories.length,
+    selectedMediaIds.length,
+    selectedMediaId,
+    stats
+  ])
 
   return (
-    <div className="h-screen w-screen flex flex-col overflow-hidden" style={{ background: 'var(--bg-primary)' }}>
+    <div
+      className="h-screen w-screen flex flex-col overflow-hidden"
+      style={{ background: 'var(--bg-primary)' }}
+    >
       <TitleBar />
       <div className="flex-1 flex pt-10 overflow-hidden sidebar-gradient">
         <Sidebar />
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <div className="flex-1 flex flex-col min-h-0 overflow-hidden p-5">
-            {children}
-          </div>
+          <div className="flex-1 flex flex-col min-h-0 overflow-hidden p-5">{children}</div>
           <div
             className="h-8 flex items-center justify-between px-4 text-xs status-bar"
             style={{ color: 'var(--text-secondary)', borderTop: '1px solid var(--divider)' }}

@@ -128,14 +128,21 @@ export class LivePhotoService {
       (cmd) =>
         cmd
           .outputOptions(
-            '-c:v', 'libx264',
-            '-preset', 'medium',
-            '-crf', '20', // 视觉无损质量
-            '-c:a', 'aac',
-            '-b:a', '128k',
-            '-movflags', '+faststart',
+            '-c:v',
+            'libx264',
+            '-preset',
+            'medium',
+            '-crf',
+            '20', // 视觉无损质量
+            '-c:a',
+            'aac',
+            '-b:a',
+            '128k',
+            '-movflags',
+            '+faststart',
             // 写入 Live Photo ContentIdentifier（关键元数据）
-            '-metadata', `com.apple.quicktime.content.identifier=${uuid}`
+            '-metadata',
+            `com.apple.quicktime.content.identifier=${uuid}`
           )
           .format('mov')
           .output(outputPath),

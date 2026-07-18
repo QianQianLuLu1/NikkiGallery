@@ -45,7 +45,12 @@ interface LutPanelProps {
   className?: string
 }
 
-export const LutPanel: React.FC<LutPanelProps> = ({ selectedLutId, onSelect, onImport, className = '' }) => {
+export const LutPanel: React.FC<LutPanelProps> = ({
+  selectedLutId,
+  onSelect,
+  onImport,
+  className = ''
+}) => {
   // U-O11：初始化时从 localStorage 加载已保存的自定义 LUT
   const [customLuts, setCustomLuts] = useState<Lut3D[]>(() => loadStoredLuts())
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -55,32 +60,38 @@ export const LutPanel: React.FC<LutPanelProps> = ({ selectedLutId, onSelect, onI
     saveStoredLuts(customLuts)
   }, [customLuts])
 
-  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    const reader = new FileReader()
-    reader.onload = () => {
-      const content = String(reader.result)
-      const lutId = `custom-${Date.now()}`
-      const lut = parseCube(content, lutId, file.name.replace(/\.cube$/i, ''))
-      if (lut) {
-        // U-O11：附加原始内容用于持久化
-        const lutWithRaw = Object.assign(lut, { __rawContent: content })
-        setCustomLuts((prev) => [...prev, lutWithRaw])
-        onSelect?.(lut.id)
-        onImport?.(lut)
+  const handleFileChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0]
+      if (!file) return
+      const reader = new FileReader()
+      reader.onload = () => {
+        const content = String(reader.result)
+        const lutId = `custom-${Date.now()}`
+        const lut = parseCube(content, lutId, file.name.replace(/\.cube$/i, ''))
+        if (lut) {
+          // U-O11：附加原始内容用于持久化
+          const lutWithRaw = Object.assign(lut, { __rawContent: content })
+          setCustomLuts((prev) => [...prev, lutWithRaw])
+          onSelect?.(lut.id)
+          onImport?.(lut)
+        }
       }
-    }
-    reader.readAsText(file)
-    if (fileInputRef.current) fileInputRef.current.value = ''
-  }, [onSelect, onImport])
+      reader.readAsText(file)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    },
+    [onSelect, onImport]
+  )
 
   // U-O11：删除自定义 LUT
-  const handleDeleteCustom = useCallback((id: string, e: React.MouseEvent) => {
-    e.stopPropagation()
-    setCustomLuts((prev) => prev.filter((l) => l.id !== id))
-    if (selectedLutId === id) onSelect(null)
-  }, [selectedLutId, onSelect])
+  const handleDeleteCustom = useCallback(
+    (id: string, e: React.MouseEvent) => {
+      e.stopPropagation()
+      setCustomLuts((prev) => prev.filter((l) => l.id !== id))
+      if (selectedLutId === id) onSelect(null)
+    },
+    [selectedLutId, onSelect]
+  )
 
   const allLuts = [...builtInLuts, ...customLuts]
   const customIds = new Set(customLuts.map((l) => l.id))
@@ -88,11 +99,24 @@ export const LutPanel: React.FC<LutPanelProps> = ({ selectedLutId, onSelect, onI
   return (
     <div className={`space-y-4 ${className}`}>
       <div className="flex gap-2">
-        <button className="btn-secondary text-xs flex-1" onClick={() => fileInputRef.current?.click()}>
+        <button
+          className="btn-secondary text-xs flex-1"
+          onClick={() => fileInputRef.current?.click()}
+        >
           导入 .cube
         </button>
-        <input ref={fileInputRef} type="file" accept=".cube" className="hidden" onChange={handleFileChange} />
-        <button className="btn-secondary text-xs flex-1" onClick={() => onSelect(null)} disabled={!selectedLutId}>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".cube"
+          className="hidden"
+          onChange={handleFileChange}
+        />
+        <button
+          className="btn-secondary text-xs flex-1"
+          onClick={() => onSelect(null)}
+          disabled={!selectedLutId}
+        >
           清除 LUT
         </button>
       </div>
@@ -107,15 +131,26 @@ export const LutPanel: React.FC<LutPanelProps> = ({ selectedLutId, onSelect, onI
             }}
             onClick={() => onSelect(lut.id)}
           >
-            <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: 'var(--bg-secondary)', color: 'var(--text-tertiary)' }}>
+            <div
+              className="w-12 h-12 rounded-lg flex items-center justify-center"
+              style={{ background: 'var(--bg-secondary)', color: 'var(--text-tertiary)' }}
+            >
               <IconLut size={20} />
             </div>
-            <span className="text-xs font-medium px-1 truncate w-full text-center" style={{ color: 'var(--text-secondary)' }}>{lut.name}</span>
+            <span
+              className="text-xs font-medium px-1 truncate w-full text-center"
+              style={{ color: 'var(--text-secondary)' }}
+            >
+              {lut.name}
+            </span>
             {/* U-O11：自定义 LUT 显示删除按钮 */}
             {customIds.has(lut.id) && (
               <span
                 className="absolute top-1 right-1 w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                style={{ background: 'color-mix(in srgb, var(--danger) 90%, transparent)', color: 'var(--text-on-accent)' }}
+                style={{
+                  background: 'color-mix(in srgb, var(--danger) 90%, transparent)',
+                  color: 'var(--text-on-accent)'
+                }}
                 onClick={(e) => handleDeleteCustom(lut.id, e)}
                 title="删除此 LUT"
                 role="button"

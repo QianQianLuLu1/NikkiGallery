@@ -120,15 +120,33 @@ interface ImportOptions {
 
 interface WindowElectronAPI {
   scanner: {
-    start: (options?: { path?: string; incremental?: boolean; customKnownPaths?: string[]; fullScan?: boolean }) => Promise<{ success: boolean; message?: string; filesFound?: number }>
+    start: (options?: {
+      path?: string
+      incremental?: boolean
+      customKnownPaths?: string[]
+      fullScan?: boolean
+    }) => Promise<{ success: boolean; message?: string; filesFound?: number }>
     stop: () => Promise<{ success: boolean }>
     // 建议改#6：明确 status 返回结构（原 unknown 类型导致调用方无法访问字段）
-    status: () => Promise<{ scanned: number; found: number; currentPath: string; status: 'idle' | 'running' | 'completed' | 'failed' }>
-    onProgress: (callback: (progress: { scanned: number; found: number; currentPath: string }) => void) => () => void
-    onComplete: (callback: (result: { success: boolean; message: string; filesFound?: number }) => void) => () => void
+    status: () => Promise<{
+      scanned: number
+      found: number
+      currentPath: string
+      status: 'idle' | 'running' | 'completed' | 'failed'
+    }>
+    onProgress: (
+      callback: (progress: { scanned: number; found: number; currentPath: string }) => void
+    ) => () => void
+    onComplete: (
+      callback: (result: { success: boolean; message: string; filesFound?: number }) => void
+    ) => () => void
   }
   decrypt: {
-    decodeFile: (filePath: string, albumType: string, uid?: string) => Promise<{
+    decodeFile: (
+      filePath: string,
+      albumType: string,
+      uid?: string
+    ) => Promise<{
       success: boolean
       data?: {
         hasParams: boolean
@@ -176,30 +194,73 @@ interface WindowElectronAPI {
           scale: { x: number; y: number; z: number } | null
         }
         dressing?: {
-          clothes: Array<{ id: number; clothType: number; clothTypeName: string | null; state: number; species: number }>
-          eureka: Array<{ id: number; level: number; color: number; attachmentPoint: number; outfit: number }>
+          clothes: Array<{
+            id: number
+            clothType: number
+            clothTypeName: string | null
+            state: number
+            species: number
+          }>
+          eureka: Array<{
+            id: number
+            level: number
+            color: number
+            attachmentPoint: number
+            outfit: number
+          }>
         }
         interactions?: {
-          mount: { id: number | string; loc: { x: number; y: number; z: number }; rot: { yaw: number; pitch: number; roll: number }; scale: { x: number; y: number; z: number } } | null
-          carrier: { id: number | string; loc: { x: number; y: number; z: number }; rot: { yaw: number; pitch: number; roll: number }; scale: { x: number; y: number; z: number } } | null
-          interactions: Array<{ id: number | string; loc: { x: number; y: number; z: number }; rot: { yaw: number; pitch: number; roll: number }; scale: { x: number; y: number; z: number } }>
+          mount: {
+            id: number | string
+            loc: { x: number; y: number; z: number }
+            rot: { yaw: number; pitch: number; roll: number }
+            scale: { x: number; y: number; z: number }
+          } | null
+          carrier: {
+            id: number | string
+            loc: { x: number; y: number; z: number }
+            rot: { yaw: number; pitch: number; roll: number }
+            scale: { x: number; y: number; z: number }
+          } | null
+          interactions: Array<{
+            id: number | string
+            loc: { x: number; y: number; z: number }
+            rot: { yaw: number; pitch: number; roll: number }
+            scale: { x: number; y: number; z: number }
+          }>
         }
         error?: string
       }
       message?: string
     }>
     // Group 2: 相机参数加密
-    encodeCameraParams: (jsonText: string) => Promise<{ success: boolean; data?: string; message?: string }>
+    encodeCameraParams: (
+      jsonText: string
+    ) => Promise<{ success: boolean; data?: string; message?: string }>
     // Group 3: 染色分享码解码
-    decodeClothDiy: (codeStr: string) => Promise<{ success: boolean; data?: { timestamp?: number; uidBytes?: string; networkData?: string }; message?: string }>
+    decodeClothDiy: (codeStr: string) => Promise<{
+      success: boolean
+      data?: { timestamp?: number; uidBytes?: string; networkData?: string }
+      message?: string
+    }>
     // Group 4: 家园建造分享码解码
-    decodeHomeBuild: (codeStr: string) => Promise<{ success: boolean; data?: { server?: number; networkData?: string }; message?: string }>
+    decodeHomeBuild: (codeStr: string) => Promise<{
+      success: boolean
+      data?: { server?: number; networkData?: string }
+      message?: string
+    }>
   }
   file: {
     delete: (filePaths: string[]) => Promise<{ success: boolean; message: string }>
     deletePermanent: (filePaths: string[]) => Promise<{ success: boolean; message: string }>
-    copy: (sourcePaths: string[], targetDir: string) => Promise<{ success: boolean; message: string; actualPaths?: string[] }>
-    move: (sourcePaths: string[], targetDir: string) => Promise<{ success: boolean; message: string; actualPaths?: string[] }>
+    copy: (
+      sourcePaths: string[],
+      targetDir: string
+    ) => Promise<{ success: boolean; message: string; actualPaths?: string[] }>
+    move: (
+      sourcePaths: string[],
+      targetDir: string
+    ) => Promise<{ success: boolean; message: string; actualPaths?: string[] }>
     rename: (oldPath: string, newName: string) => Promise<{ success: boolean; message: string }>
     // T12：批量重命名返回结构
     batchRename: (operations: { oldPath: string; newName: string }[]) => Promise<{
@@ -208,8 +269,16 @@ interface WindowElectronAPI {
       renamed: { oldPath: string; newPath: string; newFileName: string }[]
       failed: { oldPath: string; message: string }[]
     }>
-    export: (filePaths: string[], targetDir: string, options?: ExportOptions) => Promise<{ success: boolean; message: string }>
-    saveAs: (filePath: string, targetDir: string, newName?: string) => Promise<{ success: boolean; message: string; newPath?: string }>
+    export: (
+      filePaths: string[],
+      targetDir: string,
+      options?: ExportOptions
+    ) => Promise<{ success: boolean; message: string }>
+    saveAs: (
+      filePath: string,
+      targetDir: string,
+      newName?: string
+    ) => Promise<{ success: boolean; message: string; newPath?: string }>
     getExif: (filePath: string) => Promise<{
       camera?: string
       lens?: string
@@ -224,40 +293,90 @@ interface WindowElectronAPI {
     }>
   }
   editor: {
-    save: (filePath: string, dataUrl: string, options?: { format?: string; quality?: number; params?: string }) => Promise<{ success: boolean; message: string; filePath?: string }>
-    saveAs: (dataUrl: string, options?: { directory?: string; fileName?: string; format?: string; quality?: number }) => Promise<{ success: boolean; message: string; filePath?: string }>
-    exportPreset: (preset: { name: string; category: string; params: string }) => Promise<{ success: boolean; id?: number; message?: string }>
+    save: (
+      filePath: string,
+      dataUrl: string,
+      options?: { format?: string; quality?: number; params?: string }
+    ) => Promise<{ success: boolean; message: string; filePath?: string }>
+    saveAs: (
+      dataUrl: string,
+      options?: { directory?: string; fileName?: string; format?: string; quality?: number }
+    ) => Promise<{ success: boolean; message: string; filePath?: string }>
+    exportPreset: (preset: {
+      name: string
+      category: string
+      params: string
+    }) => Promise<{ success: boolean; id?: number; message?: string }>
     loadPresets: () => Promise<{ success: boolean; presets: unknown[]; message?: string }>
     deletePreset: (id: string | number) => Promise<{ success: boolean; message?: string }>
-    exportPresetToFile: (preset: { name: string; category: string; params: unknown }) => Promise<{ success: boolean; filePath?: string; canceled?: boolean; message?: string }>
-    importPresetFromFile: () => Promise<{ success: boolean; preset?: unknown; canceled?: boolean; filePath?: string; message?: string }>
+    exportPresetToFile: (preset: {
+      name: string
+      category: string
+      params: unknown
+    }) => Promise<{ success: boolean; filePath?: string; canceled?: boolean; message?: string }>
+    importPresetFromFile: () => Promise<{
+      success: boolean
+      preset?: unknown
+      canceled?: boolean
+      filePath?: string
+      message?: string
+    }>
   }
   watermark: {
-    apply: (config: unknown, filePaths: string[], targetDir: string) => Promise<{ success: boolean; message: string; processed: number }>
-    saveTemplate: (name: string, config: string) => Promise<{ success: boolean; id?: number; message?: string }>
+    apply: (
+      config: unknown,
+      filePaths: string[],
+      targetDir: string
+    ) => Promise<{ success: boolean; message: string; processed: number }>
+    saveTemplate: (
+      name: string,
+      config: string
+    ) => Promise<{ success: boolean; id?: number; message?: string }>
     loadTemplates: () => Promise<unknown[]>
     deleteTemplate: (id: number) => Promise<{ success: boolean; message?: string }>
     onProgress: (callback: (progress: { current: number; total: number }) => void) => () => void
   }
   category: {
-    create: (name: string, options?: { icon?: string; color?: string; parentId?: number }) => Promise<{ success: boolean; id?: number; message?: string }>
-    update: (id: number, updates: { name?: string; icon?: string; color?: string; parent_id?: number | null }) => Promise<{ success: boolean; message?: string }>
+    create: (
+      name: string,
+      options?: { icon?: string; color?: string; parentId?: number }
+    ) => Promise<{ success: boolean; id?: number; message?: string }>
+    update: (
+      id: number,
+      updates: { name?: string; icon?: string; color?: string; parent_id?: number | null }
+    ) => Promise<{ success: boolean; message?: string }>
     delete: (id: number) => Promise<{ success: boolean; message?: string }>
-    reorder: (orders: Array<{ id: number; sort_order: number; parent_id?: number }>) => Promise<{ success: boolean; message?: string }>
+    reorder: (
+      orders: Array<{ id: number; sort_order: number; parent_id?: number }>
+    ) => Promise<{ success: boolean; message?: string }>
     list: () => Promise<{ success: boolean; categories: unknown[]; message?: string }>
   }
   // P0-B：删除 tag 命名空间类型定义（IPC 已移除）
   mediaAction: {
-    updateRating: (mediaId: number, rating: number) => Promise<{ success: boolean; message?: string }>
+    updateRating: (
+      mediaId: number,
+      rating: number
+    ) => Promise<{ success: boolean; message?: string }>
     // P0-D：删除 toggleFavorite 类型定义
-    updateFavorite: (mediaId: number, isFavorite: boolean) => Promise<{ success: boolean; message?: string }>
+    updateFavorite: (
+      mediaId: number,
+      isFavorite: boolean
+    ) => Promise<{ success: boolean; message?: string }>
     updateTags: (mediaId: number, tags: string[]) => Promise<{ success: boolean; message?: string }>
     updateNotes: (mediaId: number, notes: string) => Promise<{ success: boolean; message?: string }>
-    updateCategory: (mediaId: number, categoryId: number | null) => Promise<{ success: boolean; message?: string }>
+    updateCategory: (
+      mediaId: number,
+      categoryId: number | null
+    ) => Promise<{ success: boolean; message?: string }>
     // F-O1：更新套装标注
-    updateOutfit: (mediaId: number, outfit: string) => Promise<{ success: boolean; message?: string }>
+    updateOutfit: (
+      mediaId: number,
+      outfit: string
+    ) => Promise<{ success: boolean; message?: string }>
     // F-O1：批量分析场景时段
-    analyzeSceneTime: (mediaIds?: number[]) => Promise<{ success: boolean; message?: string; analyzed?: number }>
+    analyzeSceneTime: (
+      mediaIds?: number[]
+    ) => Promise<{ success: boolean; message?: string; analyzed?: number }>
     // 物理删除数据库记录（配合文件永久删除场景，与 softDelete 语义不同，不合并）
     delete: (mediaId: number) => Promise<{ success: boolean; message?: string }>
     softDelete: (mediaIds: number[]) => Promise<{ success: boolean; message: string }>
@@ -272,27 +391,94 @@ interface WindowElectronAPI {
   }
   video: {
     thumbnail: (filePath: string) => Promise<unknown>
-    metadata: (filePath: string) => Promise<{ success: boolean; message?: string; path?: string; size?: number; duration?: number; width?: number; height?: number; codec?: string; frameRate?: number }>
-    export: (filePath: string, targetDir: string, format: string) => Promise<{ success: boolean; message: string }>
-    captureFrame: (filePath: string, currentTime: number, targetDir?: string) => Promise<{ success: boolean; message: string; filePath?: string }>
+    metadata: (filePath: string) => Promise<{
+      success: boolean
+      message?: string
+      path?: string
+      size?: number
+      duration?: number
+      width?: number
+      height?: number
+      codec?: string
+      frameRate?: number
+    }>
+    export: (
+      filePath: string,
+      targetDir: string,
+      format: string
+    ) => Promise<{ success: boolean; message: string }>
+    captureFrame: (
+      filePath: string,
+      currentTime: number,
+      targetDir?: string
+    ) => Promise<{ success: boolean; message: string; filePath?: string }>
     // F-S9：视频裁剪与调速
-    trim: (filePath: string, startTime: number, endTime: number, targetDir: string) => Promise<{ success: boolean; message: string; filePath?: string }>
-    changeSpeed: (filePath: string, speed: number, targetDir: string) => Promise<{ success: boolean; message: string; filePath?: string }>
+    trim: (
+      filePath: string,
+      startTime: number,
+      endTime: number,
+      targetDir: string
+    ) => Promise<{ success: boolean; message: string; filePath?: string }>
+    changeSpeed: (
+      filePath: string,
+      speed: number,
+      targetDir: string
+    ) => Promise<{ success: boolean; message: string; filePath?: string }>
     // P1-05：导出 Apple Live Photo（JPG + MOV 配对文件，含 ContentIdentifier UUID）
-    exportLivePhoto: (filePath: string, targetDir: string) => Promise<{ success: boolean; message: string; jpgPath?: string; movPath?: string; uuid?: string }>
+    exportLivePhoto: (
+      filePath: string,
+      targetDir: string
+    ) => Promise<{
+      success: boolean
+      message: string
+      jpgPath?: string
+      movPath?: string
+      uuid?: string
+    }>
   }
   dialog: {
     selectDirectory: () => Promise<string | null>
-    openFile: (options?: { properties?: string[]; filters?: { name: string; extensions: string[] }[] }) => Promise<string | null>
-    saveFile: (options?: { defaultPath?: string; filters?: { name: string; extensions: string[] }[] }) => Promise<string | null>
-    showMessageBox: (options: { type?: string; title?: string; message: string; buttons?: string[] }) => Promise<number>
+    openFile: (options?: {
+      properties?: string[]
+      filters?: { name: string; extensions: string[] }[]
+    }) => Promise<string | null>
+    saveFile: (options?: {
+      defaultPath?: string
+      filters?: { name: string; extensions: string[] }[]
+    }) => Promise<string | null>
+    showMessageBox: (options: {
+      type?: string
+      title?: string
+      message: string
+      buttons?: string[]
+    }) => Promise<number>
   }
   thumbnail: {
     // P1-03：quality='low' 返回 64px 低质量缩略图（首屏快速预览）
-    generate: (filePath: string, quality?: 'low' | 'standard') => Promise<string | null>
+    // quality='high' 返回 512px 高清缩略图（高分屏 DPR ≥ 2 时使用）
+    generate: (filePath: string, quality?: 'low' | 'standard' | 'high') => Promise<string | null>
   }
   media: {
-    list: (options?: { page?: number; pageSize?: number; includeDeleted?: boolean; deletedOnly?: boolean; sortBy?: string; sortOrder?: string; accountUid?: string; albumType?: string; hideDuplicates?: boolean; mediaSource?: 'game' | 'launcher' | 'cloud' | 'all' }) => Promise<{ success: boolean; files: unknown[]; message?: string; total?: number; page?: number; pageSize?: number; hasMore?: boolean }>
+    list: (options?: {
+      page?: number
+      pageSize?: number
+      includeDeleted?: boolean
+      deletedOnly?: boolean
+      sortBy?: string
+      sortOrder?: string
+      accountUid?: string
+      albumType?: string
+      hideDuplicates?: boolean
+      mediaSource?: 'game' | 'launcher' | 'cloud' | 'all'
+    }) => Promise<{
+      success: boolean
+      files: unknown[]
+      message?: string
+      total?: number
+      page?: number
+      pageSize?: number
+      hasMore?: boolean
+    }>
     // F-S10：重复文件检测——返回 sha256 hash 重复分组及统计信息
     // P1-01：返回值新增 bestItemIds（每组推荐保留的 id，基于评分）
     findDuplicates: () => Promise<{
@@ -321,15 +507,29 @@ interface WindowElectronAPI {
       hashedFiles: number
     }>
     // T05：手动触发 phash 补算
-    generatePhash: () => Promise<{ success: boolean; message?: string; processed?: number; total?: number }>
+    generatePhash: () => Promise<{
+      success: boolean
+      message?: string
+      processed?: number
+      total?: number
+    }>
     // P0-03：智能媒体分组——按维度统计分组数量
-    getGroupCounts: (dimension: string, accountUid?: string, mediaSource?: 'game' | 'launcher' | 'cloud' | 'all') => Promise<{
+    getGroupCounts: (
+      dimension: string,
+      accountUid?: string,
+      mediaSource?: 'game' | 'launcher' | 'cloud' | 'all'
+    ) => Promise<{
       success: boolean
       message?: string
       groups: Array<{ key: string; count: number }>
     }>
     // P1-01：手动触发重复标记（基于 pHash 极严格阈值 + 评分推荐保留）
-    markDuplicates: () => Promise<{ success: boolean; message?: string; markedDuplicates: number; totalGroups: number }>
+    markDuplicates: () => Promise<{
+      success: boolean
+      message?: string
+      markedDuplicates: number
+      totalGroups: number
+    }>
     // P1-01：查询已标记的重复分组（is_duplicate=1 按 original_id 聚合）
     listDuplicateGroups: () => Promise<{
       success: boolean
@@ -356,8 +556,16 @@ interface WindowElectronAPI {
         last_active_at: string | null
       }>
     }>
-    add: (uid: string, nickname: string, avatar?: string) => Promise<{ success: boolean; message?: string }>
-    update: (uid: string, nickname?: string, avatar?: string) => Promise<{ success: boolean; message?: string }>
+    add: (
+      uid: string,
+      nickname: string,
+      avatar?: string
+    ) => Promise<{ success: boolean; message?: string }>
+    update: (
+      uid: string,
+      nickname?: string,
+      avatar?: string
+    ) => Promise<{ success: boolean; message?: string }>
     delete: (uid: string) => Promise<{ success: boolean; message?: string }>
     setCurrent: (uid: string) => Promise<{ success: boolean; message?: string }>
     getStats: (uid: string) => Promise<{
@@ -376,7 +584,10 @@ interface WindowElectronAPI {
       } | null
     }>
     // P1-04：跨档案转移——批量更新 media_files.account_uid
-    transferFiles: (mediaIds: number[], targetUid: string) => Promise<{ success: boolean; message?: string }>
+    transferFiles: (
+      mediaIds: number[],
+      targetUid: string
+    ) => Promise<{ success: boolean; message?: string }>
   }
   uiTheme: {
     get: () => Promise<{ theme: 'default' | 'soft-pink-luxury' }>
@@ -398,8 +609,15 @@ interface WindowElectronAPI {
   // T01：数据库备份管理
   backup: {
     // P1-04：支持按档案备份（文件名加入 _{uid} 后缀以便识别）
-    create: (options?: { accountUid?: string }) => Promise<{ success: boolean; backup?: BackupRecord; message?: string }>
-    list: () => Promise<{ success: boolean; backups: BackupRecord[]; backupDir: string; message?: string }>
+    create: (options?: {
+      accountUid?: string
+    }) => Promise<{ success: boolean; backup?: BackupRecord; message?: string }>
+    list: () => Promise<{
+      success: boolean
+      backups: BackupRecord[]
+      backupDir: string
+      message?: string
+    }>
     restore: (filename: string) => Promise<{ success: boolean; message?: string }>
     delete: (filename: string) => Promise<{ success: boolean; message?: string }>
     // 自定义目录支持
@@ -409,22 +627,57 @@ interface WindowElectronAPI {
   }
   // T08：WiFi 局域网分享 + T09 剪贴板分享
   share: {
-    startWifi: (filePaths: string[]) => Promise<{ success: boolean; message?: string; url?: string; port?: number; pin?: string; fileCount?: number; timeoutMs?: number }>
+    startWifi: (filePaths: string[]) => Promise<{
+      success: boolean
+      message?: string
+      url?: string
+      port?: number
+      pin?: string
+      fileCount?: number
+      timeoutMs?: number
+    }>
     stopWifi: () => Promise<{ success: boolean; message?: string }>
     // P0-D：删除 wifiStatus 类型定义
     // T09：复制文件到剪贴板（CF_HDROP 格式）
-    copyFiles: (filePaths: string[]) => Promise<{ success: boolean; message: string; count: number; skipped: number }>
+    copyFiles: (
+      filePaths: string[]
+    ) => Promise<{ success: boolean; message: string; count: number; skipped: number }>
     // T09：检测渠道应用状态（installed=已安装，running=正在运行，installPath=可执行文件路径）
-    detectApp: (channelId: string) => Promise<{ success: boolean; installed: boolean; running: boolean; installPath: string | null }>
+    detectApp: (channelId: string) => Promise<{
+      success: boolean
+      installed: boolean
+      running: boolean
+      installPath: string | null
+    }>
     // T09：启动目标应用（用于"已安装未运行"场景，用户点击"打开 XX"按钮）
     launchApp: (channelId: string) => Promise<{ success: boolean; message: string }>
   }
   // T10：缩略图缓存管理
   cache: {
-    getStats: () => Promise<{ success: boolean; message?: string; totalSize?: number; fileCount?: number; limit?: number; cacheDir?: string }>
-    clean: () => Promise<{ success: boolean; message?: string; clearedSize?: number; clearedCount?: number }>
-    setLimit: (limitBytes: number) => Promise<{ success: boolean; message?: string; applied: boolean; evicted: number }>
-    enforceLimit: () => Promise<{ success: boolean; message?: string; evicted: number; totalSize?: number; fileCount?: number }>
+    getStats: () => Promise<{
+      success: boolean
+      message?: string
+      totalSize?: number
+      fileCount?: number
+      limit?: number
+      cacheDir?: string
+    }>
+    clean: () => Promise<{
+      success: boolean
+      message?: string
+      clearedSize?: number
+      clearedCount?: number
+    }>
+    setLimit: (
+      limitBytes: number
+    ) => Promise<{ success: boolean; message?: string; applied: boolean; evicted: number }>
+    enforceLimit: () => Promise<{
+      success: boolean
+      message?: string
+      evicted: number
+      totalSize?: number
+      fileCount?: number
+    }>
     // 自定义目录支持
     setDir: (dir: string) => Promise<{ success: boolean; needRestart: boolean; message: string }>
     resetDir: () => Promise<{ success: boolean; needRestart: boolean; message: string }>
@@ -434,13 +687,22 @@ interface WindowElectronAPI {
     // 获取所有故障列表（按时间倒序）
     listFaults: () => Promise<{ success: boolean; faults: FaultRecord[]; message?: string }>
     // 获取单个故障详情
-    getFaultDetail: (id: string) => Promise<{ success: boolean; fault?: FaultRecord; message?: string }>
+    getFaultDetail: (
+      id: string
+    ) => Promise<{ success: boolean; fault?: FaultRecord; message?: string }>
     // 打开日志目录
     openDirectory: () => Promise<{ success: boolean; message: string }>
     // 获取日志目录路径
     getDirectoryPath: () => Promise<{ success: boolean; path: string }>
     // 获取日志统计信息
-    getStats: () => Promise<{ success: boolean; faultCount: number; totalSize: number; fileCount: number; oldestTimestamp: string | null; message?: string }>
+    getStats: () => Promise<{
+      success: boolean
+      faultCount: number
+      totalSize: number
+      fileCount: number
+      oldestTimestamp: string | null
+      message?: string
+    }>
     // 导出全部日志为 zip（主进程会弹出保存对话框）
     exportZip: () => Promise<{ success: boolean; message?: string; canceled?: boolean }>
     // 清空所有日志
@@ -465,7 +727,13 @@ interface WindowElectronAPI {
     // 列出所有崩溃 dump 文件（按时间倒序）
     list: () => Promise<{ success: boolean; crashes: CrashRecord[]; message?: string }>
     // 获取崩溃目录统计信息
-    getStats: () => Promise<{ success: boolean; fileCount: number; totalSize: number; oldestTime: string | null; message?: string }>
+    getStats: () => Promise<{
+      success: boolean
+      fileCount: number
+      totalSize: number
+      oldestTime: string | null
+      message?: string
+    }>
     // 打开崩溃目录（系统资源管理器）
     openDirectory: () => Promise<{ success: boolean; message: string }>
     // 清空所有崩溃 dump 文件
@@ -484,9 +752,15 @@ interface WindowElectronAPI {
   // T14：文件导入向导
   import: {
     // 预览源目录中的待导入文件（仅元信息）
-    preview: (sourceDir: string) => Promise<{ success: boolean; files: ImportFilePreview[]; message?: string }>
+    preview: (
+      sourceDir: string
+    ) => Promise<{ success: boolean; files: ImportFilePreview[]; message?: string }>
     // 执行批量导入
-    run: (sourcePaths: string[], targetBaseDir: string, options: ImportOptions) => Promise<{
+    run: (
+      sourcePaths: string[],
+      targetBaseDir: string,
+      options: ImportOptions
+    ) => Promise<{
       success: boolean
       message: string
       imported: Array<{ sourcePath: string; targetPath: string }>
@@ -499,11 +773,23 @@ interface WindowElectronAPI {
 
   // 建议改#9：操作历史持久化（支持跨重启撤销）
   operationHistory: {
-    add: (record: { operationType: string; mediaId?: number; payload: unknown; description: string; createdAt: string }) =>
-      Promise<{ success: boolean; id?: number; message?: string }>
+    add: (record: {
+      operationType: string
+      mediaId?: number
+      payload: unknown
+      description: string
+      createdAt: string
+    }) => Promise<{ success: boolean; id?: number; message?: string }>
     list: (limit?: number) => Promise<{
       success: boolean
-      records: Array<{ id: number; operationType: string; mediaId: number | null; payload: string; description: string; createdAt: string }>
+      records: Array<{
+        id: number
+        operationType: string
+        mediaId: number | null
+        payload: string
+        description: string
+        createdAt: string
+      }>
       message?: string
     }>
     remove: (id: number) => Promise<{ success: boolean; message?: string }>

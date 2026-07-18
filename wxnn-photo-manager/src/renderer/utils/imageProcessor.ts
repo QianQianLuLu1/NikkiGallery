@@ -1,10 +1,30 @@
 export type HSLColorKey =
-  | 'red' | 'orange' | 'yellow' | 'yellowGreen' | 'green' | 'cyan'
-  | 'blue' | 'purple' | 'magenta' | 'skin' | 'bluePurple' | 'warm'
+  | 'red'
+  | 'orange'
+  | 'yellow'
+  | 'yellowGreen'
+  | 'green'
+  | 'cyan'
+  | 'blue'
+  | 'purple'
+  | 'magenta'
+  | 'skin'
+  | 'bluePurple'
+  | 'warm'
 
 export const hslColorKeys: HSLColorKey[] = [
-  'red', 'orange', 'yellow', 'yellowGreen', 'green', 'cyan',
-  'blue', 'purple', 'magenta', 'skin', 'bluePurple', 'warm'
+  'red',
+  'orange',
+  'yellow',
+  'yellowGreen',
+  'green',
+  'cyan',
+  'blue',
+  'purple',
+  'magenta',
+  'skin',
+  'bluePurple',
+  'warm'
 ]
 
 export interface HSLAdjustment {
@@ -55,7 +75,17 @@ export type WatermarkStyle = 'normal' | 'polaroid' | 'date-label' | 'signature' 
 export interface WatermarkConfig {
   text?: WatermarkText
   image?: WatermarkImage
-  position: 'topLeft' | 'topCenter' | 'topRight' | 'centerLeft' | 'center' | 'centerRight' | 'bottomLeft' | 'bottomCenter' | 'bottomRight' | 'custom'
+  position:
+    | 'topLeft'
+    | 'topCenter'
+    | 'topRight'
+    | 'centerLeft'
+    | 'center'
+    | 'centerRight'
+    | 'bottomLeft'
+    | 'bottomCenter'
+    | 'bottomRight'
+    | 'custom'
   customX: number
   customY: number
   rotation: number
@@ -109,12 +139,30 @@ export const defaultFilterParams: FilterParams = {
   dehaze: 0,
   sharpen: 0,
   denoise: 0,
-  hsl: Object.fromEntries(hslColorKeys.map((k) => [k, { hue: 0, saturation: 0, lightness: 0 }])) as Record<HSLColorKey, HSLAdjustment>,
+  hsl: Object.fromEntries(
+    hslColorKeys.map((k) => [k, { hue: 0, saturation: 0, lightness: 0 }])
+  ) as Record<HSLColorKey, HSLAdjustment>,
   curves: {
-    rgb: [{ x: 0, y: 0 }, { x: 0.5, y: 0.5 }, { x: 1, y: 1 }],
-    r: [{ x: 0, y: 0 }, { x: 0.5, y: 0.5 }, { x: 1, y: 1 }],
-    g: [{ x: 0, y: 0 }, { x: 0.5, y: 0.5 }, { x: 1, y: 1 }],
-    b: [{ x: 0, y: 0 }, { x: 0.5, y: 0.5 }, { x: 1, y: 1 }]
+    rgb: [
+      { x: 0, y: 0 },
+      { x: 0.5, y: 0.5 },
+      { x: 1, y: 1 }
+    ],
+    r: [
+      { x: 0, y: 0 },
+      { x: 0.5, y: 0.5 },
+      { x: 1, y: 1 }
+    ],
+    g: [
+      { x: 0, y: 0 },
+      { x: 0.5, y: 0.5 },
+      { x: 1, y: 1 }
+    ],
+    b: [
+      { x: 0, y: 0 },
+      { x: 0.5, y: 0.5 },
+      { x: 1, y: 1 }
+    ]
   },
   highlightHue: 0,
   highlightSaturation: 0,
@@ -140,19 +188,28 @@ export interface ProcessOptions {
 }
 
 export function rgbToHsl(r: number, g: number, b: number): [number, number, number] {
-  r /= 255; g /= 255; b /= 255
+  r /= 255
+  g /= 255
+  b /= 255
   const max = Math.max(r, g, b)
   const min = Math.min(r, g, b)
-  let h = 0, s = 0
+  let h = 0,
+    s = 0
   const l = (max + min) / 2
 
   if (max !== min) {
     const d = max - min
     s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
     switch (max) {
-      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break
-      case g: h = ((b - r) / d + 2) / 6; break
-      case b: h = ((r - g) / d + 4) / 6; break
+      case r:
+        h = ((g - b) / d + (g < b ? 6 : 0)) / 6
+        break
+      case g:
+        h = ((b - r) / d + 2) / 6
+        break
+      case b:
+        h = ((r - g) / d + 4) / 6
+        break
     }
   }
   return [h, s, l]
@@ -184,7 +241,7 @@ function clamp(v: number): number {
   return Math.max(0, Math.min(255, Math.round(v)))
 }
 
-function buildCurveMap(points: CurvePoint[]): number[] {
+export function buildCurveMap(points: CurvePoint[]): number[] {
   const sorted = [...points].sort((a, b) => a.x - b.x)
   const map = new Array(256)
   for (let i = 0; i < 256; i++) {
@@ -204,18 +261,35 @@ function buildCurveMap(points: CurvePoint[]): number[] {
   return map
 }
 
-function getHSLTargetHue(key: HSLColorKey): number {
+export function getHSLTargetHue(key: HSLColorKey): number {
   const map: Record<HSLColorKey, number> = {
-    red: 0, orange: 30, yellow: 60, yellowGreen: 90, green: 120, cyan: 180,
-    blue: 240, purple: 270, magenta: 300, skin: 25, bluePurple: 255, warm: 45
+    red: 0,
+    orange: 30,
+    yellow: 60,
+    yellowGreen: 90,
+    green: 120,
+    cyan: 180,
+    blue: 240,
+    purple: 270,
+    magenta: 300,
+    skin: 25,
+    bluePurple: 255,
+    warm: 45
   }
   return map[key]
 }
 
-function applyHSL(r: number, g: number, b: number, hsl: Record<HSLColorKey, HSLAdjustment>): [number, number, number] {
+export function applyHSL(
+  r: number,
+  g: number,
+  b: number,
+  hsl: Record<HSLColorKey, HSLAdjustment>
+): [number, number, number] {
   const [h] = rgbToHsl(r, g, b)
   const hueDeg = h * 360
-  let or = r, og = g, ob = b
+  let or = r,
+    og = g,
+    ob = b
 
   for (const key of hslColorKeys) {
     const adj = hsl[key]
@@ -227,9 +301,9 @@ function applyHSL(r: number, g: number, b: number, hsl: Record<HSLColorKey, HSLA
     if (factor <= 0) continue
 
     let [nh, ns, nl] = rgbToHsl(or, og, ob)
-    nh = (nh + adj.hue / 360 * factor + 1) % 1
-    ns = Math.max(0, Math.min(1, ns * (1 + adj.saturation / 100 * factor)))
-    nl = Math.max(0, Math.min(1, nl + adj.lightness / 100 * factor))
+    nh = (nh + (adj.hue / 360) * factor + 1) % 1
+    ns = Math.max(0, Math.min(1, ns * (1 + (adj.saturation / 100) * factor)))
+    nl = Math.max(0, Math.min(1, nl + (adj.lightness / 100) * factor))
     const [nr, ng, nb] = hslToRgb(nh, ns, nl)
     const blend = factor * 0.7
     or = or * (1 - blend) + nr * blend
@@ -240,16 +314,27 @@ function applyHSL(r: number, g: number, b: number, hsl: Record<HSLColorKey, HSLA
   return [or, og, ob]
 }
 
-function applyTemperature(r: number, g: number, b: number, temp: number, tint: number): [number, number, number] {
+export function applyTemperature(
+  r: number,
+  g: number,
+  b: number,
+  temp: number,
+  tint: number
+): [number, number, number] {
   const t = temp / 100
   const warmR = r * (1 + t * 0.15)
   const warmB = b * (1 - t * 0.15)
-  const tintG = g * (1 + tint / 100 * 0.1)
-  const tintM = b * (1 - tint / 100 * 0.1)
+  const tintG = g * (1 + (tint / 100) * 0.1)
+  const tintM = b * (1 - (tint / 100) * 0.1)
   return [warmR, tintG, warmB * 0.5 + tintM * 0.5]
 }
 
-function applyVibrance(r: number, g: number, b: number, vibrance: number): [number, number, number] {
+export function applyVibrance(
+  r: number,
+  g: number,
+  b: number,
+  vibrance: number
+): [number, number, number] {
   if (vibrance === 0) return [r, g, b]
   const max = Math.max(r, g, b)
   const avg = (r + g + b) / 3
@@ -262,32 +347,44 @@ function applyVibrance(r: number, g: number, b: number, vibrance: number): [numb
 
 // P1-C5：三个卷积类函数改为接收预分配的 src/dst 缓冲区，避免各自 new Uint8ClampedArray
 // 调用方通过 ping-pong 交替使用两个工作缓冲区，峰值内存从 448MB 降至 192MB（4096² 场景）
-function applyClarity(src: Uint8ClampedArray, dst: Uint8ClampedArray, w: number, h: number, clarity: number): void {
-  const amount = clarity / 100 * 1.5
+function applyClarity(
+  src: Uint8ClampedArray,
+  dst: Uint8ClampedArray,
+  w: number,
+  h: number,
+  clarity: number
+): void {
+  const amount = (clarity / 100) * 1.5
 
   for (let y = 1; y < h - 1; y++) {
     for (let x = 1; x < w - 1; x++) {
       const idx = (y * w + x) * 4
       for (let c = 0; c < 3; c++) {
         const center = src[idx + c]
-        const blur = (
-          src[(y - 1) * w * 4 + (x - 1) * 4 + c] +
-          src[(y - 1) * w * 4 + x * 4 + c] +
-          src[(y - 1) * w * 4 + (x + 1) * 4 + c] +
-          src[y * w * 4 + (x - 1) * 4 + c] +
-          src[y * w * 4 + (x + 1) * 4 + c] +
-          src[(y + 1) * w * 4 + (x - 1) * 4 + c] +
-          src[(y + 1) * w * 4 + x * 4 + c] +
-          src[(y + 1) * w * 4 + (x + 1) * 4 + c]
-        ) / 8
+        const blur =
+          (src[(y - 1) * w * 4 + (x - 1) * 4 + c] +
+            src[(y - 1) * w * 4 + x * 4 + c] +
+            src[(y - 1) * w * 4 + (x + 1) * 4 + c] +
+            src[y * w * 4 + (x - 1) * 4 + c] +
+            src[y * w * 4 + (x + 1) * 4 + c] +
+            src[(y + 1) * w * 4 + (x - 1) * 4 + c] +
+            src[(y + 1) * w * 4 + x * 4 + c] +
+            src[(y + 1) * w * 4 + (x + 1) * 4 + c]) /
+          8
         dst[idx + c] = clamp(center + (center - blur) * amount)
       }
     }
   }
 }
 
-function applySharpen(src: Uint8ClampedArray, dst: Uint8ClampedArray, w: number, h: number, sharpen: number): void {
-  const amount = sharpen / 100 * 1.2
+function applySharpen(
+  src: Uint8ClampedArray,
+  dst: Uint8ClampedArray,
+  w: number,
+  h: number,
+  sharpen: number
+): void {
+  const amount = (sharpen / 100) * 1.2
   const kernel = [0, -1, 0, -1, 5, -1, 0, -1, 0]
 
   for (let y = 1; y < h - 1; y++) {
@@ -308,7 +405,13 @@ function applySharpen(src: Uint8ClampedArray, dst: Uint8ClampedArray, w: number,
   }
 }
 
-function applyDenoise(src: Uint8ClampedArray, dst: Uint8ClampedArray, w: number, h: number, denoise: number): void {
+function applyDenoise(
+  src: Uint8ClampedArray,
+  dst: Uint8ClampedArray,
+  w: number,
+  h: number,
+  denoise: number
+): void {
   const strength = denoise / 100
 
   for (let y = 1; y < h - 1; y++) {
@@ -332,9 +435,14 @@ function applyDenoise(src: Uint8ClampedArray, dst: Uint8ClampedArray, w: number,
   }
 }
 
-function applyDehaze(r: number, g: number, b: number, dehaze: number): [number, number, number] {
+export function applyDehaze(
+  r: number,
+  g: number,
+  b: number,
+  dehaze: number
+): [number, number, number] {
   if (dehaze === 0) return [r, g, b]
-  const factor = dehaze / 100 * 0.5
+  const factor = (dehaze / 100) * 0.5
   const haze = 255 * factor
   return [
     r * (1 - factor) + (r - haze * (1 - r / 255)) * factor,
@@ -343,8 +451,19 @@ function applyDehaze(r: number, g: number, b: number, dehaze: number): [number, 
   ]
 }
 
-function applySplitTone(r: number, g: number, b: number, lum: number, params: FilterParams): [number, number, number] {
-  if (params.highlightHue === 0 && params.highlightSaturation === 0 && params.shadowHue === 0 && params.shadowSaturation === 0) {
+export function applySplitTone(
+  r: number,
+  g: number,
+  b: number,
+  lum: number,
+  params: FilterParams
+): [number, number, number] {
+  if (
+    params.highlightHue === 0 &&
+    params.highlightSaturation === 0 &&
+    params.shadowHue === 0 &&
+    params.shadowSaturation === 0
+  ) {
     return [r, g, b]
   }
   const balance = (params.splitBalance + 100) / 200
@@ -412,13 +531,13 @@ export async function processImageData(
   const gCurve = buildCurveMap(params.curves.g)
   const bCurve = buildCurveMap(params.curves.b)
 
-  const brightness = params.brightness / 100 * 80
+  const brightness = (params.brightness / 100) * 80
   const contrast = (params.contrast + 100) / 100
   const saturation = (params.saturation + 100) / 100
   const highlights = params.highlights / 100
   const shadows = params.shadows / 100
-  const whites = params.whites / 100 * 80
-  const blacks = params.blacks / 100 * 80
+  const whites = (params.whites / 100) * 80
+  const blacks = (params.blacks / 100) * 80
 
   for (let i = 0; i < data.length; i += 4) {
     let r = data[i]
@@ -551,7 +670,7 @@ function applyVignette(imageData: ImageData, amount: number): void {
   const cx = width / 2
   const cy = height / 2
   const maxDist = Math.sqrt(cx * cx + cy * cy)
-  const strength = amount / 100 * 0.8
+  const strength = (amount / 100) * 0.8
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
@@ -567,7 +686,7 @@ function applyVignette(imageData: ImageData, amount: number): void {
 
 function applyGrain(imageData: ImageData, amount: number): void {
   const { data } = imageData
-  const strength = amount / 100 * 30
+  const strength = (amount / 100) * 30
   for (let i = 0; i < data.length; i += 4) {
     const noise = (Math.random() - 0.5) * strength
     for (let c = 0; c < 3; c++) {
@@ -586,7 +705,7 @@ function applyFade(imageData: ImageData, amount: number): void {
   }
 }
 
-function getWatermarkPosition(
+export function getWatermarkPosition(
   position: WatermarkConfig['position'],
   cw: number,
   ch: number,
@@ -597,17 +716,28 @@ function getWatermarkPosition(
   customY: number
 ): { x: number; y: number } {
   switch (position) {
-    case 'topLeft': return { x: margin, y: margin }
-    case 'topCenter': return { x: (cw - ww) / 2, y: margin }
-    case 'topRight': return { x: cw - ww - margin, y: margin }
-    case 'centerLeft': return { x: margin, y: (ch - wh) / 2 }
-    case 'center': return { x: (cw - ww) / 2, y: (ch - wh) / 2 }
-    case 'centerRight': return { x: cw - ww - margin, y: (ch - wh) / 2 }
-    case 'bottomLeft': return { x: margin, y: ch - wh - margin }
-    case 'bottomCenter': return { x: (cw - ww) / 2, y: ch - wh - margin }
-    case 'bottomRight': return { x: cw - ww - margin, y: ch - wh - margin }
-    case 'custom': return { x: customX, y: customY }
-    default: return { x: cw - ww - margin, y: ch - wh - margin }
+    case 'topLeft':
+      return { x: margin, y: margin }
+    case 'topCenter':
+      return { x: (cw - ww) / 2, y: margin }
+    case 'topRight':
+      return { x: cw - ww - margin, y: margin }
+    case 'centerLeft':
+      return { x: margin, y: (ch - wh) / 2 }
+    case 'center':
+      return { x: (cw - ww) / 2, y: (ch - wh) / 2 }
+    case 'centerRight':
+      return { x: cw - ww - margin, y: (ch - wh) / 2 }
+    case 'bottomLeft':
+      return { x: margin, y: ch - wh - margin }
+    case 'bottomCenter':
+      return { x: (cw - ww) / 2, y: ch - wh - margin }
+    case 'bottomRight':
+      return { x: cw - ww - margin, y: ch - wh - margin }
+    case 'custom':
+      return { x: customX, y: customY }
+    default:
+      return { x: cw - ww - margin, y: ch - wh - margin }
   }
 }
 
@@ -629,7 +759,7 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   })
 }
 
-function formatWatermarkText(content: string): string {
+export function formatWatermarkText(content: string): string {
   const now = new Date()
   const dateStr = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}`
   const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
@@ -655,7 +785,16 @@ function drawTextWatermark(
   const metrics = ctx.measureText(displayContent)
   const ww = metrics.width
   const wh = text.size * 1.2
-  const pos = getWatermarkPosition(config.position, cw, ch, ww, wh, config.margin, config.customX, config.customY)
+  const pos = getWatermarkPosition(
+    config.position,
+    cw,
+    ch,
+    ww,
+    wh,
+    config.margin,
+    config.customX,
+    config.customY
+  )
 
   const drawOne = (x: number, y: number) => {
     ctx.save()
@@ -705,7 +844,16 @@ async function drawImageWatermark(
 
   const ww = imgCfg.width || img.width || 120
   const wh = imgCfg.height || img.height || 120
-  const pos = getWatermarkPosition(config.position, cw, ch, ww, wh, config.margin, config.customX, config.customY)
+  const pos = getWatermarkPosition(
+    config.position,
+    cw,
+    ch,
+    ww,
+    wh,
+    config.margin,
+    config.customX,
+    config.customY
+  )
 
   const blendMap: Record<string, GlobalCompositeOperation> = {
     normal: 'source-over',
@@ -766,7 +914,12 @@ async function applyWatermark(imageData: ImageData, config: WatermarkConfig): Pr
   return ctx.getImageData(0, 0, cw, ch)
 }
 
-function drawPolaroidFrame(ctx: CanvasRenderingContext2D, config: WatermarkConfig, cw: number, ch: number): void {
+function drawPolaroidFrame(
+  ctx: CanvasRenderingContext2D,
+  config: WatermarkConfig,
+  cw: number,
+  ch: number
+): void {
   const frameColor = '#ffffff'
   const frameRatio = 0.16
   const frameHeight = Math.max(1, Math.round(ch * frameRatio))
@@ -784,7 +937,11 @@ function drawPolaroidFrame(ctx: CanvasRenderingContext2D, config: WatermarkConfi
   ctx.restore()
 }
 
-export async function imageToDataUrl(imageData: ImageData, format: 'image/jpeg' | 'image/png' | 'image/webp' = 'image/jpeg', quality = 0.95): Promise<string> {
+export async function imageToDataUrl(
+  imageData: ImageData,
+  format: 'image/jpeg' | 'image/png' | 'image/webp' = 'image/jpeg',
+  quality = 0.95
+): Promise<string> {
   const canvas = document.createElement('canvas')
   canvas.width = imageData.width
   canvas.height = imageData.height

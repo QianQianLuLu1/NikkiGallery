@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from 'react'
-import { type WatermarkConfig, type WatermarkText, type WatermarkImage, type WatermarkStyle } from '../../utils/imageProcessor'
+import {
+  type WatermarkConfig,
+  type WatermarkText,
+  type WatermarkImage,
+  type WatermarkStyle
+} from '../../utils/imageProcessor'
 import { toFileUrl } from '../../utils/file'
 import { SliderControl } from '../common/SliderControl'
 
@@ -207,7 +212,10 @@ export const WatermarkPanel: React.FC<WatermarkPanelProps> = ({ config, onChange
     if (!templateName.trim() || !window.electronAPI?.watermark?.saveTemplate) return
     setLoading(true)
     try {
-      const result = await window.electronAPI.watermark.saveTemplate(templateName.trim(), JSON.stringify(current))
+      const result = await window.electronAPI.watermark.saveTemplate(
+        templateName.trim(),
+        JSON.stringify(current)
+      )
       if (result.success) {
         setTemplateName('')
         const rows = await window.electronAPI.watermark.loadTemplates()
@@ -257,7 +265,10 @@ export const WatermarkPanel: React.FC<WatermarkPanelProps> = ({ config, onChange
       <div className="flex gap-1 p-1 rounded-lg" style={{ background: 'var(--bg-tertiary)' }}>
         <button
           className="flex-1 py-1.5 rounded-md text-xs font-medium transition-all"
-          style={{ background: mode === 'text' ? 'var(--accent)' : 'transparent', color: mode === 'text' ? 'white' : 'var(--text-secondary)' }}
+          style={{
+            background: mode === 'text' ? 'var(--accent)' : 'transparent',
+            color: mode === 'text' ? 'white' : 'var(--text-secondary)'
+          }}
           onClick={() => setMode('text')}
           aria-label="文字水印"
         >
@@ -265,7 +276,10 @@ export const WatermarkPanel: React.FC<WatermarkPanelProps> = ({ config, onChange
         </button>
         <button
           className="flex-1 py-1.5 rounded-md text-xs font-medium transition-all"
-          style={{ background: mode === 'image' ? 'var(--accent)' : 'transparent', color: mode === 'image' ? 'white' : 'var(--text-secondary)' }}
+          style={{
+            background: mode === 'image' ? 'var(--accent)' : 'transparent',
+            color: mode === 'image' ? 'white' : 'var(--text-secondary)'
+          }}
           onClick={() => setMode('image')}
           aria-label="图片水印"
         >
@@ -275,7 +289,9 @@ export const WatermarkPanel: React.FC<WatermarkPanelProps> = ({ config, onChange
 
       {/* 样式预设 */}
       <div className="space-y-3">
-        <label className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>样式预设</label>
+        <label className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+          样式预设
+        </label>
         <div className="grid grid-cols-2 gap-2">
           {stylePresets.map((preset) => (
             <button
@@ -284,13 +300,21 @@ export const WatermarkPanel: React.FC<WatermarkPanelProps> = ({ config, onChange
               style={{
                 background: current.style === preset.id ? 'var(--accent)' : 'var(--bg-tertiary)',
                 color: current.style === preset.id ? 'white' : 'var(--text-secondary)',
-                border: current.style === preset.id ? '1px solid var(--accent)' : '1px solid var(--divider)'
+                border:
+                  current.style === preset.id
+                    ? '1px solid var(--accent)'
+                    : '1px solid var(--divider)'
               }}
               onClick={() => applyStylePreset(preset)}
               title={preset.description}
               aria-label={`应用${preset.name}样式`}
             >
-              <span className="block font-medium" style={{ color: current.style === preset.id ? 'white' : 'var(--text-primary)' }}>{preset.name}</span>
+              <span
+                className="block font-medium"
+                style={{ color: current.style === preset.id ? 'white' : 'var(--text-primary)' }}
+              >
+                {preset.name}
+              </span>
               <span className="block mt-0.5 opacity-80">{preset.description}</span>
             </button>
           ))}
@@ -300,7 +324,9 @@ export const WatermarkPanel: React.FC<WatermarkPanelProps> = ({ config, onChange
       {mode === 'text' ? (
         <div className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>文字内容</label>
+            <label className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+              文字内容
+            </label>
             <input
               type="text"
               value={current.text?.content || ''}
@@ -312,7 +338,9 @@ export const WatermarkPanel: React.FC<WatermarkPanelProps> = ({ config, onChange
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <label className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>字体</label>
+              <label className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+                字体
+              </label>
               <select
                 value={current.text?.font || 'sans-serif'}
                 onChange={(e) => updateText({ font: e.target.value })}
@@ -325,7 +353,9 @@ export const WatermarkPanel: React.FC<WatermarkPanelProps> = ({ config, onChange
               </select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>颜色</label>
+              <label className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+                颜色
+              </label>
               <input
                 type="color"
                 value={current.text?.color || '#ffffff'}
@@ -335,9 +365,30 @@ export const WatermarkPanel: React.FC<WatermarkPanelProps> = ({ config, onChange
             </div>
           </div>
 
-          <SliderControl label="大小" value={current.text?.size || 24} min={8} max={120} onChange={(v) => updateText({ size: v })} onCommit={onCommit} />
-          <SliderControl label="透明度" value={current.text?.opacity || 80} min={0} max={100} onChange={(v) => updateText({ opacity: v })} onCommit={onCommit} />
-          <SliderControl label="旋转" value={current.rotation} min={-180} max={180} onChange={(v) => updateConfig({ rotation: v })} onCommit={onCommit} />
+          <SliderControl
+            label="大小"
+            value={current.text?.size || 24}
+            min={8}
+            max={120}
+            onChange={(v) => updateText({ size: v })}
+            onCommit={onCommit}
+          />
+          <SliderControl
+            label="透明度"
+            value={current.text?.opacity || 80}
+            min={0}
+            max={100}
+            onChange={(v) => updateText({ opacity: v })}
+            onCommit={onCommit}
+          />
+          <SliderControl
+            label="旋转"
+            value={current.rotation}
+            min={-180}
+            max={180}
+            onChange={(v) => updateConfig({ rotation: v })}
+            onCommit={onCommit}
+          />
 
           <div className="flex gap-2">
             <button
@@ -366,7 +417,9 @@ export const WatermarkPanel: React.FC<WatermarkPanelProps> = ({ config, onChange
       ) : (
         <div className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>水印图片</label>
+            <label className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+              水印图片
+            </label>
             <div className="flex gap-2">
               <input
                 type="text"
@@ -375,33 +428,79 @@ export const WatermarkPanel: React.FC<WatermarkPanelProps> = ({ config, onChange
                 placeholder="选择 PNG 透明图片"
                 className="input-field flex-1 text-xs"
               />
-              <button className="btn-secondary text-sm whitespace-nowrap" onClick={handleSelectImage}>选择</button>
+              <button
+                className="btn-secondary text-sm whitespace-nowrap"
+                onClick={handleSelectImage}
+              >
+                选择
+              </button>
             </div>
           </div>
 
           {current.image?.path && (
-            <div className="rounded-lg overflow-hidden h-24 flex items-center justify-center" style={{ background: 'var(--bg-tertiary)' }}>
-              <img src={toFileUrl(current.image.path) || undefined} alt="水印预览" className="max-w-full max-h-full object-contain" />
+            <div
+              className="rounded-lg overflow-hidden h-24 flex items-center justify-center"
+              style={{ background: 'var(--bg-tertiary)' }}
+            >
+              <img
+                src={toFileUrl(current.image.path) || undefined}
+                alt="水印预览"
+                className="max-w-full max-h-full object-contain"
+              />
             </div>
           )}
 
           <div className="grid grid-cols-2 gap-3">
-            <SliderControl label="宽度" value={current.image?.width || 120} min={20} max={800} onChange={(v) => updateImage({ width: v })} onCommit={onCommit} />
-            <SliderControl label="高度" value={current.image?.height || 120} min={20} max={800} onChange={(v) => updateImage({ height: v })} onCommit={onCommit} />
+            <SliderControl
+              label="宽度"
+              value={current.image?.width || 120}
+              min={20}
+              max={800}
+              onChange={(v) => updateImage({ width: v })}
+              onCommit={onCommit}
+            />
+            <SliderControl
+              label="高度"
+              value={current.image?.height || 120}
+              min={20}
+              max={800}
+              onChange={(v) => updateImage({ height: v })}
+              onCommit={onCommit}
+            />
           </div>
 
-          <SliderControl label="透明度" value={current.image?.opacity || 80} min={0} max={100} onChange={(v) => updateImage({ opacity: v })} onCommit={onCommit} />
-          <SliderControl label="旋转" value={current.rotation} min={-180} max={180} onChange={(v) => updateConfig({ rotation: v })} onCommit={onCommit} />
+          <SliderControl
+            label="透明度"
+            value={current.image?.opacity || 80}
+            min={0}
+            max={100}
+            onChange={(v) => updateImage({ opacity: v })}
+            onCommit={onCommit}
+          />
+          <SliderControl
+            label="旋转"
+            value={current.rotation}
+            min={-180}
+            max={180}
+            onChange={(v) => updateConfig({ rotation: v })}
+            onCommit={onCommit}
+          />
 
           <div className="space-y-2">
-            <label className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>混合模式</label>
+            <label className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+              混合模式
+            </label>
             <select
               value={current.image?.blendMode || 'normal'}
-              onChange={(e) => updateImage({ blendMode: e.target.value as WatermarkImage['blendMode'] })}
+              onChange={(e) =>
+                updateImage({ blendMode: e.target.value as WatermarkImage['blendMode'] })
+              }
               className="input-field"
             >
               {blendModes.map((m) => (
-                <option key={m.id} value={m.id}>{m.label}</option>
+                <option key={m.id} value={m.id}>
+                  {m.label}
+                </option>
               ))}
             </select>
           </div>
@@ -410,7 +509,9 @@ export const WatermarkPanel: React.FC<WatermarkPanelProps> = ({ config, onChange
 
       {/* 位置九宫格 */}
       <div className="space-y-2">
-        <label className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>位置</label>
+        <label className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+          位置
+        </label>
         <div className="grid grid-cols-3 gap-1">
           {positions.map((pos) => (
             <button
@@ -429,23 +530,53 @@ export const WatermarkPanel: React.FC<WatermarkPanelProps> = ({ config, onChange
         </div>
       </div>
 
-      <SliderControl label="边距" value={current.margin} min={0} max={200} onChange={(v) => updateConfig({ margin: v })} onCommit={onCommit} />
+      <SliderControl
+        label="边距"
+        value={current.margin}
+        min={0}
+        max={200}
+        onChange={(v) => updateConfig({ margin: v })}
+        onCommit={onCommit}
+      />
 
       <div className="flex items-center gap-2">
-        <input type="checkbox" id="tile" checked={current.tile} onChange={(e) => updateConfig({ tile: e.target.checked })} />
-        <label htmlFor="tile" className="text-sm" style={{ color: 'var(--text-secondary)' }}>平铺模式</label>
+        <input
+          type="checkbox"
+          id="tile"
+          checked={current.tile}
+          onChange={(e) => updateConfig({ tile: e.target.checked })}
+        />
+        <label htmlFor="tile" className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+          平铺模式
+        </label>
       </div>
 
       {current.tile && (
         <div className="grid grid-cols-2 gap-3">
-          <SliderControl label="水平间距" value={current.tileSpacingX} min={10} max={500} onChange={(v) => updateConfig({ tileSpacingX: v })} onCommit={onCommit} />
-          <SliderControl label="垂直间距" value={current.tileSpacingY} min={10} max={500} onChange={(v) => updateConfig({ tileSpacingY: v })} onCommit={onCommit} />
+          <SliderControl
+            label="水平间距"
+            value={current.tileSpacingX}
+            min={10}
+            max={500}
+            onChange={(v) => updateConfig({ tileSpacingX: v })}
+            onCommit={onCommit}
+          />
+          <SliderControl
+            label="垂直间距"
+            value={current.tileSpacingY}
+            min={10}
+            max={500}
+            onChange={(v) => updateConfig({ tileSpacingY: v })}
+            onCommit={onCommit}
+          />
         </div>
       )}
 
       {/* 模板 */}
       <div className="space-y-3 pt-4" style={{ borderTop: '1px solid var(--divider)' }}>
-        <label className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>水印模板</label>
+        <label className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+          水印模板
+        </label>
         {templates.length > 0 && (
           <div className="space-y-1 max-h-32 overflow-y-auto">
             {templates.map((tpl) => (
@@ -456,7 +587,14 @@ export const WatermarkPanel: React.FC<WatermarkPanelProps> = ({ config, onChange
                 onClick={() => handleApplyTemplate(tpl)}
               >
                 <span>{tpl.name}</span>
-                <button className="text-xs" style={{ color: 'var(--danger)' }} onClick={(e) => handleDeleteTemplate(tpl.id, e)} aria-label={`删除模板 ${tpl.name}`}>删除</button>
+                <button
+                  className="text-xs"
+                  style={{ color: 'var(--danger)' }}
+                  onClick={(e) => handleDeleteTemplate(tpl.id, e)}
+                  aria-label={`删除模板 ${tpl.name}`}
+                >
+                  删除
+                </button>
               </div>
             ))}
           </div>
@@ -469,7 +607,12 @@ export const WatermarkPanel: React.FC<WatermarkPanelProps> = ({ config, onChange
             placeholder="模板名称"
             className="input-field flex-1 text-sm"
           />
-          <button className="btn-secondary text-sm whitespace-nowrap" onClick={handleSaveTemplate} disabled={loading || !templateName.trim()} aria-label="保存水印模板">
+          <button
+            className="btn-secondary text-sm whitespace-nowrap"
+            onClick={handleSaveTemplate}
+            disabled={loading || !templateName.trim()}
+            aria-label="保存水印模板"
+          >
             保存
           </button>
         </div>

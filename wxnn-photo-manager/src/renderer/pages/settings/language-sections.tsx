@@ -35,7 +35,10 @@ export const LanguageSection: React.FC = () => {
   }
 
   return (
-    <SectionShell title={t('settings.language.title')} description={t('settings.language.description')}>
+    <SectionShell
+      title={t('settings.language.title')}
+      description={t('settings.language.description')}
+    >
       <div className="space-y-2">
         {/* 语言下拉选择器 */}
         <select
@@ -61,7 +64,8 @@ export const LanguageSection: React.FC = () => {
         </p>
         {selected === 'auto' && (
           <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
-            {t('settings.language.auto')}: {SUPPORTED_LANGUAGES.find((l) => l.code === currentLang)?.label ?? currentLang}
+            {t('settings.language.auto')}:{' '}
+            {SUPPORTED_LANGUAGES.find((l) => l.code === currentLang)?.label ?? currentLang}
           </p>
         )}
       </div>

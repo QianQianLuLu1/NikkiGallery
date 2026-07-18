@@ -35,7 +35,8 @@ export const ScanProgress: React.FC = () => {
   // U-G6：进度百分比使用动态上限，避免硬编码导致超限提前满格或少于时永远不满
   // 优先使用 total 字段；若无则取 scanned/found 的较大值作为分母（至少为 1 避免除零）
   const total = (scanProgress as { total?: number }).total
-  const denominator = total && total > 0 ? total : Math.max(scanProgress.scanned, scanProgress.found, 1)
+  const denominator =
+    total && total > 0 ? total : Math.max(scanProgress.scanned, scanProgress.found, 1)
   const percent = Math.min(100, (scanProgress.scanned / denominator) * 100)
 
   return (
@@ -88,7 +89,12 @@ export const ScanProgress: React.FC = () => {
       {scanProgress.currentPath && (
         <p
           className="text-xs ellipsis"
-          style={{ color: 'var(--text-tertiary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+          style={{
+            color: 'var(--text-tertiary)',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis'
+          }}
           title={scanProgress.currentPath}
         >
           {scanProgress.currentPath}

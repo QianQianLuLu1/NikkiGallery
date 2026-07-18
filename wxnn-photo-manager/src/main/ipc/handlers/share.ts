@@ -7,7 +7,11 @@ import { logger } from '../../utils/logger'
 // T08：WiFi 局域网分享服务（单例）
 import { wifiShareService } from '../../services/share-wifi-service'
 // T09：剪贴板分享服务（CF_HDROP 格式）+ 渠道应用检测/启动
-import { copyFilesToClipboard, getAppStatus, launchApp } from '../../services/share-clipboard-service'
+import {
+  copyFilesToClipboard,
+  getAppStatus,
+  launchApp
+} from '../../services/share-clipboard-service'
 
 /**
  * P0-A1：从 Application.setupIPC() 迁移的分享域 IPC handler 集合。

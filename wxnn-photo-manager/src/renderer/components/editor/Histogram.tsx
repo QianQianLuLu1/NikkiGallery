@@ -52,13 +52,7 @@ export const Histogram: React.FC<HistogramProps> = ({ imageSrc, className = '' }
         l[Math.round((data[i] + data[i + 1] + data[i + 2]) / 3)]++
       }
 
-      const max = Math.max(
-        Math.max(...r),
-        Math.max(...g),
-        Math.max(...b),
-        Math.max(...l),
-        1
-      )
+      const max = Math.max(Math.max(...r), Math.max(...g), Math.max(...b), Math.max(...l), 1)
 
       const drawChannel = (values: number[], color: string) => {
         ctx.strokeStyle = color
@@ -136,7 +130,10 @@ export const Histogram: React.FC<HistogramProps> = ({ imageSrc, className = '' }
   }, [imageSrc])
 
   return (
-    <div className={`relative rounded-xl overflow-hidden ${className}`} style={{ background: 'var(--bg-tertiary)' }}>
+    <div
+      className={`relative rounded-xl overflow-hidden ${className}`}
+      style={{ background: 'var(--bg-tertiary)' }}
+    >
       <canvas
         ref={canvasRef}
         width={256}
@@ -145,7 +142,10 @@ export const Histogram: React.FC<HistogramProps> = ({ imageSrc, className = '' }
         className="w-full h-24"
       />
       {error && (
-        <div className="absolute inset-0 flex items-center justify-center text-xs" style={{ color: 'var(--text-tertiary)' }}>
+        <div
+          className="absolute inset-0 flex items-center justify-center text-xs"
+          style={{ color: 'var(--text-tertiary)' }}
+        >
           无法生成直方图
         </div>
       )}

@@ -89,8 +89,8 @@ export function useGameParams(
     setLoading(true)
     setError(null)
 
-    window.electronAPI!.decrypt
-      .decodeFile(filePath, albumType, uid)
+    window
+      .electronAPI!.decrypt.decodeFile(filePath, albumType, uid)
       .then((result) => {
         if (token.cancelled) return
         if (result.success && result.data) {

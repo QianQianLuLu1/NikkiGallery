@@ -28,11 +28,17 @@ export const AppearanceThemeSection: React.FC = () => {
           value={theme}
           onChange={(e) => saveTheme(e.target.value as UITheme)}
           className="px-3 py-2 text-sm rounded-lg min-w-[140px]"
-          style={{ background: 'var(--bg-tertiary)', color: 'var(--text-primary)', border: '1px solid var(--divider)' }}
+          style={{
+            background: 'var(--bg-tertiary)',
+            color: 'var(--text-primary)',
+            border: '1px solid var(--divider)'
+          }}
           aria-label={t('settings.theme.label')}
         >
           {themes.map((t) => (
-            <option key={t.id} value={t.id}>{t.name}</option>
+            <option key={t.id} value={t.id}>
+              {t.name}
+            </option>
           ))}
         </select>
       </div>
@@ -54,13 +60,19 @@ export const AppearanceDisplaySection: React.FC = () => {
   useEffect(() => {
     const load = async () => {
       if (!window.electronAPI) return
-      const size = await window.electronAPI.settings.get('display.fontSize', 'normal') as FontSize
+      const size = (await window.electronAPI.settings.get('display.fontSize', 'normal')) as FontSize
       setFontSize(size)
       applyFontSize(size)
-      const compact = await window.electronAPI.settings.get('display.compactMode', false) as boolean
+      const compact = (await window.electronAPI.settings.get(
+        'display.compactMode',
+        false
+      )) as boolean
       setCompactMode(compact)
       applyCompactMode(compact)
-      const motion = await window.electronAPI.settings.get('display.reduceMotion', false) as boolean
+      const motion = (await window.electronAPI.settings.get(
+        'display.reduceMotion',
+        false
+      )) as boolean
       setReduceMotion(motion)
       applyReduceMotion(motion)
     }
@@ -69,7 +81,12 @@ export const AppearanceDisplaySection: React.FC = () => {
 
   const applyFontSize = (size: FontSize) => {
     const html = document.documentElement
-    html.classList.remove('font-size-small', 'font-size-normal', 'font-size-large', 'font-size-xlarge')
+    html.classList.remove(
+      'font-size-small',
+      'font-size-normal',
+      'font-size-large',
+      'font-size-xlarge'
+    )
     html.classList.add(`font-size-${size}`)
   }
 
@@ -132,7 +149,9 @@ export const AppearanceDisplaySection: React.FC = () => {
                 border: fontSize === opt.value ? '1px solid var(--accent)' : '1px solid transparent'
               }}
             >
-              <div className="font-medium" style={{ fontSize: opt.sample }}>{opt.label}</div>
+              <div className="font-medium" style={{ fontSize: opt.sample }}>
+                {opt.label}
+              </div>
               <div className="text-xs mt-1 opacity-70">{opt.sample}</div>
             </button>
           ))}
@@ -146,7 +165,9 @@ export const AppearanceDisplaySection: React.FC = () => {
       <label className="flex items-center justify-between cursor-pointer">
         <div>
           <div style={{ color: 'var(--text-primary)' }}>{t('settings.display.compactMode')}</div>
-          <div className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>{t('settings.display.compactModeDesc')}</div>
+          <div className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>
+            {t('settings.display.compactModeDesc')}
+          </div>
         </div>
         <input
           type="checkbox"
@@ -160,7 +181,9 @@ export const AppearanceDisplaySection: React.FC = () => {
       <label className="flex items-center justify-between cursor-pointer">
         <div>
           <div style={{ color: 'var(--text-primary)' }}>{t('settings.display.reduceMotion')}</div>
-          <div className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>{t('settings.display.reduceMotionDesc')}</div>
+          <div className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>
+            {t('settings.display.reduceMotionDesc')}
+          </div>
         </div>
         <input
           type="checkbox"

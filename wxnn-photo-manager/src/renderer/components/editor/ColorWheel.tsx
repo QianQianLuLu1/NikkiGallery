@@ -7,7 +7,12 @@ interface ColorWheelProps {
   className?: string
 }
 
-export const ColorWheel: React.FC<ColorWheelProps> = ({ value, onChange, size = 120, className = '' }) => {
+export const ColorWheel: React.FC<ColorWheelProps> = ({
+  value,
+  onChange,
+  size = 120,
+  className = ''
+}) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [isDragging, setIsDragging] = useState(false)
 
@@ -47,16 +52,19 @@ export const ColorWheel: React.FC<ColorWheelProps> = ({ value, onChange, size = 
   }, [value, size])
 
   // P1-U10：提取核心坐标计算，供 mouse/touch 事件复用
-  const updateHue = useCallback((clientX: number, clientY: number) => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const rect = canvas.getBoundingClientRect()
-    const x = clientX - rect.left - size / 2
-    const y = clientY - rect.top - size / 2
-    const angle = Math.atan2(y, x) * (180 / Math.PI)
-    const hue = (angle + 90 + 360) % 360
-    onChange(Math.round(hue))
-  }, [onChange, size])
+  const updateHue = useCallback(
+    (clientX: number, clientY: number) => {
+      const canvas = canvasRef.current
+      if (!canvas) return
+      const rect = canvas.getBoundingClientRect()
+      const x = clientX - rect.left - size / 2
+      const y = clientY - rect.top - size / 2
+      const angle = Math.atan2(y, x) * (180 / Math.PI)
+      const hue = (angle + 90 + 360) % 360
+      onChange(Math.round(hue))
+    },
+    [onChange, size]
+  )
 
   // P1-U10：拖动时全局监听 mousemove/mouseup，避免拖出 canvas 后色相卡在边界
   useEffect(() => {
@@ -81,12 +89,22 @@ export const ColorWheel: React.FC<ColorWheelProps> = ({ value, onChange, size = 
         aria-label="色相轮，点击或拖动可选择色相"
         tabIndex={0}
         className="cursor-pointer rounded-full"
-        onMouseDown={(e) => { setIsDragging(true); updateHue(e.clientX, e.clientY) }}
-        onTouchStart={(e) => { setIsDragging(true); updateHue(e.touches[0].clientX, e.touches[0].clientY) }}
-        onTouchMove={(e) => { if (isDragging) updateHue(e.touches[0].clientX, e.touches[0].clientY) }}
+        onMouseDown={(e) => {
+          setIsDragging(true)
+          updateHue(e.clientX, e.clientY)
+        }}
+        onTouchStart={(e) => {
+          setIsDragging(true)
+          updateHue(e.touches[0].clientX, e.touches[0].clientY)
+        }}
+        onTouchMove={(e) => {
+          if (isDragging) updateHue(e.touches[0].clientX, e.touches[0].clientY)
+        }}
         onTouchEnd={() => setIsDragging(false)}
       />
-      <div className="text-center text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>{value}°</div>
+      <div className="text-center text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>
+        {value}°
+      </div>
     </div>
   )
 }

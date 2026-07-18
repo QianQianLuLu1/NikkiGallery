@@ -43,6 +43,12 @@ node20.zip
 .vscode/
 *.code-workspace
 
+# 代码规范工具缓存 / Linter & Formatter cache
+.eslintcache
+.cache/
+node_modules/.cache/
+.stylelintcache
+
 # 操作系统
 Thumbs.db
 Desktop.ini

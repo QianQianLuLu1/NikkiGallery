@@ -21,7 +21,23 @@ import fs from 'fs'
 import fsp from 'fs/promises'
 import { app } from 'electron'
 import { logger } from '../utils/logger'
-import { type DecryptionResult, type CameraParams, type RichCameraParams, type PhotographyInfo, type NikkiParams, type DressingParams, type InteractionParams, type ObjectParams, type SocialPhotoJSON, type EditPhotoState, type LocationInfo, type TaskInfo, type ClothParams, type EurekaParams, type MomoHiddenState } from '../types/decryption'
+import {
+  type DecryptionResult,
+  type CameraParams,
+  type RichCameraParams,
+  type PhotographyInfo,
+  type NikkiParams,
+  type DressingParams,
+  type InteractionParams,
+  type ObjectParams,
+  type SocialPhotoJSON,
+  type EditPhotoState,
+  type LocationInfo,
+  type TaskInfo,
+  type ClothParams,
+  type EurekaParams,
+  type MomoHiddenState
+} from '../types/decryption'
 
 // ============================================================
 // 常量
@@ -40,29 +56,29 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024
 const CBytes = koffi.struct('CBytes', {
   data: koffi.pointer('uint8_t'),
   len: 'size_t',
-  cap: 'size_t',
+  cap: 'size_t'
 })
 
 const MediaDecryptionResult = koffi.struct('MediaDecryptionResult', {
   status: 'uint32_t',
-  bytes: CBytes,
+  bytes: CBytes
 })
 
 // Group 2: 加密结果（与解密结果布局相同）
 const MediaEncryptionResult = koffi.struct('MediaEncryptionResult', {
   status: 'uint32_t',
-  bytes: CBytes,
+  bytes: CBytes
 })
 
 // Group 3/4: 分享码解密结果（与 MediaDecryptionResult 布局相同）
 const ClothDiyDecryptionResult = koffi.struct('ClothDiyDecryptionResult', {
   status: 'uint32_t',
-  bytes: CBytes,
+  bytes: CBytes
 })
 
 const HomeBuildDecryptionResult = koffi.struct('HomeBuildDecryptionResult', {
   status: 'uint32_t',
-  bytes: CBytes,
+  bytes: CBytes
 })
 
 const MediaKeyPtr = koffi.pointer('void')
@@ -83,7 +99,7 @@ const STATUS_MESSAGES: Record<number, string> = {
   9: 'NotNumberString',
   10: 'NetworkError',
   11: 'InvalidHomeBuildShareCode',
-  12: 'DeserializationFailed',
+  12: 'DeserializationFailed'
 }
 
 // ============================================================
@@ -122,7 +138,7 @@ function findDllPath(): string {
   const candidates = [
     path.join(process.resourcesPath, 'app.asar.unpacked', 'resources', 'nuan5_decryption.dll'),
     path.join(process.resourcesPath, 'nuan5_decryption.dll'),
-    path.join(app.getAppPath(), 'resources', 'nuan5_decryption.dll'),
+    path.join(app.getAppPath(), 'resources', 'nuan5_decryption.dll')
   ]
   for (const p of candidates) {
     if (fs.existsSync(p)) return p
@@ -141,9 +157,15 @@ function getLib(): koffi.IKoffiLib {
   logger.info('[decryption] ABI version:', ver, 'expected:', EXPECTED_ABI_VERSION)
   if (ver !== EXPECTED_ABI_VERSION) {
     // 卸载已加载的库，避免后续误调用
-    try { lib.unload() } catch { /* ignore */ }
+    try {
+      lib.unload()
+    } catch {
+      /* ignore */
+    }
     lib = null
-    throw new Error(`ABI 版本不匹配：DLL 报告 ${ver}，预期 ${EXPECTED_ABI_VERSION}。请更新 nuan5_decryption.dll 或联系开发者。`)
+    throw new Error(
+      `ABI 版本不匹配：DLL 报告 ${ver}，预期 ${EXPECTED_ABI_VERSION}。请更新 nuan5_decryption.dll 或联系开发者。`
+    )
   }
 
   return lib
@@ -159,15 +181,23 @@ function getBoundFunctions(): BoundFunctions {
   boundFns = {
     // Group 1: Media 解密
     mediaDecrypt: libInstance.func('media_decrypt', MediaDecryptionResult, [
-      koffi.pointer('uint8_t'), 'size_t', MediaKeyPtr,
+      koffi.pointer('uint8_t'),
+      'size_t',
+      MediaKeyPtr
     ]) as koffi.KoffiFunction,
     mediaDecodeFileBytesUnchecked: libInstance.func(
       'media_decode_file_bytes_unchecked',
       MediaDecryptionResult,
       [koffi.pointer('uint8_t'), 'size_t', koffi.pointer('uint8_t'), 'size_t', MediaKeyPtr]
     ) as koffi.KoffiFunction,
-    mediaKeyCameraParam: libInstance.func('media_key_camera_param', MediaKeyPtr, []) as koffi.KoffiFunction,
-    mediaKeyFromStr: libInstance.func('media_key_from_str', MediaKeyPtr, ['string']) as koffi.KoffiFunction,
+    mediaKeyCameraParam: libInstance.func(
+      'media_key_camera_param',
+      MediaKeyPtr,
+      []
+    ) as koffi.KoffiFunction,
+    mediaKeyFromStr: libInstance.func('media_key_from_str', MediaKeyPtr, [
+      'string'
+    ]) as koffi.KoffiFunction,
     freeMediaKey: libInstance.func('free_media_key', 'void', [MediaKeyPtr]) as koffi.KoffiFunction,
     freeCBytes: libInstance.func('free_c_bytes', 'void', [CBytes]) as koffi.KoffiFunction,
     // Group 2: Media 加密 — media_encode_camera_params_bytes(bytes, len) -> MediaEncryptionResult
@@ -178,33 +208,41 @@ function getBoundFunctions(): BoundFunctions {
     ) as koffi.KoffiFunction,
     // Group 3: ClothDiy 分享码
     clothDiyShareCodeFromCodeStr: libInstance.func(
-      'cloth_diy_share_code_from_code_str', ClothDiyShareCodePtr, ['string']
+      'cloth_diy_share_code_from_code_str',
+      ClothDiyShareCodePtr,
+      ['string']
     ) as koffi.KoffiFunction,
-    clothDiyShareCodeTimestamp: libInstance.func(
-      'cloth_diy_share_code_timestamp', 'int64_t', [ClothDiyShareCodePtr]
-    ) as koffi.KoffiFunction,
+    clothDiyShareCodeTimestamp: libInstance.func('cloth_diy_share_code_timestamp', 'int64_t', [
+      ClothDiyShareCodePtr
+    ]) as koffi.KoffiFunction,
     clothDiyShareCodeUidBytes: libInstance.func(
-      'cloth_diy_share_code_uid_bytes', ClothDiyDecryptionResult, [ClothDiyShareCodePtr]
+      'cloth_diy_share_code_uid_bytes',
+      ClothDiyDecryptionResult,
+      [ClothDiyShareCodePtr]
     ) as koffi.KoffiFunction,
-    clothDiyDecodeNetwork: libInstance.func(
-      'cloth_diy_decode_network', ClothDiyDecryptionResult, [ClothDiyShareCodePtr]
-    ) as koffi.KoffiFunction,
-    freeClothDiyShareCode: libInstance.func(
-      'free_cloth_diy_share_code', 'void', [ClothDiyShareCodePtr]
-    ) as koffi.KoffiFunction,
+    clothDiyDecodeNetwork: libInstance.func('cloth_diy_decode_network', ClothDiyDecryptionResult, [
+      ClothDiyShareCodePtr
+    ]) as koffi.KoffiFunction,
+    freeClothDiyShareCode: libInstance.func('free_cloth_diy_share_code', 'void', [
+      ClothDiyShareCodePtr
+    ]) as koffi.KoffiFunction,
     // Group 4: HomeBuild 分享码
     homeBuildShareCodeFromCodeStr: libInstance.func(
-      'home_build_share_code_from_code_str', HomeBuildShareCodePtr, ['string']
+      'home_build_share_code_from_code_str',
+      HomeBuildShareCodePtr,
+      ['string']
     ) as koffi.KoffiFunction,
-    homeBuildShareCodeServer: libInstance.func(
-      'home_build_share_code_server', 'int64_t', [HomeBuildShareCodePtr]
-    ) as koffi.KoffiFunction,
+    homeBuildShareCodeServer: libInstance.func('home_build_share_code_server', 'int64_t', [
+      HomeBuildShareCodePtr
+    ]) as koffi.KoffiFunction,
     homeBuildDecodeNetwork: libInstance.func(
-      'home_build_decode_network', HomeBuildDecryptionResult, [HomeBuildShareCodePtr]
+      'home_build_decode_network',
+      HomeBuildDecryptionResult,
+      [HomeBuildShareCodePtr]
     ) as koffi.KoffiFunction,
-    freeHomeBuildShareCode: libInstance.func(
-      'free_home_build_share_code', 'void', [HomeBuildShareCodePtr]
-    ) as koffi.KoffiFunction,
+    freeHomeBuildShareCode: libInstance.func('free_home_build_share_code', 'void', [
+      HomeBuildShareCodePtr
+    ]) as koffi.KoffiFunction
   }
   return boundFns
 }
@@ -243,7 +281,7 @@ function parseCameraParams(text: string): CameraParams | undefined {
     arr = JSON.parse(text) as unknown[]
     if (arr.length < 31) return undefined
   } else {
-    arr = text.split(',').map(v => v.trim())
+    arr = text.split(',').map((v) => v.trim())
     if (arr.length < 31) return undefined
   }
 
@@ -261,13 +299,15 @@ function parseCameraParams(text: string): CameraParams | undefined {
     bloomIntensity: Number(arr[20]) || 0,
     bloomThreshold: Number(arr[21]) || 0,
     portraitMode: Number(arr[1]) === 1,
-    filter: arr[29] && arr[29] !== 'None'
-      ? { id: String(arr[29]), strength: Number(arr[30]) || 0 }
-      : undefined,
-    light: arr[17] && arr[17] !== 'None'
-      ? { id: String(arr[17]), strength: Number(arr[18]) || 0 }
-      : undefined,
-    rawParams: text,
+    filter:
+      arr[29] && arr[29] !== 'None'
+        ? { id: String(arr[29]), strength: Number(arr[30]) || 0 }
+        : undefined,
+    light:
+      arr[17] && arr[17] !== 'None'
+        ? { id: String(arr[17]), strength: Number(arr[18]) || 0 }
+        : undefined,
+    rawParams: text
   }
 }
 
@@ -286,7 +326,7 @@ function pick(obj: Record<string, unknown> | null | undefined, ...keys: string[]
 }
 
 function num(v: unknown): number {
-  return typeof v === 'number' ? v : (typeof v === 'string' ? (Number(v) || 0) : 0)
+  return typeof v === 'number' ? v : typeof v === 'string' ? Number(v) || 0 : 0
 }
 
 function bool(v: unknown): boolean {
@@ -309,13 +349,13 @@ function parseSocialPhoto(step1Text: string): SocialPhotoJSON | null {
 /** 从 SocialPhotoJSON 中获取 social_photo 对象 */
 function getSocialPhoto(json: SocialPhotoJSON): Record<string, unknown> | null {
   const sp = pick(json, 'social_photo', 'socialPhoto', 'SocialPhoto')
-  return (typeof sp === 'object' && sp !== null) ? sp as Record<string, unknown> : null
+  return typeof sp === 'object' && sp !== null ? (sp as Record<string, unknown>) : null
 }
 
 /** 从 social_photo 中获取 photo_info 对象 */
 function getPhotoInfo(socialPhoto: Record<string, unknown>): Record<string, unknown> | null {
   const pi = pick(socialPhoto, 'photo_info', 'photoInfo', 'PhotoInfo')
-  return (typeof pi === 'object' && pi !== null) ? pi as Record<string, unknown> : null
+  return typeof pi === 'object' && pi !== null ? (pi as Record<string, unknown>) : null
 }
 
 /** Step 5a: 解析拍摄信息 */
@@ -325,23 +365,29 @@ function parsePhotographyInfo(json: SocialPhotoJSON): PhotographyInfo {
 
   // 编辑状态
   const editHandler = pick(json, 'edit_photo_handler', 'editPhotoHandler', 'EditPhotoHandler')
-  const editObj = (typeof editHandler === 'object' && editHandler !== null) ? editHandler as Record<string, unknown> : null
+  const editObj =
+    typeof editHandler === 'object' && editHandler !== null
+      ? (editHandler as Record<string, unknown>)
+      : null
   const edit: EditPhotoState = {
     enabled: !!editObj,
     hasSticker: editObj ? bool(pick(editObj, 'has_sticker', 'hasSticker', 'HasSticker')) : false,
-    hasText: editObj ? bool(pick(editObj, 'has_text', 'hasText', 'HasText')) : false,
+    hasText: editObj ? bool(pick(editObj, 'has_text', 'hasText', 'HasText')) : false
   }
 
   // 日期和时间
   const timeObj = socialPhoto ? pick(socialPhoto, 'time', 'Time') : undefined
-  const timeRecord = (typeof timeObj === 'object' && timeObj !== null) ? timeObj as Record<string, unknown> : null
+  const timeRecord =
+    typeof timeObj === 'object' && timeObj !== null ? (timeObj as Record<string, unknown>) : null
   const day = timeRecord ? num(pick(timeRecord, 'day', 'Day')) : 0
   const date = timeRecord ? { day } : null
-  const time = timeRecord ? {
-    hour: num(pick(timeRecord, 'hour', 'Hour')),
-    minute: num(pick(timeRecord, 'min', 'minute', 'Min', 'Minute')),
-    second: num(pick(timeRecord, 'sec', 'second', 'Sec', 'Second')),
-  } : null
+  const time = timeRecord
+    ? {
+        hour: num(pick(timeRecord, 'hour', 'Hour')),
+        minute: num(pick(timeRecord, 'min', 'minute', 'Min', 'Minute')),
+        second: num(pick(timeRecord, 'sec', 'second', 'Sec', 'Second'))
+      }
+    : null
 
   // 地点（原始坐标）
   let location: LocationInfo | null = null
@@ -353,23 +399,31 @@ function parsePhotographyInfo(json: SocialPhotoJSON): PhotographyInfo {
   }
 
   // 天气
-  const weather = socialPhoto ? num(pick(socialPhoto, 'weather_type', 'weatherType', 'WeatherType')) || null : null
+  const weather = socialPhoto
+    ? num(pick(socialPhoto, 'weather_type', 'weatherType', 'WeatherType')) || null
+    : null
 
   // 照片墙
   const photoWallPlugin = pick(json, 'photo_wall_plugin', 'photoWallPlugin', 'PhotoWallPlugin')
-  const pwObj = (typeof photoWallPlugin === 'object' && photoWallPlugin !== null) ? photoWallPlugin as Record<string, unknown> : null
+  const pwObj =
+    typeof photoWallPlugin === 'object' && photoWallPlugin !== null
+      ? (photoWallPlugin as Record<string, unknown>)
+      : null
   let photoWall: number[] = []
   if (pwObj) {
     const ids = pick(pwObj, 'photo_id', 'photoId', 'PhotoId')
     if (Array.isArray(ids)) {
-      photoWall = ids.map(v => num(v))
+      photoWall = ids.map((v) => num(v))
     }
   }
 
   // 拍摄任务
   const tasks: TaskInfo[] = []
   const puzzlePlugin = pick(json, 'puzzle_game_plugin', 'puzzleGamePlugin', 'PuzzleGamePlugin')
-  const puzzleObj = (typeof puzzlePlugin === 'object' && puzzlePlugin !== null) ? puzzlePlugin as Record<string, unknown> : null
+  const puzzleObj =
+    typeof puzzlePlugin === 'object' && puzzlePlugin !== null
+      ? (puzzlePlugin as Record<string, unknown>)
+      : null
   if (puzzleObj) {
     const tag = num(pick(puzzleObj, 'tag', 'Tag'))
     if (tag !== -1 && tag !== 0) tasks.push({ type: 'puzzle', tag })
@@ -391,10 +445,15 @@ function parseNikkiParams(json: SocialPhotoJSON): NikkiParams {
   const socialPhoto = getSocialPhoto(json)
   const photoInfo = socialPhoto ? getPhotoInfo(socialPhoto) : null
 
-  const giantStateRaw = socialPhoto ? pick(socialPhoto, 'giant_state', 'giantState', 'GiantState') : undefined
-  const giantState = giantStateRaw !== undefined && giantStateRaw !== null ? bool(giantStateRaw) : false
+  const giantStateRaw = socialPhoto
+    ? pick(socialPhoto, 'giant_state', 'giantState', 'GiantState')
+    : undefined
+  const giantState =
+    giantStateRaw !== undefined && giantStateRaw !== null ? bool(giantStateRaw) : false
 
-  const hidden = photoInfo ? bool(pick(photoInfo, 'nikki_hidden', 'nikkiHidden', 'NikkiHidden')) : false
+  const hidden = photoInfo
+    ? bool(pick(photoInfo, 'nikki_hidden', 'nikkiHidden', 'NikkiHidden'))
+    : false
 
   let loc: NikkiParams['loc'] = null
   let rot: NikkiParams['rot'] = null
@@ -404,17 +463,17 @@ function parseNikkiParams(json: SocialPhotoJSON): NikkiParams {
     loc = {
       x: num(pick(photoInfo, 'nikki_loc_x', 'nikkiLocX')),
       y: num(pick(photoInfo, 'nikki_loc_y', 'nikkiLocY')),
-      z: num(pick(photoInfo, 'nikki_loc_z', 'nikkiLocZ')),
+      z: num(pick(photoInfo, 'nikki_loc_z', 'nikkiLocZ'))
     }
     rot = {
       yaw: num(pick(photoInfo, 'nikki_rot_yaw', 'nikkiRotYaw')),
       pitch: num(pick(photoInfo, 'nikki_rot_pitch', 'nikkiRotPitch')),
-      roll: num(pick(photoInfo, 'nikki_rot_roll', 'nikkiRotRoll')),
+      roll: num(pick(photoInfo, 'nikki_rot_roll', 'nikkiRotRoll'))
     }
     scale = {
       x: num(pick(photoInfo, 'nikki_scale_x', 'nikkiScaleX')),
       y: num(pick(photoInfo, 'nikki_scale_y', 'nikkiScaleY')),
-      z: num(pick(photoInfo, 'nikki_scale_z', 'nikkiScaleZ')),
+      z: num(pick(photoInfo, 'nikki_scale_z', 'nikkiScaleZ'))
     }
   }
 
@@ -435,11 +494,12 @@ function parseDressingParams(json: SocialPhotoJSON): DressingParams {
     const rawClothes = pick(photoInfo, 'nikki_clothes', 'nikkiClothes', 'NikkiClothes')
     if (Array.isArray(rawClothes)) {
       for (const item of rawClothes) {
-        const rawId = typeof item === 'number'
-          ? item
-          : (typeof item === 'object' && item !== null
+        const rawId =
+          typeof item === 'number'
+            ? item
+            : typeof item === 'object' && item !== null
               ? num(pick(item as Record<string, unknown>, 'id', 'Id', 'ID'))
-              : 0)
+              : 0
         if (rawId === 0) continue
 
         // 从 ID 拆解（对齐上游 cloth_parser.rs）
@@ -457,7 +517,13 @@ function parseDressingParams(json: SocialPhotoJSON): DressingParams {
         }
 
         clothes.push({ id: rawId, clothType, clothTypeName, state, species })
-        logger.debug('[decryption] Cloth parsed:', { id: rawId, clothType, state, species, outfitFeature })
+        logger.debug('[decryption] Cloth parsed:', {
+          id: rawId,
+          clothType,
+          state,
+          species,
+          outfitFeature
+        })
       }
     }
   }
@@ -466,14 +532,20 @@ function parseDressingParams(json: SocialPhotoJSON): DressingParams {
   // ID 结构: outfit × 10^3 + attachment_point × 10^2 + level × 10 + color
   const eureka: EurekaParams[] = []
   if (photoInfo) {
-    const rawEureka = pick(photoInfo, 'magicball_color_ids', 'magicballColorIds', 'MagicballColorIds')
+    const rawEureka = pick(
+      photoInfo,
+      'magicball_color_ids',
+      'magicballColorIds',
+      'MagicballColorIds'
+    )
     if (Array.isArray(rawEureka)) {
       for (const item of rawEureka) {
-        const rawId = typeof item === 'number'
-          ? item
-          : (typeof item === 'object' && item !== null
+        const rawId =
+          typeof item === 'number'
+            ? item
+            : typeof item === 'object' && item !== null
               ? num(pick(item as Record<string, unknown>, 'id', 'Id', 'ID'))
-              : 0)
+              : 0
         if (rawId === 0) continue
 
         // 从 ID 拆解（对齐上游 eureka_parser.rs）
@@ -483,7 +555,13 @@ function parseDressingParams(json: SocialPhotoJSON): DressingParams {
         const outfit = Math.floor(rawId / 1000)
 
         eureka.push({ id: rawId, level, color, attachmentPoint, outfit })
-        logger.debug('[decryption] Eureka parsed:', { id: rawId, color, level, attachmentPoint, outfit })
+        logger.debug('[decryption] Eureka parsed:', {
+          id: rawId,
+          color,
+          level,
+          attachmentPoint,
+          outfit
+        })
       }
     }
   }
@@ -499,27 +577,32 @@ function parseInteractionParams(json: SocialPhotoJSON): InteractionParams {
     if (!raw || typeof raw !== 'object') return null
     const obj = raw as Record<string, unknown>
     return {
-      id: (typeof obj['id'] === 'string' ? obj['id'] : num(pick(obj, 'id', 'Id', 'ID', 'config_id', 'configId', 'cfg_id', 'cfgId'))),
+      id:
+        typeof obj['id'] === 'string'
+          ? obj['id']
+          : num(pick(obj, 'id', 'Id', 'ID', 'config_id', 'configId', 'cfg_id', 'cfgId')),
       loc: {
         x: num(pick(obj, 'loc_x', 'locX', 'LocX')),
         y: num(pick(obj, 'loc_y', 'locY', 'LocY')),
-        z: num(pick(obj, 'loc_z', 'locZ', 'LocZ')),
+        z: num(pick(obj, 'loc_z', 'locZ', 'LocZ'))
       },
       rot: {
         yaw: num(pick(obj, 'rot_yaw', 'rotYaw', 'RotYaw')),
         pitch: num(pick(obj, 'rot_pitch', 'rotPitch', 'RotPitch')),
-        roll: num(pick(obj, 'rot_roll', 'rotRoll', 'RotRoll')),
+        roll: num(pick(obj, 'rot_roll', 'rotRoll', 'RotRoll'))
       },
       scale: {
         x: num(pick(obj, 'scale_x', 'scaleX', 'ScaleX')),
         y: num(pick(obj, 'scale_y', 'scaleY', 'ScaleY')),
-        z: num(pick(obj, 'scale_z', 'scaleZ', 'ScaleZ')),
-      },
+        z: num(pick(obj, 'scale_z', 'scaleZ', 'ScaleZ'))
+      }
     }
   }
 
   // 坐骑
-  const mountRaw = socialPhoto ? pick(socialPhoto, 'mount_info', 'mountInfo', 'MountInfo') : undefined
+  const mountRaw = socialPhoto
+    ? pick(socialPhoto, 'mount_info', 'mountInfo', 'MountInfo')
+    : undefined
   let mount: ObjectParams | null = null
   if (mountRaw && typeof mountRaw === 'object') {
     const mountObj = mountRaw as Record<string, unknown>
@@ -529,12 +612,16 @@ function parseInteractionParams(json: SocialPhotoJSON): InteractionParams {
   }
 
   // 载具
-  const carrierRaw = socialPhoto ? pick(socialPhoto, 'carrier_info', 'carrierInfo', 'CarrierInfo') : undefined
+  const carrierRaw = socialPhoto
+    ? pick(socialPhoto, 'carrier_info', 'carrierInfo', 'CarrierInfo')
+    : undefined
   const carrier = parseObject(carrierRaw)
 
   // 交互物列表
   const interactions: ObjectParams[] = []
-  const interactionsRaw = socialPhoto ? pick(socialPhoto, 'interactions', 'Interactions') : undefined
+  const interactionsRaw = socialPhoto
+    ? pick(socialPhoto, 'interactions', 'Interactions')
+    : undefined
   if (Array.isArray(interactionsRaw)) {
     for (const item of interactionsRaw) {
       const obj = parseObject(item)
@@ -561,16 +648,20 @@ function mergeRichCameraParams(camera: CameraParams, json: SocialPhotoJSON): Ric
     const camY = num(pick(photoInfo, 'camera_actor_loc_y', 'cameraActorLocY'))
     const camZ = num(pick(photoInfo, 'camera_actor_loc_z', 'cameraActorLocZ'))
     cameraLoc = { x: camX, y: camY, z: camZ }
-    const distance = Math.sqrt(
-      (nikkiX - camX) ** 2 + (nikkiY - camY) ** 2 + (nikkiZ - camZ) ** 2
-    )
+    const distance = Math.sqrt((nikkiX - camX) ** 2 + (nikkiY - camY) ** 2 + (nikkiZ - camZ) ** 2)
     zoom = -0.0035 * distance + 6.45
   }
 
   // 镜头旋转（roll + yaw + pitch）
-  const rotation = photoInfo ? num(pick(photoInfo, 'camera_actor_rot_roll', 'cameraActorRotRoll')) : 0
-  const cameraYaw = photoInfo ? num(pick(photoInfo, 'camera_actor_rot_yaw', 'cameraActorRotYaw')) : 0
-  const cameraPitch = photoInfo ? num(pick(photoInfo, 'camera_actor_rot_pitch', 'cameraActorRotPitch')) : 0
+  const rotation = photoInfo
+    ? num(pick(photoInfo, 'camera_actor_rot_roll', 'cameraActorRotRoll'))
+    : 0
+  const cameraYaw = photoInfo
+    ? num(pick(photoInfo, 'camera_actor_rot_yaw', 'cameraActorRotYaw'))
+    : 0
+  const cameraPitch = photoInfo
+    ? num(pick(photoInfo, 'camera_actor_rot_pitch', 'cameraActorRotPitch'))
+    : 0
 
   // 动作场景
   const pose = photoInfo ? num(pick(photoInfo, 'pose_id', 'poseId', 'PoseId')) : 0
@@ -579,15 +670,31 @@ function mergeRichCameraParams(camera: CameraParams, json: SocialPhotoJSON): Ric
   }
 
   // 定格（从 photo_info.framed_moment 读取，非 0 表示有定格）
-  const framedMoment = photoInfo ? num(pick(photoInfo, 'framed_moment', 'framedMoment', 'FramedMoment')) : 0
+  const framedMoment = photoInfo
+    ? num(pick(photoInfo, 'framed_moment', 'framedMoment', 'FramedMoment'))
+    : 0
   if (framedMoment !== 0) {
-    logger.debug('[decryption] framed_moment:', framedMoment, '— 如需映射名称请补充到 FRAMED_MOMENT_MAP')
+    logger.debug(
+      '[decryption] framed_moment:',
+      framedMoment,
+      '— 如需映射名称请补充到 FRAMED_MOMENT_MAP'
+    )
   }
 
   // portrait_mode 优先从 portrait_mode_handler 读取
-  const portraitHandler = pick(json, 'portrait_mode_handler', 'portraitModeHandler', 'PortraitModeHandler')
+  const portraitHandler = pick(
+    json,
+    'portrait_mode_handler',
+    'portraitModeHandler',
+    'PortraitModeHandler'
+  )
   if (portraitHandler && typeof portraitHandler === 'object') {
-    const pm = pick(portraitHandler as Record<string, unknown>, 'portrait_mode', 'portraitMode', 'PortraitMode')
+    const pm = pick(
+      portraitHandler as Record<string, unknown>,
+      'portrait_mode',
+      'portraitMode',
+      'PortraitMode'
+    )
     if (pm !== undefined) {
       camera.portraitMode = bool(pm)
     }
@@ -595,10 +702,15 @@ function mergeRichCameraParams(camera: CameraParams, json: SocialPhotoJSON): Ric
 
   // 大喵隐藏状态（CameraParams V2 才有，当前简化处理）
   // 如果 JSON 中 da_miao_info 存在且非空，则大喵可见
-  const daMiaoRaw = socialPhoto ? pick(socialPhoto, 'da_miao_info', 'daMiaoInfo', 'DaMiaoInfo') : undefined
+  const daMiaoRaw = socialPhoto
+    ? pick(socialPhoto, 'da_miao_info', 'daMiaoInfo', 'DaMiaoInfo')
+    : undefined
   let momoHidden: MomoHiddenState | null = null
   if (daMiaoRaw !== undefined) {
-    if (daMiaoRaw === null || (typeof daMiaoRaw === 'object' && Object.keys(daMiaoRaw as object).length === 0)) {
+    if (
+      daMiaoRaw === null ||
+      (typeof daMiaoRaw === 'object' && Object.keys(daMiaoRaw as object).length === 0)
+    ) {
       momoHidden = 'enabled'
     } else {
       momoHidden = 'disabled'
@@ -614,7 +726,7 @@ function mergeRichCameraParams(camera: CameraParams, json: SocialPhotoJSON): Ric
     cameraLoc,
     pose,
     framedMoment,
-    momoHidden,
+    momoHidden
   }
 }
 
@@ -639,9 +751,13 @@ function decodeCameraParamsFromFile(
   camKey: koffi.PointerObject
 ): DecryptionResult {
   // Step 1: 用 UID key + FFD9 flag 解密文件
-  const flag = Buffer.from([0xFF, 0xD9])
+  const flag = Buffer.from([0xff, 0xd9])
   const r1 = fns.mediaDecodeFileBytesUnchecked(
-    flag, flag.length, fileData, fileData.length, uidKey
+    flag,
+    flag.length,
+    fileData,
+    fileData.length,
+    uidKey
   ) as { status: number; bytes: { data: koffi.PointerObject; len: number; cap: number } }
 
   logger.info('[decryption] Step 1 status:', r1.status, STATUS_MESSAGES[r1.status] || 'Unknown')
@@ -649,18 +765,31 @@ function decodeCameraParamsFromFile(
   // P0-A3：Step 1 status≠0 时也要释放 r1.bytes（原实现漏掉此处的 freeCBytes）
   // 注意：status≠0 时 bytes.data 可能为 null，freeCBytes 需自行处理空指针
   if (r1.status !== 0) {
-    try { fns.freeCBytes(r1.bytes) } catch { /* ignore */ }
+    try {
+      fns.freeCBytes(r1.bytes)
+    } catch {
+      /* ignore */
+    }
     return {
       hasParams: false,
-      error: STATUS_MESSAGES[r1.status] || `Step 1 失败 (status=${r1.status})`,
+      error: STATUS_MESSAGES[r1.status] || `Step 1 失败 (status=${r1.status})`
     }
   }
 
   const step1Buf = readCBytes(r1.bytes)
-  try { fns.freeCBytes(r1.bytes) } catch { /* ignore */ }
+  try {
+    fns.freeCBytes(r1.bytes)
+  } catch {
+    /* ignore */
+  }
 
   const step1Text = step1Buf.toString('utf-8')
-  logger.info('[decryption] Step 1 text length:', step1Text.length, 'prefix:', step1Text.slice(0, 120))
+  logger.info(
+    '[decryption] Step 1 text length:',
+    step1Text.length,
+    'prefix:',
+    step1Text.slice(0, 120)
+  )
   // P0-T1: 完整 JSON 日志（debug 级别，避免生产环境泄露 UID 等敏感信息）
   logger.debug('[decryption] Step 1 full JSON:', step1Text)
 
@@ -677,25 +806,39 @@ function decodeCameraParamsFromFile(
 
   // Step 3: 用 Camera key 解密 CameraParams Base64
   const b64Buf = Buffer.from(cameraParamsB64, 'utf-8')
-  const r2 = fns.mediaDecrypt(
-    b64Buf, b64Buf.length, camKey
-  ) as { status: number; bytes: { data: koffi.PointerObject; len: number; cap: number } }
+  const r2 = fns.mediaDecrypt(b64Buf, b64Buf.length, camKey) as {
+    status: number
+    bytes: { data: koffi.PointerObject; len: number; cap: number }
+  }
 
   logger.info('[decryption] Step 3 status:', r2.status, STATUS_MESSAGES[r2.status] || 'Unknown')
 
   if (r2.status !== 0) {
-    try { fns.freeCBytes(r2.bytes) } catch { /* ignore */ }
+    try {
+      fns.freeCBytes(r2.bytes)
+    } catch {
+      /* ignore */
+    }
     return {
       hasParams: false,
-      error: STATUS_MESSAGES[r2.status] || `Step 3 失败 (status=${r2.status})`,
+      error: STATUS_MESSAGES[r2.status] || `Step 3 失败 (status=${r2.status})`
     }
   }
 
   const step3Buf = readCBytes(r2.bytes)
-  try { fns.freeCBytes(r2.bytes) } catch { /* ignore */ }
+  try {
+    fns.freeCBytes(r2.bytes)
+  } catch {
+    /* ignore */
+  }
 
   const step3Text = step3Buf.toString('utf-8').trim()
-  logger.info('[decryption] Step 3 text length:', step3Text.length, 'content:', step3Text.slice(0, 200))
+  logger.info(
+    '[decryption] Step 3 text length:',
+    step3Text.length,
+    'content:',
+    step3Text.slice(0, 200)
+  )
 
   // Step 4: 解析相机参数
   const camera = parseCameraParams(step3Text)
@@ -752,7 +895,7 @@ function decodeCameraParamsFromFile(
     hasNikki: !!nikki,
     hasDressing: !!dressing,
     clothesCount: dressing?.clothes.length ?? 0,
-    hasInteractions: !!interactions,
+    hasInteractions: !!interactions
   })
 
   return { hasParams: true, camera: richCamera, photography, nikki, dressing, interactions }
@@ -780,7 +923,10 @@ export async function decodeFileParams(
       try {
         const stat = await fsp.stat(filePath)
         if (stat.size > MAX_FILE_SIZE) {
-          return { hasParams: false, error: `文件过大（${stat.size} 字节），超过 ${MAX_FILE_SIZE} 字节上限` }
+          return {
+            hasParams: false,
+            error: `文件过大（${stat.size} 字节），超过 ${MAX_FILE_SIZE} 字节上限`
+          }
         }
         fileData = await fsp.readFile(filePath)
         logger.info('[decryption] File size:', fileData.length)
@@ -810,8 +956,18 @@ export async function decodeFileParams(
         return decodeCameraParamsFromFile(fns, fileData, uidKey, camKey)
       } finally {
         // 无论解密成功与否，都必须释放密钥 C 内存
-        if (uidKey) try { fns.freeMediaKey(uidKey) } catch { /* ignore */ }
-        if (camKey) try { fns.freeMediaKey(camKey) } catch { /* ignore */ }
+        if (uidKey)
+          try {
+            fns.freeMediaKey(uidKey)
+          } catch {
+            /* ignore */
+          }
+        if (camKey)
+          try {
+            fns.freeMediaKey(camKey)
+          } catch {
+            /* ignore */
+          }
       }
     } catch (err) {
       logger.error('[decryption] Unexpected error:', err)
@@ -844,12 +1000,23 @@ export async function encodeCameraParams(jsonText: string): Promise<MediaEncrypt
       logger.info('[encrypt] status:', r.status, STATUS_MESSAGES[r.status] || 'Unknown')
 
       if (r.status !== 0) {
-        try { fns.freeCBytes(r.bytes) } catch { /* ignore */ }
-        return { success: false, error: STATUS_MESSAGES[r.status] || `加密失败 (status=${r.status})` }
+        try {
+          fns.freeCBytes(r.bytes)
+        } catch {
+          /* ignore */
+        }
+        return {
+          success: false,
+          error: STATUS_MESSAGES[r.status] || `加密失败 (status=${r.status})`
+        }
       }
 
       const outputBuf = readCBytes(r.bytes)
-      try { fns.freeCBytes(r.bytes) } catch { /* ignore */ }
+      try {
+        fns.freeCBytes(r.bytes)
+      } catch {
+        /* ignore */
+      }
 
       return { success: true, data: outputBuf }
     } catch (err) {
@@ -896,7 +1063,11 @@ export async function decodeClothDiyShareCode(codeStr: string): Promise<ClothDiy
       if (uidResult.status === 0) {
         uidBytes = readCBytes(uidResult.bytes)
       }
-      try { fns.freeCBytes(uidResult.bytes) } catch { /* ignore */ }
+      try {
+        fns.freeCBytes(uidResult.bytes)
+      } catch {
+        /* ignore */
+      }
 
       // Step 4: 网络解码（可能因网络问题失败）
       const networkResult = fns.clothDiyDecodeNetwork(shareCode) as {
@@ -909,23 +1080,38 @@ export async function decodeClothDiyShareCode(codeStr: string): Promise<ClothDiy
         networkData = networkBuf.toString('utf-8')
         logger.info('[clothDiy] network data length:', networkData.length)
       } else {
-        logger.warn('[clothDiy] network decode status:', networkResult.status, STATUS_MESSAGES[networkResult.status] || 'Unknown')
+        logger.warn(
+          '[clothDiy] network decode status:',
+          networkResult.status,
+          STATUS_MESSAGES[networkResult.status] || 'Unknown'
+        )
       }
-      try { fns.freeCBytes(networkResult.bytes) } catch { /* ignore */ }
+      try {
+        fns.freeCBytes(networkResult.bytes)
+      } catch {
+        /* ignore */
+      }
 
       return {
         success: true,
         timestamp: timestamp > 0 ? timestamp : undefined,
         uidBytes,
         networkData,
-        error: networkResult.status !== 0 ? (STATUS_MESSAGES[networkResult.status] || '网络解码失败') : undefined,
+        error:
+          networkResult.status !== 0
+            ? STATUS_MESSAGES[networkResult.status] || '网络解码失败'
+            : undefined
       }
     } catch (err) {
       logger.error('[clothDiy] Unexpected error:', err)
       return { success: false, error: err instanceof Error ? err.message : '未知错误' }
     } finally {
       if (shareCode) {
-        try { fns_get().freeClothDiyShareCode(shareCode) } catch { /* ignore */ }
+        try {
+          fns_get().freeClothDiyShareCode(shareCode)
+        } catch {
+          /* ignore */
+        }
       }
     }
   })
@@ -969,22 +1155,37 @@ export async function decodeHomeBuildShareCode(codeStr: string): Promise<HomeBui
         networkData = networkBuf.toString('utf-8')
         logger.info('[homeBuild] network data length:', networkData.length)
       } else {
-        logger.warn('[homeBuild] network decode status:', networkResult.status, STATUS_MESSAGES[networkResult.status] || 'Unknown')
+        logger.warn(
+          '[homeBuild] network decode status:',
+          networkResult.status,
+          STATUS_MESSAGES[networkResult.status] || 'Unknown'
+        )
       }
-      try { fns.freeCBytes(networkResult.bytes) } catch { /* ignore */ }
+      try {
+        fns.freeCBytes(networkResult.bytes)
+      } catch {
+        /* ignore */
+      }
 
       return {
         success: true,
         server: server > 0 ? server : undefined,
         networkData,
-        error: networkResult.status !== 0 ? (STATUS_MESSAGES[networkResult.status] || '网络解码失败') : undefined,
+        error:
+          networkResult.status !== 0
+            ? STATUS_MESSAGES[networkResult.status] || '网络解码失败'
+            : undefined
       }
     } catch (err) {
       logger.error('[homeBuild] Unexpected error:', err)
       return { success: false, error: err instanceof Error ? err.message : '未知错误' }
     } finally {
       if (shareCode) {
-        try { fns_get().freeHomeBuildShareCode(shareCode) } catch { /* ignore */ }
+        try {
+          fns_get().freeHomeBuildShareCode(shareCode)
+        } catch {
+          /* ignore */
+        }
       }
     }
   })
@@ -998,7 +1199,11 @@ function fns_get(): BoundFunctions {
 
 export function disposeDecryptionService(): void {
   if (lib) {
-    try { lib.unload() } catch { /* ignore */ }
+    try {
+      lib.unload()
+    } catch {
+      /* ignore */
+    }
     lib = null
     boundFns = null
     logger.info('[decryption] DLL unloaded')

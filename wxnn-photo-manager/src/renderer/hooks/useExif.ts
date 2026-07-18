@@ -25,7 +25,10 @@ export interface UseExifResult {
  * 文件路径变化时自动重新加载
  * 视频文件不加载 EXIF（exifr 主要面向图片）
  */
-export function useExif(filePath: string | null | undefined, enabled: boolean = true): UseExifResult {
+export function useExif(
+  filePath: string | null | undefined,
+  enabled: boolean = true
+): UseExifResult {
   const [exif, setExif] = useState<ExifData | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -40,7 +43,8 @@ export function useExif(filePath: string | null | undefined, enabled: boolean = 
     let cancelled = false
     setLoading(true)
     setError(null)
-    window.electronAPI?.file?.getExif(filePath)
+    window.electronAPI?.file
+      ?.getExif(filePath)
       .then((data) => {
         if (cancelled) return
         setExif(data || null)

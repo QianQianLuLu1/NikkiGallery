@@ -1,6 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { useAutoAnimate } from '@formkit/auto-animate/react'
-import { IconDelete, IconExport, IconMove, IconWatermark, IconClose, IconSelectAll, IconInvertSelection, IconCategory, IconShare, IconRename } from '../../icons'
+import {
+  IconDelete,
+  IconExport,
+  IconMove,
+  IconWatermark,
+  IconClose,
+  IconSelectAll,
+  IconInvertSelection,
+  IconCategory,
+  IconShare,
+  IconRename
+} from '../../icons'
 import { ShareMenuButton } from '../common/ShareMenuButton'
 import type { ShareChannelId } from '../common/ShareGuideDialog'
 
@@ -57,30 +68,50 @@ export const BatchActions: React.FC<BatchActionsProps> = ({
       role="toolbar"
       aria-label="批量操作"
     >
-      <span className="text-sm font-medium px-2" style={{ color: 'var(--text-primary)' }}>
+      <span
+        className="text-sm font-medium px-2 whitespace-nowrap flex-shrink-0"
+        style={{ color: 'var(--text-primary)' }}
+      >
         {count} / {total} 项已选择
       </span>
-      <div className="w-px h-5 mx-1" style={{ background: 'var(--divider)' }} />
-      <button className="icon-btn text-sm px-3 w-auto gap-1" onClick={onSelectAll} aria-label="全选">
+      <div className="w-px h-5 mx-1 flex-shrink-0" style={{ background: 'var(--divider)' }} />
+      <button
+        className="icon-btn text-sm px-3 w-auto gap-1 whitespace-nowrap flex-shrink-0"
+        onClick={onSelectAll}
+        aria-label="全选"
+      >
         <IconSelectAll size={14} />
         全选
       </button>
-      <button className="icon-btn text-sm px-3 w-auto gap-1" onClick={onInvertSelection} aria-label="反选">
+      <button
+        className="icon-btn text-sm px-3 w-auto gap-1 whitespace-nowrap flex-shrink-0"
+        onClick={onInvertSelection}
+        aria-label="反选"
+      >
         <IconInvertSelection size={14} />
         反选
       </button>
-      <div className="w-px h-5 mx-1" style={{ background: 'var(--divider)' }} />
-      <button className="icon-btn text-sm px-3 w-auto gap-1" onClick={onDelete} aria-label="删除">
+      <div className="w-px h-5 mx-1 flex-shrink-0" style={{ background: 'var(--divider)' }} />
+      <button
+        className="icon-btn text-sm px-3 w-auto gap-1 whitespace-nowrap flex-shrink-0"
+        onClick={onDelete}
+        aria-label="删除"
+      >
         <IconDelete size={14} />
         删除
       </button>
-      <button className="icon-btn text-sm px-3 w-auto gap-1" onClick={onExport} aria-label="导出" title="选择目录导出">
+      <button
+        className="icon-btn text-sm px-3 w-auto gap-1 whitespace-nowrap flex-shrink-0"
+        onClick={onExport}
+        aria-label="导出"
+        title="选择目录导出"
+      >
         <IconExport size={14} />
         导出
       </button>
       {onExportToDefault && (
         <button
-          className="icon-btn text-sm px-3 w-auto gap-1"
+          className="icon-btn text-sm px-3 w-auto gap-1 whitespace-nowrap flex-shrink-0"
           onClick={onExportToDefault}
           aria-label="导出到默认文件夹"
           title="一键导出到默认文件夹（按命名规则自动重命名）"
@@ -90,22 +121,39 @@ export const BatchActions: React.FC<BatchActionsProps> = ({
           导出到默认
         </button>
       )}
-      <button className="icon-btn text-sm px-3 w-auto gap-1" onClick={onMove} aria-label="移动">
+      <button
+        className="icon-btn text-sm px-3 w-auto gap-1 whitespace-nowrap flex-shrink-0"
+        onClick={onMove}
+        aria-label="移动"
+      >
         <IconMove size={14} />
         移动
       </button>
-      <button className="icon-btn text-sm px-3 w-auto gap-1" onClick={onWatermark} aria-label="水印">
+      <button
+        className="icon-btn text-sm px-3 w-auto gap-1 whitespace-nowrap flex-shrink-0"
+        onClick={onWatermark}
+        aria-label="水印"
+      >
         <IconWatermark size={14} />
         水印
       </button>
       {onBatchRename && (
-        <button className="icon-btn text-sm px-3 w-auto gap-1" onClick={onBatchRename} aria-label="批量重命名" title="批量重命名">
+        <button
+          className="icon-btn text-sm px-3 w-auto gap-1 whitespace-nowrap flex-shrink-0"
+          onClick={onBatchRename}
+          aria-label="批量重命名"
+          title="批量重命名"
+        >
           <IconRename size={14} />
           重命名
         </button>
       )}
       {onCategorize && (
-        <button className="icon-btn text-sm px-3 w-auto gap-1" onClick={onCategorize} aria-label="分类">
+        <button
+          className="icon-btn text-sm px-3 w-auto gap-1 whitespace-nowrap flex-shrink-0"
+          onClick={onCategorize}
+          aria-label="分类"
+        >
           <IconCategory size={14} />
           分类
         </button>
@@ -115,16 +163,25 @@ export const BatchActions: React.FC<BatchActionsProps> = ({
         <ProfileTransferMenu profiles={profiles} onSelect={onTransferToProfile} />
       )}
       {onShareClipboard && (
-        <ShareMenuButton onSelect={onShareClipboard} label="分享" title="复制到剪贴板并分享到微信/QQ/vivo" />
+        <ShareMenuButton
+          onSelect={onShareClipboard}
+          label="分享"
+          title="复制到剪贴板并分享到微信/QQ/vivo"
+        />
       )}
       {onShareWifi && (
-        <button className="icon-btn text-sm px-3 w-auto gap-1" onClick={onShareWifi} aria-label="WiFi 分享" title="WiFi 局域网分享">
+        <button
+          className="icon-btn text-sm px-3 w-auto gap-1 whitespace-nowrap flex-shrink-0"
+          onClick={onShareWifi}
+          aria-label="WiFi 分享"
+          title="WiFi 局域网分享"
+        >
           <IconShare size={14} />
           WiFi 分享
         </button>
       )}
-      <div className="w-px h-5 mx-1" style={{ background: 'var(--divider)' }} />
-      <button className="icon-btn" onClick={onClear} aria-label="清除选择">
+      <div className="w-px h-5 mx-1 flex-shrink-0" style={{ background: 'var(--divider)' }} />
+      <button className="icon-btn flex-shrink-0" onClick={onClear} aria-label="清除选择">
         <IconClose size={14} />
       </button>
     </div>
@@ -188,7 +245,9 @@ const ProfileTransferMenu: React.FC<{
             >
               <IconCategory size={14} />
               <span className="truncate">{p.nickname}</span>
-              <span className="ml-auto text-xs" style={{ color: 'var(--text-tertiary)' }}>{p.uid}</span>
+              <span className="ml-auto text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                {p.uid}
+              </span>
             </button>
           ))}
         </div>

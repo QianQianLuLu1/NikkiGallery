@@ -4,7 +4,12 @@ import { useUIStore } from '../stores/uiStore'
 import { useMediaStore, toFileUrl } from '../stores/mediaStore'
 import { Histogram } from '../components/editor/Histogram'
 import { useImageProcessor } from '../hooks/useImageProcessor'
-import { processImageData, imageToDataUrl, type FilterPreset, type FilterParams } from '../utils/imageProcessor'
+import {
+  processImageData,
+  imageToDataUrl,
+  type FilterPreset,
+  type FilterParams
+} from '../utils/imageProcessor'
 import { mergeFilterParams } from '../utils/filter'
 import { useEditHistory, type AdjustmentState } from '../hooks/useEditHistory'
 // P0-C1：编辑保存后清理游戏参数缓存，避免显示旧 EXIF/参数
@@ -30,14 +35,15 @@ export const EditorPage: React.FC = () => {
 
   // F-S7 批量编辑：选中的图片（排除当前编辑的图片和视频）
   const batchApplyTargets = useMemo(() => {
-    return mediaFiles.filter((f) =>
-      selectedMediaIds.includes(f.id) &&
-      f.id !== selectedMediaId &&
-      f.file_type === 'image'
+    return mediaFiles.filter(
+      (f) => selectedMediaIds.includes(f.id) && f.id !== selectedMediaId && f.file_type === 'image'
     )
   }, [mediaFiles, selectedMediaIds, selectedMediaId])
 
-  const sourceUrl = useMemo(() => (media && media.file_type === 'image' ? toFileUrl(media.file_path) : null), [media])
+  const sourceUrl = useMemo(
+    () => (media && media.file_type === 'image' ? toFileUrl(media.file_path) : null),
+    [media]
+  )
 
   const {
     loading,
@@ -98,12 +104,15 @@ export const EditorPage: React.FC = () => {
     }
   }, [])
 
-  const applyHistoryState = useCallback((state: AdjustmentState) => {
-    setParams(state.params)
-    setFilter(state.filter)
-    setFilterIntensity(state.filterIntensity)
-    setWatermark(state.watermark)
-  }, [setParams, setFilter, setFilterIntensity, setWatermark])
+  const applyHistoryState = useCallback(
+    (state: AdjustmentState) => {
+      setParams(state.params)
+      setFilter(state.filter)
+      setFilterIntensity(state.filterIntensity)
+      setWatermark(state.watermark)
+    },
+    [setParams, setFilter, setFilterIntensity, setWatermark]
+  )
 
   // C-O11：initialState 改用 ref 持有最新值
   // 原实现 useMemo([]) 空依赖导致 initialState 永远是首次渲染的快照，
@@ -121,10 +130,13 @@ export const EditorPage: React.FC = () => {
   }, [params, filter, filterIntensity, watermark])
 
   // useEditHistory 只在首次挂载时初始化，传入稳定的空对象避免引用变化触发重初始化
-  const { pushHistory: pushHistoryToStack, undo, redo, canUndo, canRedo } = useEditHistory(
-    initialStateRef.current,
-    applyHistoryState
-  )
+  const {
+    pushHistory: pushHistoryToStack,
+    undo,
+    redo,
+    canUndo,
+    canRedo
+  } = useEditHistory(initialStateRef.current, applyHistoryState)
 
   const pushHistory = useCallback(() => {
     pushHistoryToStack({ params: { ...params }, filter, filterIntensity, watermark })
@@ -191,11 +203,14 @@ export const EditorPage: React.FC = () => {
       } else {
         // F-B2：IPC 返回失败时，暂存 dataUrl 到 localStorage 供下次恢复
         try {
-          localStorage.setItem('editor-failed-save', JSON.stringify({
-            dataUrl,
-            fileName: media.file_name,
-            timestamp: Date.now()
-          }))
+          localStorage.setItem(
+            'editor-failed-save',
+            JSON.stringify({
+              dataUrl,
+              fileName: media.file_name,
+              timestamp: Date.now()
+            })
+          )
           showMessage(t('editor.recover.stored'), 'info')
         } catch {
           // localStorage quota 超限（dataUrl 过大）
@@ -249,7 +264,10 @@ export const EditorPage: React.FC = () => {
       }
       const result = await window.electronAPI.editor.exportPresetToFile(preset)
       if (result.canceled) return
-      showMessage(result.success ? '预设导出成功' : (result.message || '预设导出失败'), result.success ? 'success' : 'error')
+      showMessage(
+        result.success ? '预设导出成功' : result.message || '预设导出失败',
+        result.success ? 'success' : 'error'
+      )
     } catch (error) {
       showMessage(error instanceof Error ? error.message : '预设导出失败', 'error')
     }
@@ -267,7 +285,11 @@ export const EditorPage: React.FC = () => {
         showMessage(result.message || '预设导入失败', 'error')
         return
       }
-      const imported = result.preset as { name: string; category: string; params: Partial<FilterParams> }
+      const imported = result.preset as {
+        name: string
+        category: string
+        params: Partial<FilterParams>
+      }
       const newPreset: FilterPreset = {
         id: `imported-${Date.now()}`,
         name: imported.name || '导入预设',
@@ -307,10 +329,13 @@ export const EditorPage: React.FC = () => {
     }
   }, [presetName, filter, params, showMessage])
 
-  const handleApplyFilterPreset = useCallback((preset: FilterPreset) => {
-    applyFilterPreset(preset)
-    pushHistory()
-  }, [applyFilterPreset, pushHistory])
+  const handleApplyFilterPreset = useCallback(
+    (preset: FilterPreset) => {
+      applyFilterPreset(preset)
+      pushHistory()
+    },
+    [applyFilterPreset, pushHistory]
+  )
 
   // F-S7 批量编辑：将当前调整/滤镜/水印应用到选中的图片
   // 逐张加载图片 → 应用 processImageData → 导出 dataUrl → 调用 editor:save（含原图备份机制）
@@ -361,7 +386,10 @@ export const EditorPage: React.FC = () => {
           params: paramsJson
         })
         if (result.success) successCount++
-        else { failedCount++; console.warn(`[BatchApply] 保存失败: ${target.file_name}`, result.message) }
+        else {
+          failedCount++
+          console.warn(`[BatchApply] 保存失败: ${target.file_name}`, result.message)
+        }
       } catch (err) {
         failedCount++
         console.warn(`[BatchApply] 处理失败: ${target.file_name}`, err)
@@ -422,30 +450,40 @@ export const EditorPage: React.FC = () => {
     showMessage(t('editor.recover.discarded'), 'info')
   }, [showMessage, t])
 
-  const shortcutOptions = useMemo(() => ({
-    onUndo: undo,
-    onRedo: redo,
-    onSave: handleSave,
-    onSaveAs: handleSaveAs,
-    onReset: handleReset,
-    onCopyParams: handleCopyParams,
-    onPasteParams: handlePasteParams,
-    onToggleFullscreen: () => setIsFullscreen((prev) => !prev),
-    onToggleShortcuts: () => setShowShortcuts((prev) => !prev),
-    onExit: () => navigateTo('detail'),
-    isFullscreen,
-    showShortcuts
-  }), [undo, redo, handleSave, handleSaveAs, handleReset, handleCopyParams, handlePasteParams, navigateTo, isFullscreen, showShortcuts])
+  const shortcutOptions = useMemo(
+    () => ({
+      onUndo: undo,
+      onRedo: redo,
+      onSave: handleSave,
+      onSaveAs: handleSaveAs,
+      onReset: handleReset,
+      onCopyParams: handleCopyParams,
+      onPasteParams: handlePasteParams,
+      onToggleFullscreen: () => setIsFullscreen((prev) => !prev),
+      onToggleShortcuts: () => setShowShortcuts((prev) => !prev),
+      onExit: () => navigateTo('detail'),
+      isFullscreen,
+      showShortcuts
+    }),
+    [
+      undo,
+      redo,
+      handleSave,
+      handleSaveAs,
+      handleReset,
+      handleCopyParams,
+      handlePasteParams,
+      navigateTo,
+      isFullscreen,
+      showShortcuts
+    ]
+  )
 
   useEditorShortcuts(shortcutOptions)
 
   if (!media) {
     return (
-      <EmptyState
-        title="未选择媒体文件"
-        ctaLabel="返回图库"
-        onCta={() => navigateTo('gallery')}
-      />
+      <EmptyState title="未选择媒体文件" ctaLabel="返回图库" onCta={() => navigateTo('gallery')} />
     )
   }
 
@@ -455,7 +493,10 @@ export const EditorPage: React.FC = () => {
   }
 
   return (
-    <div className={`h-full flex gap-4 ${isFullscreen ? 'fixed inset-0 z-50 p-4' : ''}`} style={isFullscreen ? { background: 'var(--bg-primary)' } : undefined}>
+    <div
+      className={`h-full flex gap-4 ${isFullscreen ? 'fixed inset-0 z-50 p-4' : ''}`}
+      style={isFullscreen ? { background: 'var(--bg-primary)' } : undefined}
+    >
       {/* 左侧预览区 */}
       <div className="flex-1 flex flex-col min-w-0">
         <EditorToolbar
@@ -485,10 +526,19 @@ export const EditorPage: React.FC = () => {
 
         <Histogram imageSrc={previewUrl} className="mb-3" />
 
-        <div className="flex-1 flex items-center justify-center relative overflow-hidden rounded-2xl" style={{ background: 'var(--bg-tertiary)' }}>
+        <div
+          className="flex-1 flex items-center justify-center relative overflow-hidden rounded-2xl"
+          style={{ background: 'var(--bg-tertiary)' }}
+        >
           {loading && (
-            <div className="absolute inset-0 flex items-center justify-center z-10" style={{ background: 'var(--bg-tertiary)' }}>
-              <div className="w-8 h-8 border-2 border-current border-t-transparent rounded-full animate-spin" style={{ color: 'var(--accent)' }} />
+            <div
+              className="absolute inset-0 flex items-center justify-center z-10"
+              style={{ background: 'var(--bg-tertiary)' }}
+            >
+              <div
+                className="w-8 h-8 border-2 border-current border-t-transparent rounded-full animate-spin"
+                style={{ color: 'var(--accent)' }}
+              />
             </div>
           )}
           {previewUrl && (
@@ -531,7 +581,6 @@ export const EditorPage: React.FC = () => {
         />
       )}
 
-
       {showShortcuts && <ShortcutsModal onClose={() => setShowShortcuts(false)} />}
 
       <BatchApplyDialog
@@ -539,7 +588,10 @@ export const EditorPage: React.FC = () => {
         progress={batchProgress}
         done={batchDone}
         message={batchMessage}
-        onClose={() => { setBatchDone(false); setBatchMessage('') }}
+        onClose={() => {
+          setBatchDone(false)
+          setBatchMessage('')
+        }}
       />
 
       <ConfirmDialog
@@ -547,7 +599,10 @@ export const EditorPage: React.FC = () => {
         title="批量应用编辑参数"
         message={`将当前调整/滤镜/水印应用到选中的 ${batchApplyTargets.length} 张图片。每张图片保存前会自动备份原图，可在编辑历史中回退。确定要继续吗？`}
         confirmText="开始应用"
-        onConfirm={() => { setBatchApplyConfirm(false); performBatchApply() }}
+        onConfirm={() => {
+          setBatchApplyConfirm(false)
+          performBatchApply()
+        }}
         onCancel={() => setBatchApplyConfirm(false)}
       />
 
@@ -555,10 +610,14 @@ export const EditorPage: React.FC = () => {
       <ConfirmDialog
         open={!!recoverData}
         title={t('editor.recover.title')}
-        message={recoverData ? t('editor.recover.message', {
-          fileName: recoverData.fileName,
-          time: new Date(recoverData.timestamp).toLocaleString()
-        }) : ''}
+        message={
+          recoverData
+            ? t('editor.recover.message', {
+                fileName: recoverData.fileName,
+                time: new Date(recoverData.timestamp).toLocaleString()
+              })
+            : ''
+        }
         confirmText={t('editor.recover.download')}
         cancelText={t('editor.recover.discard')}
         onConfirm={handleRecoverDownload}
@@ -582,12 +641,7 @@ const ZoomablePreview: React.FC<ZoomablePreviewProps> = ({ src, alt }) => {
       resetVariant="text"
       containerClassName="flex items-center justify-center w-full h-full overflow-hidden relative"
     >
-      <img
-        src={src}
-        alt={alt}
-        className="max-w-full max-h-full object-contain"
-        draggable={false}
-      />
+      <img src={src} alt={alt} className="max-w-full max-h-full object-contain" draggable={false} />
     </ZoomableContainer>
   )
 }

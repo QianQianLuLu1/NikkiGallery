@@ -29,30 +29,32 @@ function loadKeys(filename: string): Set<string> {
 
 function main(): void {
   const baselineKeys = loadKeys(BASELINE)
-  const localeFiles = fs.readdirSync(LOCALES_DIR).filter(f => f.endsWith('.json') && f !== BASELINE)
-  
+  const localeFiles = fs
+    .readdirSync(LOCALES_DIR)
+    .filter((f) => f.endsWith('.json') && f !== BASELINE)
+
   let hasError = false
   for (const file of localeFiles) {
     const fileKeys = loadKeys(file)
-    const missing = [...baselineKeys].filter(k => !fileKeys.has(k))
-    const extra = [...fileKeys].filter(k => !baselineKeys.has(k))
-    
+    const missing = [...baselineKeys].filter((k) => !fileKeys.has(k))
+    const extra = [...fileKeys].filter((k) => !baselineKeys.has(k))
+
     if (missing.length > 0 || extra.length > 0) {
       hasError = true
       console.error(`\n[${file}] key 对齐失败：`)
       if (missing.length > 0) {
         console.error(`  缺失 ${missing.length} 个 key：`)
-        missing.forEach(k => console.error(`    - ${k}`))
+        missing.forEach((k) => console.error(`    - ${k}`))
       }
       if (extra.length > 0) {
         console.error(`  多余 ${extra.length} 个 key：`)
-        extra.forEach(k => console.error(`    - ${k}`))
+        extra.forEach((k) => console.error(`    - ${k}`))
       }
     } else {
       console.log(`[${file}] key 对齐成功 (${fileKeys.size} keys)`)
     }
   }
-  
+
   if (hasError) {
     console.error('\n❌ i18n key 对齐校验失败，请补齐缺失的 key')
     process.exit(1)

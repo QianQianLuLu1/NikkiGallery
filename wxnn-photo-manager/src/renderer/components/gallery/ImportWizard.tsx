@@ -55,7 +55,10 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({ open, onClose }) => 
   const [conflictStrategy, setConflictStrategy] = useState<ImportConflictStrategy>('rename')
   const [loading, setLoading] = useState(false)
   const [importing, setImporting] = useState(false)
-  const [progress, setProgress] = useState<{ current: number; total: number }>({ current: 0, total: 0 })
+  const [progress, setProgress] = useState<{ current: number; total: number }>({
+    current: 0,
+    total: 0
+  })
   const [result, setResult] = useState<{
     imported: Array<{ sourcePath: string; targetPath: string }>
     failed: Array<{ sourcePath: string; message: string }>
@@ -117,7 +120,7 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({ open, onClose }) => 
       if (res?.success && Array.isArray(res.files)) {
         setPreviewFiles(res.files)
         // 默认全选
-        setSelectedPaths(new Set(res.files.map(f => f.sourcePath)))
+        setSelectedPaths(new Set(res.files.map((f) => f.sourcePath)))
       } else {
         setPreviewFiles([])
         setError(res?.message || '无法读取源目录')
@@ -130,7 +133,7 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({ open, onClose }) => 
   }, [])
 
   const toggleSelect = (path: string) => {
-    setSelectedPaths(prev => {
+    setSelectedPaths((prev) => {
       const next = new Set(prev)
       if (next.has(path)) next.delete(path)
       else next.add(path)
@@ -142,13 +145,13 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({ open, onClose }) => 
     if (selectedPaths.size === previewFiles.length) {
       setSelectedPaths(new Set())
     } else {
-      setSelectedPaths(new Set(previewFiles.map(f => f.sourcePath)))
+      setSelectedPaths(new Set(previewFiles.map((f) => f.sourcePath)))
     }
   }
 
   const totalSize = useMemo(() => {
     return previewFiles
-      .filter(f => selectedPaths.has(f.sourcePath))
+      .filter((f) => selectedPaths.has(f.sourcePath))
       .reduce((sum, f) => sum + f.size, 0)
   }, [previewFiles, selectedPaths])
 
@@ -159,11 +162,11 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({ open, onClose }) => 
     setResult(null)
     setProgress({ current: 0, total: selectedPaths.size })
     try {
-      const res = await window.electronAPI.import.run(
-        Array.from(selectedPaths),
-        targetDir,
-        { namingRule, categorize, conflictStrategy }
-      )
+      const res = await window.electronAPI.import.run(Array.from(selectedPaths), targetDir, {
+        namingRule,
+        categorize,
+        conflictStrategy
+      })
       if (res) {
         setResult({
           imported: res.imported || [],
@@ -200,7 +203,11 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({ open, onClose }) => 
         {/* 标题与步骤指示 */}
         <div className="flex items-center justify-between">
           <div>
-            <h3 id="import-wizard-title" className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
+            <h3
+              id="import-wizard-title"
+              className="text-lg font-semibold"
+              style={{ color: 'var(--text-primary)' }}
+            >
               文件导入向导
             </h3>
             <p className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>
@@ -228,10 +235,13 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({ open, onClose }) => 
         </div>
 
         {error && (
-          <div className="p-3 rounded-lg text-xs" style={{
-            background: 'var(--danger-bg)',
-            color: 'var(--danger-hover)'
-          }}>
+          <div
+            className="p-3 rounded-lg text-xs"
+            style={{
+              background: 'var(--danger-bg)',
+              color: 'var(--danger-hover)'
+            }}
+          >
             {error}
           </div>
         )}
@@ -269,26 +279,38 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({ open, onClose }) => 
 
             {loading && (
               <div className="py-8 text-center">
-                <div className="text-sm" style={{ color: 'var(--text-tertiary)' }}>正在扫描源目录…</div>
+                <div className="text-sm" style={{ color: 'var(--text-tertiary)' }}>
+                  正在扫描源目录…
+                </div>
               </div>
             )}
 
             {previewFiles.length > 0 && (
-              <div className="p-3 rounded-lg space-y-2" style={{ background: 'var(--bg-tertiary)' }}>
+              <div
+                className="p-3 rounded-lg space-y-2"
+                style={{ background: 'var(--bg-tertiary)' }}
+              >
                 <div className="flex items-center justify-between text-xs">
                   <span style={{ color: 'var(--text-secondary)' }}>扫描结果</span>
                   <span style={{ color: 'var(--text-tertiary)' }}>
-                    共 {previewFiles.length} 个媒体文件，总大小 {formatSize(previewFiles.reduce((s, f) => s + f.size, 0))}
+                    共 {previewFiles.length} 个媒体文件，总大小{' '}
+                    {formatSize(previewFiles.reduce((s, f) => s + f.size, 0))}
                   </span>
                 </div>
                 <div className="flex gap-3 text-xs">
-                  <span className="flex items-center gap-1" style={{ color: 'var(--text-primary)' }}>
+                  <span
+                    className="flex items-center gap-1"
+                    style={{ color: 'var(--text-primary)' }}
+                  >
                     <IconImage size={14} />
-                    {previewFiles.filter(f => !f.isVideo).length} 张图片
+                    {previewFiles.filter((f) => !f.isVideo).length} 张图片
                   </span>
-                  <span className="flex items-center gap-1" style={{ color: 'var(--text-primary)' }}>
+                  <span
+                    className="flex items-center gap-1"
+                    style={{ color: 'var(--text-primary)' }}
+                  >
                     <IconVideo size={14} />
-                    {previewFiles.filter(f => f.isVideo).length} 个视频
+                    {previewFiles.filter((f) => f.isVideo).length} 个视频
                   </span>
                 </div>
               </div>
@@ -307,7 +329,10 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({ open, onClose }) => 
                 {selectedPaths.size === previewFiles.length ? '取消全选' : '全选'}
               </button>
             </div>
-            <div className="border rounded-lg max-h-[300px] overflow-y-auto" style={{ borderColor: 'var(--divider)' }}>
+            <div
+              className="border rounded-lg max-h-[300px] overflow-y-auto"
+              style={{ borderColor: 'var(--divider)' }}
+            >
               {previewFiles.map((file) => {
                 const checked = selectedPaths.has(file.sourcePath)
                 return (
@@ -329,7 +354,11 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({ open, onClose }) => 
                       {file.isVideo ? <IconVideo size={16} /> : <IconImage size={16} />}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-xs font-mono truncate" style={{ color: 'var(--text-primary)' }} title={file.fileName}>
+                      <div
+                        className="text-xs font-mono truncate"
+                        style={{ color: 'var(--text-primary)' }}
+                        title={file.fileName}
+                      >
                         {file.fileName}
                       </div>
                       <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
@@ -351,9 +380,14 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({ open, onClose }) => 
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
                   <span style={{ color: 'var(--text-secondary)' }}>正在导入…</span>
-                  <span style={{ color: 'var(--text-tertiary)' }}>{progress.current} / {progress.total}</span>
+                  <span style={{ color: 'var(--text-tertiary)' }}>
+                    {progress.current} / {progress.total}
+                  </span>
                 </div>
-                <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--bg-tertiary)' }}>
+                <div
+                  className="h-2 rounded-full overflow-hidden"
+                  style={{ background: 'var(--bg-tertiary)' }}
+                >
                   <div
                     className="h-full transition-all"
                     style={{
@@ -368,17 +402,38 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({ open, onClose }) => 
             {/* 导入结果 */}
             {result && (
               <div className="grid grid-cols-3 gap-2">
-                <div className="p-3 rounded-lg text-center" style={{ background: 'rgba(34, 197, 94, 0.12)' }}>
-                  <div className="text-lg font-semibold" style={{ color: 'var(--success-deep)' }}>{result.imported.length}</div>
-                  <div className="text-xs mt-0.5" style={{ color: 'var(--text-tertiary)' }}>成功导入</div>
+                <div
+                  className="p-3 rounded-lg text-center"
+                  style={{ background: 'rgba(34, 197, 94, 0.12)' }}
+                >
+                  <div className="text-lg font-semibold" style={{ color: 'var(--success-deep)' }}>
+                    {result.imported.length}
+                  </div>
+                  <div className="text-xs mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
+                    成功导入
+                  </div>
                 </div>
-                <div className="p-3 rounded-lg text-center" style={{ background: 'rgba(234, 88, 12, 0.12)' }}>
-                  <div className="text-lg font-semibold" style={{ color: '#ea580c' }}>{result.skipped.length}</div>
-                  <div className="text-xs mt-0.5" style={{ color: 'var(--text-tertiary)' }}>跳过</div>
+                <div
+                  className="p-3 rounded-lg text-center"
+                  style={{ background: 'rgba(234, 88, 12, 0.12)' }}
+                >
+                  <div className="text-lg font-semibold" style={{ color: '#ea580c' }}>
+                    {result.skipped.length}
+                  </div>
+                  <div className="text-xs mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
+                    跳过
+                  </div>
                 </div>
-                <div className="p-3 rounded-lg text-center" style={{ background: 'var(--danger-bg)' }}>
-                  <div className="text-lg font-semibold" style={{ color: 'var(--danger-hover)' }}>{result.failed.length}</div>
-                  <div className="text-xs mt-0.5" style={{ color: 'var(--text-tertiary)' }}>失败</div>
+                <div
+                  className="p-3 rounded-lg text-center"
+                  style={{ background: 'var(--danger-bg)' }}
+                >
+                  <div className="text-lg font-semibold" style={{ color: 'var(--danger-hover)' }}>
+                    {result.failed.length}
+                  </div>
+                  <div className="text-xs mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
+                    失败
+                  </div>
                 </div>
               </div>
             )}
@@ -405,7 +460,10 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({ open, onClose }) => 
                         color: 'var(--text-primary)'
                       }}
                     />
-                    <button className="btn-secondary text-xs px-3 py-1.5" onClick={handleSelectTarget}>
+                    <button
+                      className="btn-secondary text-xs px-3 py-1.5"
+                      onClick={handleSelectTarget}
+                    >
                       浏览
                     </button>
                   </div>
@@ -417,18 +475,26 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({ open, onClose }) => 
                     命名规则
                   </label>
                   <div className="grid grid-cols-3 gap-2">
-                    {NAMING_OPTIONS.map(opt => (
+                    {NAMING_OPTIONS.map((opt) => (
                       <button
                         key={opt.id}
                         onClick={() => setNamingRule(opt.id)}
                         className="p-2 rounded-lg text-left transition-all"
                         style={{
                           border: `1px solid ${namingRule === opt.id ? 'var(--accent)' : 'var(--divider)'}`,
-                          background: namingRule === opt.id ? 'rgba(255, 184, 0, 0.08)' : 'var(--bg-tertiary)'
+                          background:
+                            namingRule === opt.id ? 'rgba(255, 184, 0, 0.08)' : 'var(--bg-tertiary)'
                         }}
                       >
-                        <div className="text-xs font-medium" style={{ color: 'var(--text-primary)' }}>{opt.label}</div>
-                        <div className="text-xs mt-0.5" style={{ color: 'var(--text-tertiary)' }}>{opt.description}</div>
+                        <div
+                          className="text-xs font-medium"
+                          style={{ color: 'var(--text-primary)' }}
+                        >
+                          {opt.label}
+                        </div>
+                        <div className="text-xs mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
+                          {opt.description}
+                        </div>
                       </button>
                     ))}
                   </div>
@@ -440,18 +506,26 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({ open, onClose }) => 
                     目录分类
                   </label>
                   <div className="grid grid-cols-3 gap-2">
-                    {CATEGORIZE_OPTIONS.map(opt => (
+                    {CATEGORIZE_OPTIONS.map((opt) => (
                       <button
                         key={opt.id}
                         onClick={() => setCategorize(opt.id)}
                         className="p-2 rounded-lg text-left transition-all"
                         style={{
                           border: `1px solid ${categorize === opt.id ? 'var(--accent)' : 'var(--divider)'}`,
-                          background: categorize === opt.id ? 'rgba(255, 184, 0, 0.08)' : 'var(--bg-tertiary)'
+                          background:
+                            categorize === opt.id ? 'rgba(255, 184, 0, 0.08)' : 'var(--bg-tertiary)'
                         }}
                       >
-                        <div className="text-xs font-medium" style={{ color: 'var(--text-primary)' }}>{opt.label}</div>
-                        <div className="text-xs mt-0.5" style={{ color: 'var(--text-tertiary)' }}>{opt.description}</div>
+                        <div
+                          className="text-xs font-medium"
+                          style={{ color: 'var(--text-primary)' }}
+                        >
+                          {opt.label}
+                        </div>
+                        <div className="text-xs mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
+                          {opt.description}
+                        </div>
                       </button>
                     ))}
                   </div>
@@ -463,28 +537,43 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({ open, onClose }) => 
                     同名文件冲突处理
                   </label>
                   <div className="grid grid-cols-3 gap-2">
-                    {CONFLICT_OPTIONS.map(opt => (
+                    {CONFLICT_OPTIONS.map((opt) => (
                       <button
                         key={opt.id}
                         onClick={() => setConflictStrategy(opt.id)}
                         className="p-2 rounded-lg text-left transition-all"
                         style={{
                           border: `1px solid ${conflictStrategy === opt.id ? 'var(--accent)' : 'var(--divider)'}`,
-                          background: conflictStrategy === opt.id ? 'rgba(255, 184, 0, 0.08)' : 'var(--bg-tertiary)'
+                          background:
+                            conflictStrategy === opt.id
+                              ? 'rgba(255, 184, 0, 0.08)'
+                              : 'var(--bg-tertiary)'
                         }}
                       >
-                        <div className="text-xs font-medium" style={{ color: 'var(--text-primary)' }}>{opt.label}</div>
-                        <div className="text-xs mt-0.5" style={{ color: 'var(--text-tertiary)' }}>{opt.description}</div>
+                        <div
+                          className="text-xs font-medium"
+                          style={{ color: 'var(--text-primary)' }}
+                        >
+                          {opt.label}
+                        </div>
+                        <div className="text-xs mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
+                          {opt.description}
+                        </div>
                       </button>
                     ))}
                   </div>
                 </div>
 
                 {/* 摘要 */}
-                <div className="p-3 rounded-lg text-xs space-y-1" style={{ background: 'var(--bg-tertiary)' }}>
+                <div
+                  className="p-3 rounded-lg text-xs space-y-1"
+                  style={{ background: 'var(--bg-tertiary)' }}
+                >
                   <div className="flex justify-between">
                     <span style={{ color: 'var(--text-tertiary)' }}>待导入文件</span>
-                    <span style={{ color: 'var(--text-primary)' }}>{selectedPaths.size} 个（{formatSize(totalSize)}）</span>
+                    <span style={{ color: 'var(--text-primary)' }}>
+                      {selectedPaths.size} 个（{formatSize(totalSize)}）
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span style={{ color: 'var(--text-tertiary)' }}>磁盘空间预估</span>
@@ -497,7 +586,10 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({ open, onClose }) => 
         )}
 
         {/* 底部按钮 */}
-        <div className="flex items-center justify-between pt-2" style={{ borderTop: '1px solid var(--divider)' }}>
+        <div
+          className="flex items-center justify-between pt-2"
+          style={{ borderTop: '1px solid var(--divider)' }}
+        >
           <div className="flex gap-2">
             {step > 1 && !importing && !result && (
               <button

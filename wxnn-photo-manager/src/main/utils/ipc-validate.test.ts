@@ -48,8 +48,14 @@ describe('ipc-validate', () => {
   describe('validateFilePathArray', () => {
     it('非数组返回 invalid', () => {
       expect(validateFilePathArray(null)).toEqual({ valid: false, message: '参数必须是字符串数组' })
-      expect(validateFilePathArray(undefined)).toEqual({ valid: false, message: '参数必须是字符串数组' })
-      expect(validateFilePathArray('C:\\foo')).toEqual({ valid: false, message: '参数必须是字符串数组' })
+      expect(validateFilePathArray(undefined)).toEqual({
+        valid: false,
+        message: '参数必须是字符串数组'
+      })
+      expect(validateFilePathArray('C:\\foo')).toEqual({
+        valid: false,
+        message: '参数必须是字符串数组'
+      })
       expect(validateFilePathArray({})).toEqual({ valid: false, message: '参数必须是字符串数组' })
     })
 
@@ -125,7 +131,10 @@ describe('ipc-validate', () => {
 
   describe('validateFilePath', () => {
     it('非字符串返回 invalid', () => {
-      const expected = { valid: false, message: `路径必须是 1-${MAX_FILE_PATH_LENGTH} 字符的字符串` }
+      const expected = {
+        valid: false,
+        message: `路径必须是 1-${MAX_FILE_PATH_LENGTH} 字符的字符串`
+      }
       expect(validateFilePath(null)).toEqual(expected)
       expect(validateFilePath(undefined)).toEqual(expected)
       expect(validateFilePath(123)).toEqual(expected)
@@ -342,7 +351,10 @@ describe('ipc-validate', () => {
   describe('validateStringLength', () => {
     it('非字符串返回 invalid', () => {
       expect(validateStringLength(null)).toEqual({ valid: false, message: 'string 必须是字符串' })
-      expect(validateStringLength(undefined)).toEqual({ valid: false, message: 'string 必须是字符串' })
+      expect(validateStringLength(undefined)).toEqual({
+        valid: false,
+        message: 'string 必须是字符串'
+      })
       expect(validateStringLength(123)).toEqual({ valid: false, message: 'string 必须是字符串' })
     })
 
@@ -443,8 +455,14 @@ describe('ipc-validate', () => {
   describe('validateMediaIdArray', () => {
     it('非数组返回 invalid', () => {
       expect(validateMediaIdArray(null)).toEqual({ valid: false, message: 'mediaIds 必须是数组' })
-      expect(validateMediaIdArray(undefined)).toEqual({ valid: false, message: 'mediaIds 必须是数组' })
-      expect(validateMediaIdArray('1,2,3')).toEqual({ valid: false, message: 'mediaIds 必须是数组' })
+      expect(validateMediaIdArray(undefined)).toEqual({
+        valid: false,
+        message: 'mediaIds 必须是数组'
+      })
+      expect(validateMediaIdArray('1,2,3')).toEqual({
+        valid: false,
+        message: 'mediaIds 必须是数组'
+      })
     })
 
     it('空数组返回 invalid', () => {
@@ -761,15 +779,19 @@ describe('ipc-validate', () => {
     })
 
     it('合法预设返回 valid', () => {
-      expect(validateFilterPreset({
-        name: '风景',
-        category: 'scene',
-        params: { brightness: 0.5, tags: ['outdoor'] }
-      })).toEqual({ valid: true })
+      expect(
+        validateFilterPreset({
+          name: '风景',
+          category: 'scene',
+          params: { brightness: 0.5, tags: ['outdoor'] }
+        })
+      ).toEqual({ valid: true })
     })
 
     it('params 为空对象返回 valid', () => {
-      expect(validateFilterPreset({ name: 'a', category: 'b', params: {} })).toEqual({ valid: true })
+      expect(validateFilterPreset({ name: 'a', category: 'b', params: {} })).toEqual({
+        valid: true
+      })
     })
   })
 })

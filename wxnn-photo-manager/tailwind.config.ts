@@ -1,10 +1,7 @@
 import type { Config } from 'tailwindcss'
 
 const config: Config = {
-  content: [
-    "./src/renderer/**/*.{js,jsx,ts,tsx}",
-    "./src/renderer/index.html"
-  ],
+  content: ['./src/renderer/**/*.{js,jsx,ts,tsx}', './src/renderer/index.html'],
   theme: {
     extend: {
       colors: {
@@ -22,10 +19,10 @@ const config: Config = {
         divider: 'var(--divider)',
         danger: 'var(--danger)',
         'danger-hover': 'var(--danger-hover)',
-        success: 'var(--success)',
+        success: 'var(--success)'
       },
       transitionTimingFunction: {
-        'win11': 'cubic-bezier(0.4, 0, 0.2, 1)',
+        win11: 'cubic-bezier(0.4, 0, 0.2, 1)',
         'win11-decelerate': 'cubic-bezier(0.0, 0, 0.2, 1)'
       }
     }

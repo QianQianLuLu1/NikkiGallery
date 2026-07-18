@@ -14,9 +14,7 @@ interface ContainerSize {
  * @param ref 容器元素 ref（由调用方持有，用于 scrollTop 等其它用途）
  * @returns `{ width, height }`，初始 `{ 0, 0 }`，挂载后立即测量
  */
-export function useContainerSize<T extends HTMLElement>(
-  ref: React.RefObject<T>
-): ContainerSize {
+export function useContainerSize<T extends HTMLElement>(ref: React.RefObject<T>): ContainerSize {
   const [size, setSize] = useState<ContainerSize>({ width: 0, height: 0 })
 
   useEffect(() => {

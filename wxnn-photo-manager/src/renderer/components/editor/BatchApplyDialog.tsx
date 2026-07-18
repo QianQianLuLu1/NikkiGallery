@@ -15,7 +15,13 @@ interface BatchApplyDialogProps {
   onClose: () => void
 }
 
-export const BatchApplyDialog: React.FC<BatchApplyDialogProps> = ({ open, progress, done, message, onClose }) => {
+export const BatchApplyDialog: React.FC<BatchApplyDialogProps> = ({
+  open,
+  progress,
+  done,
+  message,
+  onClose
+}) => {
   const closeBtnRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
@@ -41,28 +47,46 @@ export const BatchApplyDialog: React.FC<BatchApplyDialogProps> = ({ open, progre
       style={{ background: 'var(--overlay-bg)' }}
     >
       <div className="glass-card p-6 w-full max-w-md mx-4 space-y-4 modal-enter">
-        <h3 id="batch-apply-title" className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
+        <h3
+          id="batch-apply-title"
+          className="text-lg font-semibold"
+          style={{ color: 'var(--text-primary)' }}
+        >
           批量应用编辑参数
         </h3>
 
         {!done && (
           <>
             <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm" style={{ color: 'var(--text-secondary)' }}>
-                <span>正在处理：{current} / {total}</span>
+              <div
+                className="flex items-center justify-between text-sm"
+                style={{ color: 'var(--text-secondary)' }}
+              >
+                <span>
+                  正在处理：{current} / {total}
+                </span>
                 <span style={{ color: 'var(--accent)' }}>{percent}%</span>
               </div>
-              <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: 'var(--bg-tertiary)' }}>
+              <div
+                className="w-full h-2 rounded-full overflow-hidden"
+                style={{ background: 'var(--bg-tertiary)' }}
+              >
                 <div
                   className="h-full transition-all duration-200"
                   style={{ width: `${percent}%`, background: 'var(--accent)' }}
                 />
               </div>
-              <p className="text-xs truncate" style={{ color: 'var(--text-tertiary)' }} title={progress?.currentFileName}>
+              <p
+                className="text-xs truncate"
+                style={{ color: 'var(--text-tertiary)' }}
+                title={progress?.currentFileName}
+              >
                 {progress?.currentFileName || '准备中...'}
               </p>
               {failedCount > 0 && (
-                <p className="text-xs" style={{ color: 'var(--danger)' }}>失败 {failedCount} 项</p>
+                <p className="text-xs" style={{ color: 'var(--danger)' }}>
+                  失败 {failedCount} 项
+                </p>
               )}
             </div>
             <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
@@ -73,9 +97,13 @@ export const BatchApplyDialog: React.FC<BatchApplyDialogProps> = ({ open, progre
 
         {done && (
           <>
-            <p className="text-sm whitespace-pre-line" style={{ color: 'var(--text-secondary)' }}>{message}</p>
+            <p className="text-sm whitespace-pre-line" style={{ color: 'var(--text-secondary)' }}>
+              {message}
+            </p>
             <div className="flex justify-end pt-2">
-              <button ref={closeBtnRef} className="btn-primary" onClick={onClose}>关闭</button>
+              <button ref={closeBtnRef} className="btn-primary" onClick={onClose}>
+                关闭
+              </button>
             </div>
           </>
         )}

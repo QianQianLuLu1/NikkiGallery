@@ -12,7 +12,7 @@ export const GeneralStartupSection: React.FC = () => {
   useEffect(() => {
     const load = async () => {
       if (!window.electronAPI) return
-      const a = await window.electronAPI.settings.get('autoScanOnStartup', true) as boolean
+      const a = (await window.electronAPI.settings.get('autoScanOnStartup', true)) as boolean
       setAutoScan(a)
     }
     load()
@@ -25,10 +25,18 @@ export const GeneralStartupSection: React.FC = () => {
   }
 
   return (
-    <SectionShell title={t('settings.sections.startup')} description={t('settings.startup.description')}>
+    <SectionShell
+      title={t('settings.sections.startup')}
+      description={t('settings.startup.description')}
+    >
       <label className="flex items-center justify-between cursor-pointer">
         <span style={{ color: 'var(--text-primary)' }}>{t('settings.startup.autoScan')}</span>
-        <input type="checkbox" checked={autoScan} onChange={(e) => saveAutoScan(e.target.checked)} className="w-5 h-5" />
+        <input
+          type="checkbox"
+          checked={autoScan}
+          onChange={(e) => saveAutoScan(e.target.checked)}
+          className="w-5 h-5"
+        />
       </label>
       <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
         {t('settings.startup.autoScanDesc')}
@@ -54,11 +62,21 @@ export const GeneralFileOpsSection: React.FC = () => {
   useEffect(() => {
     const load = async () => {
       if (!window.electronAPI) return
-      setDeleteConfirm(await window.electronAPI.settings.get('fileOps.deleteConfirm', true) as boolean)
-      setPermanentDeleteDoubleConfirm(await window.electronAPI.settings.get('fileOps.permanentDoubleConfirm', true) as boolean)
-      setBatchThreshold(await window.electronAPI.settings.get('fileOps.batchThreshold', 10) as number)
-      setBatchThresholdEnabled(await window.electronAPI.settings.get('fileOps.batchThresholdEnabled', true) as boolean)
-      setPreferSoftDelete(await window.electronAPI.settings.get('fileOps.preferSoftDelete', true) as boolean)
+      setDeleteConfirm(
+        (await window.electronAPI.settings.get('fileOps.deleteConfirm', true)) as boolean
+      )
+      setPermanentDeleteDoubleConfirm(
+        (await window.electronAPI.settings.get('fileOps.permanentDoubleConfirm', true)) as boolean
+      )
+      setBatchThreshold(
+        (await window.electronAPI.settings.get('fileOps.batchThreshold', 10)) as number
+      )
+      setBatchThresholdEnabled(
+        (await window.electronAPI.settings.get('fileOps.batchThresholdEnabled', true)) as boolean
+      )
+      setPreferSoftDelete(
+        (await window.electronAPI.settings.get('fileOps.preferSoftDelete', true)) as boolean
+      )
     }
     load()
   }, [])
@@ -69,19 +87,28 @@ export const GeneralFileOpsSection: React.FC = () => {
   }
 
   return (
-    <SectionShell title={t('settings.sections.fileops')} description={t('settings.fileops.description')}>
+    <SectionShell
+      title={t('settings.sections.fileops')}
+      description={t('settings.fileops.description')}
+    >
       {/* 删除前确认 */}
       <label className="flex items-center justify-between cursor-pointer">
         <div>
           <div style={{ color: 'var(--text-primary)' }}>{t('settings.fileops.deleteConfirm')}</div>
-          <div className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>{t('settings.fileops.deleteConfirmDesc')}</div>
+          <div className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>
+            {t('settings.fileops.deleteConfirmDesc')}
+          </div>
         </div>
         <input
           type="checkbox"
           checked={deleteConfirm}
           onChange={async (e) => {
             setDeleteConfirm(e.target.checked)
-            await updateSetting('fileOps.deleteConfirm', e.target.checked, e.target.checked ? t('toast.deleteConfirmOn') : t('toast.deleteConfirmOff'))
+            await updateSetting(
+              'fileOps.deleteConfirm',
+              e.target.checked,
+              e.target.checked ? t('toast.deleteConfirmOn') : t('toast.deleteConfirmOff')
+            )
           }}
           className="w-5 h-5"
         />
@@ -90,15 +117,25 @@ export const GeneralFileOpsSection: React.FC = () => {
       {/* 永久删除二次确认 */}
       <label className="flex items-center justify-between cursor-pointer">
         <div>
-          <div style={{ color: 'var(--text-primary)' }}>{t('settings.fileops.permanentDoubleConfirm')}</div>
-          <div className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>{t('settings.fileops.permanentDoubleConfirmDesc')}</div>
+          <div style={{ color: 'var(--text-primary)' }}>
+            {t('settings.fileops.permanentDoubleConfirm')}
+          </div>
+          <div className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>
+            {t('settings.fileops.permanentDoubleConfirmDesc')}
+          </div>
         </div>
         <input
           type="checkbox"
           checked={permanentDeleteDoubleConfirm}
           onChange={async (e) => {
             setPermanentDeleteDoubleConfirm(e.target.checked)
-            await updateSetting('fileOps.permanentDoubleConfirm', e.target.checked, e.target.checked ? t('toast.permanentDoubleConfirmOn') : t('toast.permanentDoubleConfirmOff'))
+            await updateSetting(
+              'fileOps.permanentDoubleConfirm',
+              e.target.checked,
+              e.target.checked
+                ? t('toast.permanentDoubleConfirmOn')
+                : t('toast.permanentDoubleConfirmOff')
+            )
           }}
           className="w-5 h-5"
         />
@@ -107,15 +144,23 @@ export const GeneralFileOpsSection: React.FC = () => {
       {/* 优先软删除 */}
       <label className="flex items-center justify-between cursor-pointer">
         <div>
-          <div style={{ color: 'var(--text-primary)' }}>{t('settings.fileops.preferSoftDelete')}</div>
-          <div className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>{t('settings.fileops.preferSoftDeleteDesc')}</div>
+          <div style={{ color: 'var(--text-primary)' }}>
+            {t('settings.fileops.preferSoftDelete')}
+          </div>
+          <div className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>
+            {t('settings.fileops.preferSoftDeleteDesc')}
+          </div>
         </div>
         <input
           type="checkbox"
           checked={preferSoftDelete}
           onChange={async (e) => {
             setPreferSoftDelete(e.target.checked)
-            await updateSetting('fileOps.preferSoftDelete', e.target.checked, e.target.checked ? t('toast.preferSoftDeleteOn') : t('toast.preferSoftDeleteOff'))
+            await updateSetting(
+              'fileOps.preferSoftDelete',
+              e.target.checked,
+              e.target.checked ? t('toast.preferSoftDeleteOn') : t('toast.preferSoftDeleteOff')
+            )
           }}
           className="w-5 h-5"
         />
@@ -125,22 +170,35 @@ export const GeneralFileOpsSection: React.FC = () => {
       <div className="space-y-2">
         <label className="flex items-center justify-between cursor-pointer">
           <div>
-            <div style={{ color: 'var(--text-primary)' }}>{t('settings.fileops.batchThreshold')}</div>
-            <div className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>{t('settings.fileops.batchThresholdDesc')}</div>
+            <div style={{ color: 'var(--text-primary)' }}>
+              {t('settings.fileops.batchThreshold')}
+            </div>
+            <div className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>
+              {t('settings.fileops.batchThresholdDesc')}
+            </div>
           </div>
           <input
             type="checkbox"
             checked={batchThresholdEnabled}
             onChange={async (e) => {
               setBatchThresholdEnabled(e.target.checked)
-              await updateSetting('fileOps.batchThresholdEnabled', e.target.checked, e.target.checked ? t('toast.batchThresholdOn') : t('toast.batchThresholdOff'))
+              await updateSetting(
+                'fileOps.batchThresholdEnabled',
+                e.target.checked,
+                e.target.checked ? t('toast.batchThresholdOn') : t('toast.batchThresholdOff')
+              )
             }}
             className="w-5 h-5"
           />
         </label>
         {batchThresholdEnabled && (
-          <div className="flex items-center gap-3 p-3 rounded-lg" style={{ background: 'var(--bg-tertiary)' }}>
-            <span className="text-sm flex-shrink-0" style={{ color: 'var(--text-secondary)' }}>{t('settings.fileops.thresholdCount')}</span>
+          <div
+            className="flex items-center gap-3 p-3 rounded-lg"
+            style={{ background: 'var(--bg-tertiary)' }}
+          >
+            <span className="text-sm flex-shrink-0" style={{ color: 'var(--text-secondary)' }}>
+              {t('settings.fileops.thresholdCount')}
+            </span>
             <input
               type="range"
               min={3}
@@ -149,11 +207,20 @@ export const GeneralFileOpsSection: React.FC = () => {
               value={batchThreshold}
               onChange={(e) => setBatchThreshold(Number(e.target.value))}
               onMouseUp={async () => {
-                await updateSetting('fileOps.batchThreshold', batchThreshold, t('toast.batchThresholdSet', { count: batchThreshold }))
+                await updateSetting(
+                  'fileOps.batchThreshold',
+                  batchThreshold,
+                  t('toast.batchThresholdSet', { count: batchThreshold })
+                )
               }}
               className="flex-1 accent-[var(--accent)]"
             />
-            <span className="text-sm font-mono w-12 text-right" style={{ color: 'var(--text-primary)' }}>{batchThreshold}</span>
+            <span
+              className="text-sm font-mono w-12 text-right"
+              style={{ color: 'var(--text-primary)' }}
+            >
+              {batchThreshold}
+            </span>
           </div>
         )}
       </div>
@@ -171,8 +238,8 @@ export const GeneralExportSection: React.FC = () => {
   useEffect(() => {
     const load = async () => {
       if (!window.electronAPI) return
-      const dir = await window.electronAPI.settings.get('export.defaultDir', '') as string
-      const pattern = await window.electronAPI.settings.get('export.namingPattern', '') as string
+      const dir = (await window.electronAPI.settings.get('export.defaultDir', '')) as string
+      const pattern = (await window.electronAPI.settings.get('export.namingPattern', '')) as string
       setDefaultDir(dir || '')
       setNamingPattern(pattern || '')
     }
@@ -204,17 +271,21 @@ export const GeneralExportSection: React.FC = () => {
     if (!namingPattern.trim()) return t('settings.export.previewEmpty')
     const date = new Date()
     const dateStr = `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getDate()).padStart(2, '0')}`
-    return namingPattern
-      .replace(/\{date\}/g, dateStr)
-      .replace(/\{album_type\}/g, '拍摄截图')
-      .replace(/\{uid\}/g, '100123456')
-      .replace(/\{original_name\}/g, 'photo_001')
-      .replace(/\{sequence\}/g, '001')
-      + '.扩展名'
+    return (
+      namingPattern
+        .replace(/\{date\}/g, dateStr)
+        .replace(/\{album_type\}/g, '拍摄截图')
+        .replace(/\{uid\}/g, '100123456')
+        .replace(/\{original_name\}/g, 'photo_001')
+        .replace(/\{sequence\}/g, '001') + '.扩展名'
+    )
   })()
 
   return (
-    <SectionShell title={t('settings.sections.exportWorkflow')} description={t('settings.export.description')}>
+    <SectionShell
+      title={t('settings.sections.exportWorkflow')}
+      description={t('settings.export.description')}
+    >
       {/* 默认导出路径 */}
       <div className="space-y-2">
         <div style={{ color: 'var(--text-primary)' }}>{t('settings.export.defaultDir')}</div>
@@ -231,10 +302,7 @@ export const GeneralExportSection: React.FC = () => {
               border: '1px solid var(--divider)'
             }}
           />
-          <button
-            className="btn-secondary text-sm px-3 py-2"
-            onClick={pickDir}
-          >
+          <button className="btn-secondary text-sm px-3 py-2" onClick={pickDir}>
             {t('settings.export.selectDir')}
           </button>
           {defaultDir && (
@@ -276,8 +344,12 @@ export const GeneralExportSection: React.FC = () => {
         </p>
         {namingPattern.trim() && (
           <div className="p-2 rounded-lg" style={{ background: 'var(--bg-tertiary)' }}>
-            <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{t('settings.export.preview')}</span>
-            <span className="text-xs font-mono" style={{ color: 'var(--accent)' }}>{previewName}</span>
+            <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+              {t('settings.export.preview')}
+            </span>
+            <span className="text-xs font-mono" style={{ color: 'var(--accent)' }}>
+              {previewName}
+            </span>
           </div>
         )}
       </div>

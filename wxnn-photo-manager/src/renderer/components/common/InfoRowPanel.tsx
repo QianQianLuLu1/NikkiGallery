@@ -88,9 +88,7 @@ export const InfoRowPanel: React.FC<InfoRowPanelProps> = ({
         copied: ''
       }
 
-  const totalRows = groups
-    ? groups.reduce((sum, g) => sum + g.rows.length, 0)
-    : (rows?.length ?? 0)
+  const totalRows = groups ? groups.reduce((sum, g) => sum + g.rows.length, 0) : (rows?.length ?? 0)
   const hasContent = totalRows > 0
 
   return (
@@ -155,8 +153,10 @@ export const InfoRowPanel: React.FC<InfoRowPanelProps> = ({
         </div>
       )}
 
-      {!loading && !error && hasContent && (
-        groups ? (
+      {!loading &&
+        !error &&
+        hasContent &&
+        (groups ? (
           <div className="space-y-3">
             {groups.map((group) => (
               <div key={group.title}>
@@ -212,8 +212,7 @@ export const InfoRowPanel: React.FC<InfoRowPanelProps> = ({
               </div>
             ))}
           </div>
-        )
-      )}
+        ))}
     </div>
   )
 }

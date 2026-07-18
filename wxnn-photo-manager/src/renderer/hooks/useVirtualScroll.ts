@@ -14,7 +14,12 @@ interface VirtualScrollState {
   offsetY: number
 }
 
-export function useVirtualScroll({ itemCount, itemHeight, overscan = 3, gap = 0 }: VirtualScrollOptions) {
+export function useVirtualScroll({
+  itemCount,
+  itemHeight,
+  overscan = 3,
+  gap = 0
+}: VirtualScrollOptions) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [scrollTop, setScrollTop] = useState(0)
   const [containerHeight, setContainerHeight] = useState(0)
@@ -58,11 +63,14 @@ export function useVirtualScroll({ itemCount, itemHeight, overscan = 3, gap = 0 
     offsetY: startRow * rowHeight
   }
 
-  const scrollToIndex = useCallback((index: number) => {
-    const container = containerRef.current
-    if (!container) return
-    container.scrollTop = index * rowHeight
-  }, [rowHeight])
+  const scrollToIndex = useCallback(
+    (index: number) => {
+      const container = containerRef.current
+      if (!container) return
+      container.scrollTop = index * rowHeight
+    },
+    [rowHeight]
+  )
 
   return { containerRef, ...state, scrollToIndex }
 }
@@ -75,7 +83,13 @@ interface VirtualGridOptions {
   columns: number
 }
 
-export function useVirtualGrid({ items, itemHeight, gap = 0, overscan = 2, columns }: VirtualGridOptions) {
+export function useVirtualGrid({
+  items,
+  itemHeight,
+  gap = 0,
+  overscan = 2,
+  columns
+}: VirtualGridOptions) {
   const rowCount = useMemo(() => Math.ceil(items.length / columns), [items.length, columns])
   const rowHeight = itemHeight + gap
 

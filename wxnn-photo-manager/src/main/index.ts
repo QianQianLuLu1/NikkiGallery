@@ -1,10 +1,26 @@
-import { app, BrowserWindow, ipcMain, dialog, shell, nativeTheme, protocol, crashReporter } from 'electron'
+import {
+  app,
+  BrowserWindow,
+  ipcMain,
+  dialog,
+  shell,
+  nativeTheme,
+  protocol,
+  crashReporter
+} from 'electron'
 import path from 'path'
 import fs from 'fs'
 import { execFile } from 'child_process'
 import Database from 'better-sqlite3'
 import { DatabaseManager } from './database/connection'
 import { ScannerManager } from './scanner'
+// 全盘扫描模块进程拆分：ScannerManager 改为薄壳，通过 ScannerWorkerBridge 与 utilityProcess 通信
+import { ScannerWorkerBridge } from './scanner/scanner-worker-bridge'
+// 缩略图 / pHash / 重复检测进程拆分：MediaWorkerManager 改为薄壳，通过 MediaWorkerBridge 与 utilityProcess 通信
+import { MediaWorkerBridge } from './media-worker/bridge'
+import { MediaWorkerManager } from './media-worker/manager'
+// 分级任务调度队列：用户主动触发=高优先级，后台自动触发=低优先级串行
+import { TaskScheduler } from './scheduler/task-scheduler'
 import { ThumbnailGenerator } from './thumbnail/generator'
 import { FileService } from './services/file-service'
 import { VideoService } from './services/video-service'
@@ -25,11 +41,7 @@ import {
   generatePhashForUnprocessed
 } from './services/thumbnail-phash-service'
 // C-3：统一媒体常量与文件工具函数（取代各文件内联重复定义）
-import {
-  MEDIA_EXTENSIONS,
-  getMimeType,
-  isVideoExt
-} from './utils/media-constants'
+import { MEDIA_EXTENSIONS, getMimeType, isVideoExt } from './utils/media-constants'
 // C-G3：共享命名常量（取代魔法数字）
 import { STARTUP_SCAN_DELAY_MS, THUMBNAIL_CONCURRENCY, MEDIA_CACHE_TTL_MS } from './utils/constants'
 // 日志管理：故障记录与日志服务
@@ -110,7 +122,13 @@ function getLogDirectorySafe(): string {
 class Application {
   private mainWindow: BrowserWindow | null = null
   private dbManager: DatabaseManager
+  private scannerWorkerBridge: ScannerWorkerBridge
   private scannerManager: ScannerManager
+  // 缩略图 / pHash / 重复检测进程拆分：media worker 独立 utilityProcess
+  private mediaWorkerBridge: MediaWorkerBridge
+  private mediaWorkerManager: MediaWorkerManager
+  // 分级任务调度队列：高优先级立即执行可抢占低优先级，低优先级 FIFO 串行
+  private taskScheduler: TaskScheduler
   private thumbnailGen: ThumbnailGenerator
 
   private fileService: FileService
@@ -138,7 +156,15 @@ class Application {
 
   constructor() {
     this.dbManager = new DatabaseManager()
-    this.scannerManager = new ScannerManager()
+    // 全盘扫描模块进程拆分：bridge 先于 ScannerManager 实例化，由其持有 utilityProcess 生命周期
+    this.scannerWorkerBridge = new ScannerWorkerBridge()
+    this.scannerManager = new ScannerManager(this.scannerWorkerBridge)
+    // 缩略图 / pHash / 重复检测进程拆分：bridge 先于 MediaWorkerManager 实例化
+    this.mediaWorkerBridge = new MediaWorkerBridge()
+    this.mediaWorkerManager = new MediaWorkerManager(this.mediaWorkerBridge)
+    // 分级任务调度队列：启动期 pause，主窗口 ready-to-show 后 resume
+    this.taskScheduler = new TaskScheduler()
+    this.taskScheduler.pause()
     this.thumbnailGen = new ThumbnailGenerator()
 
     this.fileService = new FileService()
@@ -173,10 +199,11 @@ class Application {
             type: 'warning',
             title: '已有实例运行',
             message: '应用已在运行中',
-            detail: '可能是之前的进程异常未退出，导致单实例锁未释放。\n\n' +
-                    '点击"清理并重启"将自动结束所有残留进程并重启应用；\n' +
-                    '点击"手动处理"将打开任务管理器供您手动结束进程；\n' +
-                    '点击"退出"将直接关闭本窗口。',
+            detail:
+              '可能是之前的进程异常未退出，导致单实例锁未释放。\n\n' +
+              '点击"清理并重启"将自动结束所有残留进程并重启应用；\n' +
+              '点击"手动处理"将打开任务管理器供您手动结束进程；\n' +
+              '点击"退出"将直接关闭本窗口。',
             buttons: ['清理并重启', '手动处理', '退出'],
             defaultId: 0,
             cancelId: 2,
@@ -224,11 +251,10 @@ class Application {
                 const { execFileSync } = require('child_process')
                 const psCommand2 = `Get-Process -Name '${appName.replace('.exe', '')}' -ErrorAction SilentlyContinue | Where-Object { $_.Id -ne ${currentPid} } | Stop-Process -Force`
                 const encoded2 = Buffer.from(psCommand2, 'utf16le').toString('base64')
-                execFileSync(
-                  'powershell',
-                  ['-NoProfile', '-EncodedCommand', encoded2],
-                  { windowsHide: true, timeout: 10000 }
-                )
+                execFileSync('powershell', ['-NoProfile', '-EncodedCommand', encoded2], {
+                  windowsHide: true,
+                  timeout: 10000
+                })
                 killedAny = true
               } catch {
                 // 两种方案都失败，跳过杀进程，直接重启（新实例会再次尝试获取锁）
@@ -240,30 +266,35 @@ class Application {
             // 避免新实例再次拿不到锁 → 再次弹窗 → 用户再点"清理并重启" → 无限循环
             if (!killedAny) {
               try {
-                await dialog.showMessageBox({
-                  type: 'warning',
-                  title: '清理失败',
-                  message: '未能自动结束残留进程',
-                  detail: '可能原因：\n• 残留进程以管理员权限运行\n• PowerShell 执行策略限制\n• 安全软件拦截\n\n请手动打开任务管理器，结束所有"无限暖暖相册管理工具"进程后重试。',
-                  buttons: ['打开任务管理器', '退出'],
-                  defaultId: 0,
-                  cancelId: 1,
-                  noLink: true
-                }).then((r) => {
-                  if (r.response === 0) {
-                    try {
-                      const { exec } = require('child_process')
-                      exec('taskmgr', { windowsHide: false })
-                    } catch {}
-                  }
-                })
+                await dialog
+                  .showMessageBox({
+                    type: 'warning',
+                    title: '清理失败',
+                    message: '未能自动结束残留进程',
+                    detail:
+                      '可能原因：\n• 残留进程以管理员权限运行\n• PowerShell 执行策略限制\n• 安全软件拦截\n\n请手动打开任务管理器，结束所有"无限暖暖相册管理工具"进程后重试。',
+                    buttons: ['打开任务管理器', '退出'],
+                    defaultId: 0,
+                    cancelId: 1,
+                    noLink: true
+                  })
+                  .then((r) => {
+                    if (r.response === 0) {
+                      try {
+                        const { exec } = require('child_process')
+                        exec('taskmgr', { windowsHide: false })
+                      } catch {}
+                    }
+                  })
               } catch {}
               app.quit()
               return
             }
             setTimeout(() => {
               // 当前进程没有锁（gotLock=false），但安全起见仍尝试释放
-              try { app.releaseSingleInstanceLock?.() } catch {}
+              try {
+                app.releaseSingleInstanceLock?.()
+              } catch {}
               app.relaunch()
               app.exit(0)
             }, 2000)
@@ -305,7 +336,11 @@ class Application {
       let isExiting = false
       process.on('uncaughtException', (err) => {
         logStartupError('uncaughtException', err)
-        try { logFault('uncaughtException', err, { source: 'process.uncaughtException' }).catch(() => {}) } catch {}
+        try {
+          logFault('uncaughtException', err, { source: 'process.uncaughtException' }).catch(
+            () => {}
+          )
+        } catch {}
         // P1-5：首次未捕获异常弹出对话框，后续静默记录避免打扰
         if (!hasShownRuntimeErrorDialog) {
           hasShownRuntimeErrorDialog = true
@@ -313,10 +348,10 @@ class Application {
             dialog.showErrorBox(
               '应用遇到错误',
               `应用遇到未预期的错误：\n\n${err.message}\n\n` +
-              `错误详情已记录到日志。建议：\n` +
-              `1. 保存当前工作后重启应用\n` +
-              `2. 如反复出现，请在设置→诊断中导出诊断包反馈给开发者\n\n` +
-              `日志路径：${getLogDirectorySafe()}`
+                `错误详情已记录到日志。建议：\n` +
+                `1. 保存当前工作后重启应用\n` +
+                `2. 如反复出现，请在设置→诊断中导出诊断包反馈给开发者\n\n` +
+                `日志路径：${getLogDirectorySafe()}`
             )
           } catch {}
         }
@@ -325,21 +360,34 @@ class Application {
         isExiting = true
         // 修复：异常后进程状态不可预测，必须退出释放单实例锁
         // 不退出会导致僵尸进程持有锁，下次启动报"已有实例运行"
-        // 给 OS 100ms 处理 mutex 释放
-        try { app.releaseSingleInstanceLock?.() } catch {}
-        setTimeout(() => { try { app.exit(1) } catch {} }, 100)
+        // P0 根因修复：原用 setTimeout(100ms) 延迟退出，但 logFault 产生的 FileHandleCloseReq
+        // 会延迟 setTimeout 回调。改为直接 app.exit(1) 立即终止进程
+        try {
+          app.releaseSingleInstanceLock?.()
+        } catch {}
+        try {
+          app.exit(1)
+        } catch {}
       })
       process.on('unhandledRejection', (reason) => {
         const err = reason instanceof Error ? reason : new Error(String(reason))
         logStartupError('unhandledRejection', err)
-        try { logFault('unhandledRejection', err, { source: 'process.unhandledRejection' }).catch(() => {}) } catch {}
+        try {
+          logFault('unhandledRejection', err, { source: 'process.unhandledRejection' }).catch(
+            () => {}
+          )
+        } catch {}
         // P1-A9：已进入退出流程则直接返回，避免重复调度 setTimeout
         if (isExiting) return
         isExiting = true
         // 修复：与 uncaughtException 对齐，未捕获的 Promise rejection 后进程状态不可预测
         // 不退出会导致僵尸进程持锁，下次启动报"已有实例运行"
-        try { app.releaseSingleInstanceLock?.() } catch {}
-        setTimeout(() => { try { app.exit(1) } catch {} }, 100)
+        try {
+          app.releaseSingleInstanceLock?.()
+        } catch {}
+        try {
+          app.exit(1)
+        } catch {}
       })
 
       // 阶段 1：数据库初始化（最可能失败的阶段）
@@ -377,65 +425,104 @@ class Application {
         logger.info('[Crash] crashReporter 已启动，dump 目录: ' + getCrashDirectory())
       } catch (err) {
         logStartupError('crashReporter.start', err)
-        try { logger.error('[Crash] crashReporter 启动失败:', err) } catch {}
+        try {
+          logger.error('[Crash] crashReporter 启动失败:', err)
+        } catch {}
       }
 
       // 阶段 5：备份服务
       try {
         backupService.init(this.dbManager)
+        // 分级调度：注入 scheduler，启动备份通过低优先级队列执行
+        backupService.setScheduler(this.taskScheduler)
         backupService.scheduleStartupBackup()
         // P1-M：编辑器服务初始化（注入 dbManager）
         editorService.init(this.dbManager)
+        // 分级调度：注入 scheduler，pruneOldSnapshots 通过低优先级队列执行
+        editorService.setScheduler(this.taskScheduler)
       } catch (err) {
         logStartupError('backupService.init', err)
-        try { logger.error('[Backup] 初始化失败:', err) } catch {}
+        try {
+          logger.error('[Backup] 初始化失败:', err)
+        } catch {}
       }
 
       // 阶段 6：协议注册 + IPC + 窗口
       this.registerMediaProtocol()
-      this.scannerManager.setDatabase(this.dbManager.getDatabase()!)
-      // A7：注入 DatabaseManager，使 scanner 调用统一迁移接口
-      this.scannerManager.setDbManager(this.dbManager)
+      // 全盘扫描模块进程拆分：worker 进程独立打开同一 db 文件（WAL 多连接并发）
+      // 不再向 ScannerManager 注入主进程的 Database / DatabaseManager
+      // dbPath 与 DatabaseManager 内部计算保持一致（userData/database/wxnn_photo_manager.db）
+      this.scannerManager.setDbPath(
+        path.join(app.getPath('userData'), 'database', 'wxnn_photo_manager.db')
+      )
+      // 缩略图 / pHash / 重复检测进程拆分：media worker 独立打开同一 db 文件（WAL 多连接并发）
+      this.mediaWorkerManager.setDbPath(
+        path.join(app.getPath('userData'), 'database', 'wxnn_photo_manager.db')
+      )
       this.setupIPC()
       await this.createMainWindow()
 
       // 阶段 7：主题 + 数据库修复
       try {
-        const savedUITheme = this.dbManager.getSetting('uiTheme', 'default') as 'default' | 'soft-pink-luxury'
+        const savedUITheme = this.dbManager.getSetting('uiTheme', 'default') as
+          'default' | 'soft-pink-luxury'
         this.applyUITheme(savedUITheme)
         await this.cleanupAndRepairDatabase()
         this.setupThemeListener()
       } catch (err) {
         logStartupError('cleanup', err)
-        try { logger?.error?.('[App] 主题/清理修复失败:', err) } catch {}
+        try {
+          logger?.error?.('[App] 主题/清理修复失败:', err)
+        } catch {}
       }
 
       // 阶段 7.5：确保桌面快捷方式存在（NSIS 覆盖安装时可能未创建）
       // F5 修复：改为 fire-and-forget 异步调用，避免注册表查询阻塞启动流程
-      void this.ensureDesktopShortcut().catch(err => logStartupError('ensureDesktopShortcut', err))
+      void this.ensureDesktopShortcut().catch((err) =>
+        logStartupError('ensureDesktopShortcut', err)
+      )
 
       // 阶段 8：启动后延迟任务（非关键，失败不阻塞）
+      // 分级调度改造：启动期任务通过 taskScheduler.enqueueLow 入队，等主窗口 ready-to-show 后 resume 才执行
       // 修复：保存定时器引用，退出时清理，避免回调在数据库关闭后访问或启动新子进程
       const autoScan = this.dbManager.getSetting('autoScanOnStartup', true)
       if (autoScan) {
-        this.startupTimers.push(setTimeout(() => {
-          this.performStartupScan().catch((err) => {
-            logStartupError('performStartupScan', err)
-          })
-        }, STARTUP_SCAN_DELAY_MS))
+        this.startupTimers.push(
+          setTimeout(() => {
+            // 分级调度：启动扫描作为低优先级任务入队，等空闲时执行
+            void this.taskScheduler
+              .enqueueLow(() => this.performStartupScan(), {
+                id: 'startup-scan',
+                cancel: () => void this.scannerManager.stopScan()
+              })
+              .catch((err) => {
+                logStartupError('performStartupScan', err)
+              })
+          }, STARTUP_SCAN_DELAY_MS)
+        )
       }
-      this.startupTimers.push(setTimeout(() => {
-        this.thumbnailGen.enforceLimitNow().catch((err) => {
-          logStartupError('enforceLimitNow', err)
-        })
-      }, STARTUP_SCAN_DELAY_MS + 5000))
+      this.startupTimers.push(
+        setTimeout(() => {
+          // 分级调度：LRU 强制校准作为低优先级任务入队
+          void this.taskScheduler
+            .enqueueLow(() => this.thumbnailGen.enforceLimitNow(), { id: 'startup-lru-enforce' })
+            .catch((err) => {
+              logStartupError('enforceLimitNow', err)
+            })
+        }, STARTUP_SCAN_DELAY_MS + 5000)
+      )
       // F-S5：启动后台 LRU 定时校准任务（每 5 分钟）
       this.thumbnailGen.startLruBackgroundTask()
-      this.startupTimers.push(setTimeout(() => {
-        enforceCrashLimit().catch((err) => {
-          logger?.warn?.('[Crash] 清理过期崩溃文件失败:', err)
-        })
-      }, STARTUP_SCAN_DELAY_MS + 6000))
+      this.startupTimers.push(
+        setTimeout(() => {
+          // 分级调度：崩溃文件清理作为低优先级任务入队
+          void this.taskScheduler
+            .enqueueLow(() => enforceCrashLimit(), { id: 'startup-crash-cleanup' })
+            .catch((err) => {
+              logger?.warn?.('[Crash] 清理过期崩溃文件失败:', err)
+            })
+        }, STARTUP_SCAN_DELAY_MS + 6000)
+      )
 
       // 退出清理：确保数据库正确关闭并执行 WAL checkpoint
       // 修复：原实现同步 before-quit 中调用异步清理且未 await，异步清理来不及完成；
@@ -464,28 +551,54 @@ class Application {
         // 用 logStartupError 记录超时诊断信息，便于排查卡死原因
         const forceExitTimer = setTimeout(() => {
           try {
-            logStartupError('force-exit-timeout', new Error(`performCleanup 超过 ${forceExitTimeoutMs}ms 未完成，强制退出（${forceExitReason}）`))
+            logStartupError(
+              'force-exit-timeout',
+              new Error(
+                `performCleanup 超过 ${forceExitTimeoutMs}ms 未完成，强制退出（${forceExitReason}）`
+              )
+            )
             const stats = getProcessRegistryStats()
-            logStartupError('force-exit-stats', new Error(JSON.stringify({
-              childProcessCount: stats.childProcessCount,
-              ffmpegCommandCount: stats.ffmpegCommandCount,
-              startupTimers: this.startupTimers.length,
-              hasMediaUpdateTimer: !!this.mediaUpdateTimer,
-              forceExitTimeoutMs
-            })))
+            logStartupError(
+              'force-exit-stats',
+              new Error(
+                JSON.stringify({
+                  childProcessCount: stats.childProcessCount,
+                  ffmpegCommandCount: stats.ffmpegCommandCount,
+                  startupTimers: this.startupTimers.length,
+                  hasMediaUpdateTimer: !!this.mediaUpdateTimer,
+                  forceExitTimeoutMs
+                })
+              )
+            )
           } catch {}
-          // 修复：强制退出前显式释放单实例锁，并给 OS 100ms 处理时间
-          try { app.releaseSingleInstanceLock?.() } catch {}
-          setTimeout(() => { try { app.exit(1) } catch {} }, 100)
+          // P0 修复：强制退出前显式释放单实例锁
+          // 原用 setTimeout(100ms) 延迟 app.exit(1)，但 I/O 活跃时 setTimeout 会被延迟
+          // 改为直接 app.exit(1)，确保进程立即终止
+          try {
+            app.releaseSingleInstanceLock?.()
+          } catch {}
+          try {
+            app.exit(1)
+          } catch {}
         }, forceExitTimeoutMs)
 
         // 异步清理后清除超时定时器并正常退出
         this.performCleanup().finally(() => {
-          try { clearTimeout(forceExitTimer) } catch {}
-          // P0 修复：锁已在 performCleanup 中 DB 关闭后释放（L575-579）
+          try {
+            clearTimeout(forceExitTimer)
+          } catch {}
+          // P0 修复：锁已在 performCleanup 中 DB 关闭后释放
           // 此处仅兜底：若 performCleanup 在 DB 关闭前异常退出，确保锁被释放
-          try { app.releaseSingleInstanceLock?.() } catch {}
-          setTimeout(() => { try { app.exit(0) } catch {} }, 100)
+          try {
+            app.releaseSingleInstanceLock?.()
+          } catch {}
+          // P0 根因修复：原用 setTimeout(100ms) 延迟 app.exit(0)，但 performCleanup 末尾的
+          // logFault 产生 FileHandleCloseReq 活跃请求，保持事件循环活跃，setTimeout 回调
+          // 被 I/O 操作延迟，进程挂着不退出。现在 logFault 已改为同步写入，直接 app.exit(0)
+          // app.exit 立即终止进程，不触发 before-quit/will-quit，不等事件循环清空
+          try {
+            app.exit(0)
+          } catch {}
         })
       })
 
@@ -524,7 +637,9 @@ class Application {
         })
         if (result.response === 0) {
           // 打开日志所在目录（startup-errors.log 在 userData 根目录）
-          try { await shell.openPath(path.dirname(startupLogPath)) } catch {}
+          try {
+            await shell.openPath(path.dirname(startupLogPath))
+          } catch {}
         }
       } catch {}
 
@@ -533,11 +648,15 @@ class Application {
         this.dbManager?.close?.()
       } catch {}
       if (lockAcquired) {
-        try { app.releaseSingleInstanceLock?.() } catch {}
+        try {
+          app.releaseSingleInstanceLock?.()
+        } catch {}
         // 修复：直接 app.exit 而非 app.quit，避免触发 before-quit 异步清理流程
         // 启动失败时 performCleanup 中的 dbManager.close 可能再次抛错（已关闭）
-        // 给 OS 100ms 处理 mutex 释放
-        setTimeout(() => { try { app.exit(1) } catch {} }, 100)
+        // P0 根因修复：原用 setTimeout(100ms)，改为直接 app.exit(1) 立即终止
+        try {
+          app.exit(1)
+        } catch {}
       } else {
         app.quit()
       }
@@ -560,28 +679,68 @@ class Application {
 
     // 1. 清理启动定时器
     for (const t of this.startupTimers) {
-      try { clearTimeout(t) } catch {}
+      try {
+        clearTimeout(t)
+      } catch {}
     }
     this.startupTimers = []
     if (this.mediaUpdateTimer) {
-      try { clearTimeout(this.mediaUpdateTimer) } catch {}
+      try {
+        clearTimeout(this.mediaUpdateTimer)
+      } catch {}
       this.mediaUpdateTimer = null
     }
 
     // 2. kill 所有活跃子进程（ffmpeg/ffprobe/PowerShell）
-    try { killAllProcesses('SIGKILL') } catch {}
+    try {
+      killAllProcesses('SIGKILL')
+    } catch {}
+
+    // 2.5 分级调度：暂停调度器 + 取消所有低优先级任务（队列中 + 正在运行）
+    // 必须在 stopScan / dispose worker 之前调用，避免新任务在清理过程中启动
+    try {
+      this.taskScheduler.pause()
+      this.taskScheduler.cancelAllLow()
+    } catch {}
 
     // 3. 停止扫描器（设置 shouldStop 标志）
-    try { await this.scannerManager.stopScan().catch(() => {}) } catch {}
+    try {
+      await this.scannerManager.stopScan().catch(() => {})
+    } catch {}
+
+    // 3.5 全盘扫描模块进程拆分：dispose worker 进程
+    // 顺序：先 stopScan（让 worker 自然完成当前批次并退出）→ 再 dispose（kill 兜底）
+    // 加 1s 超时保护，避免 worker 卡住阻塞主进程退出
+    try {
+      await Promise.race([
+        this.scannerWorkerBridge.dispose(),
+        new Promise<void>((resolve) => setTimeout(resolve, 1000))
+      ])
+    } catch {}
+
+    // 3.6 缩略图 / pHash / 重复检测进程拆分：dispose media worker 进程
+    // 加 1s 超时保护，避免 worker 卡住阻塞主进程退出
+    try {
+      await Promise.race([
+        this.mediaWorkerBridge.dispose(),
+        new Promise<void>((resolve) => setTimeout(resolve, 1000))
+      ])
+    } catch {}
 
     // 4. 停止 WiFi 分享服务
-    try { wifiShareService.stop() } catch {}
+    try {
+      wifiShareService.stop()
+    } catch {}
 
     // 5. 备份服务清理定时器
-    try { backupService.dispose() } catch {}
+    try {
+      backupService.dispose()
+    } catch {}
 
     // F-S5：停止缩略图 LRU 后台定时任务
-    try { this.thumbnailGen.stopLruBackgroundTask() } catch {}
+    try {
+      this.thumbnailGen.stopLruBackgroundTask()
+    } catch {}
 
     // 6. flush 缩略图访问时间（带超时保护，避免卡住）
     try {
@@ -592,7 +751,9 @@ class Application {
     } catch {}
 
     // 7. 关闭数据库（同步，含 WAL checkpoint）
-    try { this.dbManager.close() } catch (error) {
+    try {
+      this.dbManager.close()
+    } catch (error) {
       logStartupError('before-quit-db-close', error)
     }
 
@@ -600,23 +761,39 @@ class Application {
     // 允许新实例启动打开数据库，不等 DLL 卸载等次要清理
     // 将持锁窗口从 2-5s（整个 cleanup）缩短到 ~1.5s（到 DB close 为止）
     // 避免"关闭应用后立即重开 → 弹'已有实例运行'对话框"的问题
-    try { app.releaseSingleInstanceLock?.() } catch {}
+    try {
+      app.releaseSingleInstanceLock?.()
+    } catch {}
 
     // P0-A3：卸载 decryption DLL，释放 C 资源，避免进程退出时内存泄漏
     try {
       const { disposeDecryptionService } = await import('./services/decryption-service')
       disposeDecryptionService()
-    } catch { /* DLL 未加载或已卸载，忽略 */ }
+    } catch {
+      /* DLL 未加载或已卸载，忽略 */
+    }
 
     // P0-6：清理后记录诊断信息，对比 before/after 可判断哪些资源被释放
     const afterStats = this.collectExitDiagnosis('after-cleanup')
-    // 写入 faults 日志（exitDiagnosis 类型），便于在设置页查看
+    // P0 根因修复：原实现调用 logFault（async，内部用 fs.promises.appendFile），
+    // 产生 FileHandleCloseReq 活跃请求，保持事件循环活跃，导致 app.exit(0) 被延迟
+    // 改用同步写入 fs.appendFileSync，不产生异步请求，确保进程能立即退出
     try {
-      const { logFault } = require('./utils/logger')
-      logFault('exitDiagnosis', new Error('进程退出诊断'), {
-        beforeCleanup: beforeStats,
-        afterCleanup: afterStats
-      }).catch(() => {})
+      const faultRecord = {
+        id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
+        timestamp: new Date().toISOString(),
+        type: 'exitDiagnosis',
+        summary: '进程退出诊断',
+        detail: `before: ${JSON.stringify(beforeStats)}\nafter: ${JSON.stringify(afterStats)}`,
+        pid: process.pid,
+        uptime: process.uptime()
+      }
+      const faultPath = path.join(
+        app.getPath('userData'),
+        'logs',
+        `faults-${new Date().toISOString().slice(0, 10)}.jsonl`
+      )
+      fs.appendFileSync(faultPath, JSON.stringify(faultRecord) + '\n', 'utf-8')
     } catch {}
   }
 
@@ -641,8 +818,8 @@ class Application {
     // 收集活跃句柄（HTTP server / socket / pipe 等）
     // _getActiveHandles 是 Node.js 内部 API，可能不存在于所有版本
     try {
-      const handles = (process as unknown as { _getActiveHandles?: () => unknown[] })
-        ._getActiveHandles?.() || []
+      const handles =
+        (process as unknown as { _getActiveHandles?: () => unknown[] })._getActiveHandles?.() || []
       diagnosis.activeHandles = handles.map((h: unknown) => {
         if (h && typeof h === 'object' && 'constructor' in h) {
           return (h as { constructor: { name: string } }).constructor.name
@@ -653,8 +830,9 @@ class Application {
 
     // 收集活跃请求
     try {
-      const requests = (process as unknown as { _getActiveRequests?: () => unknown[] })
-        ._getActiveRequests?.() || []
+      const requests =
+        (process as unknown as { _getActiveRequests?: () => unknown[] })._getActiveRequests?.() ||
+        []
       diagnosis.activeRequests = requests.map((r: unknown) => {
         if (r && typeof r === 'object' && 'constructor' in r) {
           return (r as { constructor: { name: string } }).constructor.name
@@ -709,10 +887,14 @@ class Application {
             return // 快捷方式有效，跳过
           }
           // target 失效，删除旧快捷方式后重建
-          try { fs.unlinkSync(shortcutPath) } catch {}
+          try {
+            fs.unlinkSync(shortcutPath)
+          } catch {}
         } catch {
           // readShortcutLink 失败（快捷方式损坏），删除后重建
-          try { fs.unlinkSync(shortcutPath) } catch {}
+          try {
+            fs.unlinkSync(shortcutPath)
+          } catch {}
         }
       }
 
@@ -726,7 +908,9 @@ class Application {
       }
       const created = shell.writeShortcutLink(shortcutPath, 'create', shortcutOpts)
       if (created) {
-        try { logger.info('[App] 桌面快捷方式已创建') } catch {}
+        try {
+          logger.info('[App] 桌面快捷方式已创建')
+        } catch {}
         return
       }
 
@@ -736,7 +920,9 @@ class Application {
       const fallbackPath = path.join(homePath, '无限暖暖相册管理工具.lnk')
       const fallbackCreated = shell.writeShortcutLink(fallbackPath, 'create', shortcutOpts)
       if (fallbackCreated) {
-        try { logger.info(`[App] 桌面快捷方式已创建（fallback 到用户主目录: ${homePath}）`) } catch {}
+        try {
+          logger.info(`[App] 桌面快捷方式已创建（fallback 到用户主目录: ${homePath}）`)
+        } catch {}
       } else {
         logger.error('[App] 桌面快捷方式创建失败（包括 fallback 到用户主目录）')
       }
@@ -757,10 +943,19 @@ class Application {
    */
   private async applyCustomDirectories(): Promise<void> {
     // P1-A10：通用迁移流程抽取为辅助函数，每个目录仅 1 行调用 + postSetup 回调
-    await this.applyCustomDir('backupDir', 'backups', MIGRATE_PATTERNS.backupDir, '备份文件',
-      (dir) => backupService.setDir(dir))
+    await this.applyCustomDir(
+      'backupDir',
+      'backups',
+      MIGRATE_PATTERNS.backupDir,
+      '备份文件',
+      (dir) => backupService.setDir(dir)
+    )
 
-    await this.applyCustomDir('thumbnailCacheDir', 'thumbnails', /metadata\.json$/i, '缩略图元数据',
+    await this.applyCustomDir(
+      'thumbnailCacheDir',
+      'thumbnails',
+      /metadata\.json$/i,
+      '缩略图元数据',
       (dir) => {
         this.thumbnailGen.setDir(dir)
         // 恢复自定义缓存上限（如有）
@@ -768,17 +963,24 @@ class Application {
         if (savedLimit && savedLimit >= 100 * 1024 * 1024) {
           this.thumbnailGen.setCacheLimitBytes(savedLimit)
         }
-      })
+      }
+    )
 
-    await this.applyCustomDir('logDir', 'logs', MIGRATE_PATTERNS.logDir, '日志文件',
-      (dir) => setLogDirectory(dir))
+    await this.applyCustomDir('logDir', 'logs', MIGRATE_PATTERNS.logDir, '日志文件', (dir) =>
+      setLogDirectory(dir)
+    )
 
     // crashDir 必须在 crashReporter.start() 之前调用 app.setPath，crashpad 子进程才能正确写入
-    await this.applyCustomDir('crashDir', 'crashes', MIGRATE_PATTERNS.crashDir, '崩溃 dump',
+    await this.applyCustomDir(
+      'crashDir',
+      'crashes',
+      MIGRATE_PATTERNS.crashDir,
+      '崩溃 dump',
       (dir) => {
         app.setPath('crashDumps', dir)
         setCrashDirectory(dir)
-      })
+      }
+    )
   }
 
   /**
@@ -858,6 +1060,8 @@ class Application {
 
     this.mainWindow.once('ready-to-show', () => {
       this.mainWindow?.show()
+      // 分级调度：主窗口显示后恢复调度器，启动期入队的低优先级任务开始执行
+      this.taskScheduler.resume()
     })
 
     // 渲染进程崩溃捕获：P1-6 增强——记录故障日志 + 弹出用户选择对话框
@@ -869,7 +1073,9 @@ class Application {
         exitCode: details.exitCode,
         source: 'webContents.render-process-gone'
       }).catch(() => {})
-      try { logger?.error?.('[Renderer] 渲染进程崩溃:', details) } catch {}
+      try {
+        logger?.error?.('[Renderer] 渲染进程崩溃:', details)
+      } catch {}
 
       // P1-6：弹窗询问用户是否重新加载（崩溃后窗口可能已不可用，需先销毁重建）
       if (!this.mainWindow || this.mainWindow.isDestroyed()) return
@@ -892,7 +1098,9 @@ class Application {
         } catch (reloadErr) {
           logStartupError('renderer-reload-failed', reloadErr)
           // reload 失败时重建窗口作为最后兜底
-          try { await this.createMainWindow() } catch {}
+          try {
+            await this.createMainWindow()
+          } catch {}
         }
       } else {
         app.quit()
@@ -930,6 +1138,10 @@ class Application {
     this.ctx = {
       dbManager: this.dbManager,
       scannerManager: this.scannerManager,
+      // 缩略图 / pHash / 重复检测进程拆分：注入 MediaWorkerManager，由共享服务模块转发到 worker
+      mediaWorkerManager: this.mediaWorkerManager,
+      // 分级任务调度队列：注入到共享服务模块，用于优先级管控
+      taskScheduler: this.taskScheduler,
       thumbnailGen: this.thumbnailGen,
       fileService: this.fileService,
       videoService: this.videoService,
@@ -939,7 +1151,9 @@ class Application {
       invalidateMediaPathCache: () => this.invalidateMediaPathCache(),
       applyUITheme: (theme) => this.applyUITheme(theme),
       isThumbnailsGenerating: () => this.thumbnailsGenerating,
-      setThumbnailsGenerating: (v) => { this.thumbnailsGenerating = v }
+      setThumbnailsGenerating: (v) => {
+        this.thumbnailsGenerating = v
+      }
     }
 
     registerMediaHandlers(this.ctx)
@@ -1180,15 +1394,15 @@ class Application {
       // P1-A4：原 `WHERE file_path = ? OR thumbnail = ?` 可能走全表扫描
       //        拆为两次查询：先查 file_path（UNIQUE 索引，最快），未命中再查 thumbnail（idx_media_files_thumbnail）
       if (!allowed) {
-        const fpRow = db.prepare(
-          'SELECT 1 FROM media_files WHERE file_path = ? LIMIT 1'
-        ).get(normalizedRequest) as { 1: number } | undefined
+        const fpRow = db
+          .prepare('SELECT 1 FROM media_files WHERE file_path = ? LIMIT 1')
+          .get(normalizedRequest) as { 1: number } | undefined
         if (fpRow) {
           allowed = true
         } else {
-          const thRow = db.prepare(
-            'SELECT 1 FROM media_files WHERE thumbnail = ? LIMIT 1'
-          ).get(normalizedRequest) as { 1: number } | undefined
+          const thRow = db
+            .prepare('SELECT 1 FROM media_files WHERE thumbnail = ? LIMIT 1')
+            .get(normalizedRequest) as { 1: number } | undefined
           if (thRow) allowed = true
         }
       }
@@ -1236,9 +1450,9 @@ class Application {
     if (this.mediaSourcePathCache && this.mediaSourcePathCache.expiresAt > Date.now()) {
       return this.mediaSourcePathCache.paths
     }
-    const rows = db.prepare(
-      'SELECT DISTINCT source_path FROM media_files WHERE source_path IS NOT NULL'
-    ).all() as Array<{ source_path: string }>
+    const rows = db
+      .prepare('SELECT DISTINCT source_path FROM media_files WHERE source_path IS NOT NULL')
+      .all() as Array<{ source_path: string }>
     const paths = rows.map((r) => r.source_path)
     this.mediaSourcePathCache = {
       paths,
@@ -1267,7 +1481,9 @@ class Application {
       let isFirstLaunch = false
       if (db) {
         try {
-          const row = db.prepare('SELECT COUNT(*) as count FROM scan_history').get() as { count: number }
+          const row = db.prepare('SELECT COUNT(*) as count FROM scan_history').get() as {
+            count: number
+          }
           isFirstLaunch = row.count === 0
         } catch {
           // scan_history 表不存在时视为首次启动
@@ -1277,24 +1493,35 @@ class Application {
 
       const incremental = isFirstLaunch ? false : this.dbManager.getSetting('incrementalScan', true)
       const fullScan = isFirstLaunch // 首次启动强制全盘扫描
-      console.log(`[Startup] 开始后台自动扫描，首次启动: ${isFirstLaunch}，全盘扫描: ${fullScan}，增量模式: ${incremental}`)
+      console.log(
+        `[Startup] 开始后台自动扫描，首次启动: ${isFirstLaunch}，全盘扫描: ${fullScan}，增量模式: ${incremental}`
+      )
       // 修复：读取用户在设置页配置的自定义游戏路径，原先未传导致设置失效
       const savedPaths = this.dbManager.getSetting<string[]>('knownPaths', [])
-      const customKnownPaths = Array.isArray(savedPaths) && savedPaths.length > 0 ? savedPaths : undefined
-      const result = await this.scannerManager.startScan({ incremental, customKnownPaths, fullScan })
+      const customKnownPaths =
+        Array.isArray(savedPaths) && savedPaths.length > 0 ? savedPaths : undefined
+      const result = await this.scannerManager.startScan({
+        incremental,
+        customKnownPaths,
+        fullScan
+      })
       console.log('[Startup] 扫描完成:', result)
       // 启动扫描也需发送 complete 事件，否则渲染进程的 scanProgress 会一直停留在 scanning:true
       this.mainWindow?.webContents.send('scanner:complete', result)
       if (result.success && (result.filesFound ?? 0) > 0) {
         // P1-A1：调用共享服务模块（this.ctx 在 setupIPC 中赋值，performStartupScan 在其后执行）
+        // 分级调度：扫描后链式触发的缩略图生成作为低优先级任务入队
         if (this.ctx) {
-          await generateThumbnailsForUnprocessed(this.ctx)
+          await generateThumbnailsForUnprocessed(this.ctx, 'low')
         }
       }
       // T05：扫描后异步补算 pHash（与缩略图生成解耦，避免阻塞）
       // Bug #08-F1：保留 fire-and-forget 模式（避免阻塞 autoAnalyzeSceneTime），仅 console.error → logger.error
+      // 分级调度：扫描后链式触发的 pHash 补算作为低优先级任务入队
       if (this.ctx) {
-        void generatePhashForUnprocessed(this.ctx).catch((e) => logger.error('[pHash] 启动补算失败:', e))
+        void generatePhashForUnprocessed(this.ctx, 'low').catch((e) =>
+          logger.error('[pHash] 启动补算失败:', e)
+        )
       }
       // 场景时段自动分析：扫描后自动分析 scene_time='unknown' 的图片
       // 基于本地缓存的图像亮度分析，避免重复扫描
@@ -1302,7 +1529,10 @@ class Application {
     } catch (error) {
       // Bug #08-F1：console.error → logger.error，统一日志渠道
       logger.error('[Startup] 自动扫描失败:', error)
-      this.mainWindow?.webContents.send('scanner:complete', { success: false, message: String(error) })
+      this.mainWindow?.webContents.send('scanner:complete', {
+        success: false,
+        message: String(error)
+      })
     }
   }
 
@@ -1312,9 +1542,11 @@ class Application {
       const db = this.dbManager.getDatabase()
       if (!db) return
 
-      const rows = db.prepare(
-        "SELECT id, file_path FROM media_files WHERE scene_time = 'unknown' AND file_type = 'image' AND is_deleted = 0"
-      ).all() as Array<{ id: number; file_path: string }>
+      const rows = db
+        .prepare(
+          "SELECT id, file_path FROM media_files WHERE scene_time = 'unknown' AND file_type = 'image' AND is_deleted = 0"
+        )
+        .all() as Array<{ id: number; file_path: string }>
 
       if (rows.length === 0) {
         console.log('[Startup] 场景时段分析：无待分析图片')
@@ -1349,8 +1581,11 @@ class Application {
       if (entries.length === 0) return
 
       const referencedThumbnails = new Set(
-        (db.prepare('SELECT thumbnail FROM media_files WHERE thumbnail IS NOT NULL').all() as Array<{ thumbnail: string }>)
-          .map((r) => path.resolve(r.thumbnail))
+        (
+          db
+            .prepare('SELECT thumbnail FROM media_files WHERE thumbnail IS NOT NULL')
+            .all() as Array<{ thumbnail: string }>
+        ).map((r) => path.resolve(r.thumbnail))
       )
 
       let removed = 0
@@ -1381,9 +1616,9 @@ class Application {
     const db = this.dbManager.getDatabase()
     if (!db) return
 
-    const rows = db.prepare(
-      'SELECT id, file_path, file_type, thumbnail, width, height FROM media_files'
-    ).all() as Array<{
+    const rows = db
+      .prepare('SELECT id, file_path, file_type, thumbnail, width, height FROM media_files')
+      .all() as Array<{
       id: number
       file_path: string
       file_type: string
@@ -1487,25 +1722,31 @@ async function resolveDesktopPath(): Promise<string | null> {
  */
 function regQueryDesktopPath(): Promise<string | null> {
   return new Promise((resolve) => {
-    execFile('reg', [
-      'query',
-      'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders',
-      '/v', 'Desktop'
-    ], { timeout: 3000, windowsHide: true }, (err, stdout) => {
-      if (err) {
-        resolve(null)
-        return
-      }
-      const lines = stdout.split(/\r?\n/)
-      for (const line of lines) {
-        const m = line.match(/REG_(?:SZ|EXPAND_SZ)\s+(.+?)\s*$/i)
-        if (m) {
-          resolve(m[1].trim())
+    execFile(
+      'reg',
+      [
+        'query',
+        'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders',
+        '/v',
+        'Desktop'
+      ],
+      { timeout: 3000, windowsHide: true },
+      (err, stdout) => {
+        if (err) {
+          resolve(null)
           return
         }
+        const lines = stdout.split(/\r?\n/)
+        for (const line of lines) {
+          const m = line.match(/REG_(?:SZ|EXPAND_SZ)\s+(.+?)\s*$/i)
+          if (m) {
+            resolve(m[1].trim())
+            return
+          }
+        }
+        resolve(null)
       }
-      resolve(null)
-    })
+    )
   })
 }
 

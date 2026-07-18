@@ -52,7 +52,14 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
       const result = await window.electronAPI.editor.loadPresets()
       if (result.success && Array.isArray(result.presets)) {
         setCustomPresets(
-          (result.presets as Array<{ id: string; name: string; category: string; params: Partial<FilterParams> }>).map((p) => ({
+          (
+            result.presets as Array<{
+              id: string
+              name: string
+              category: string
+              params: Partial<FilterParams>
+            }>
+          ).map((p) => ({
             id: p.id,
             name: p.name,
             category: p.category,
@@ -117,14 +124,21 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
         for (const [key, value] of Object.entries(presetParams)) {
           const k = key as keyof FilterParams | 'hsl'
           if (k === 'hsl' && typeof value === 'object' && value) {
-            for (const [colorKey, adj] of Object.entries(value as Partial<Record<string, { hue?: number; saturation?: number; lightness?: number }>>)) {
+            for (const [colorKey, adj] of Object.entries(
+              value as Partial<
+                Record<string, { hue?: number; saturation?: number; lightness?: number }>
+              >
+            )) {
               if (!merged.hsl[colorKey as keyof typeof merged.hsl]) continue
-              if (adj?.hue !== undefined) merged.hsl[colorKey as keyof typeof merged.hsl].hue = adj.hue
-              if (adj?.saturation !== undefined) merged.hsl[colorKey as keyof typeof merged.hsl].saturation = adj.saturation
-              if (adj?.lightness !== undefined) merged.hsl[colorKey as keyof typeof merged.hsl].lightness = adj.lightness
+              if (adj?.hue !== undefined)
+                merged.hsl[colorKey as keyof typeof merged.hsl].hue = adj.hue
+              if (adj?.saturation !== undefined)
+                merged.hsl[colorKey as keyof typeof merged.hsl].saturation = adj.saturation
+              if (adj?.lightness !== undefined)
+                merged.hsl[colorKey as keyof typeof merged.hsl].lightness = adj.lightness
             }
           } else if (typeof value === 'number' && k !== 'hsl') {
-            (merged[k as keyof FilterParams] as number) = value as number
+            ;(merged[k as keyof FilterParams] as number) = value as number
           }
         }
 
@@ -165,11 +179,12 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
     await loadCustomPresets()
   }
 
-  const displayPresets = filterCategory === 'custom'
-    ? customPresets
-    : filterCategory === 'all'
-      ? [...filteredPresets, ...customPresets]
-      : filteredPresets
+  const displayPresets =
+    filterCategory === 'custom'
+      ? customPresets
+      : filterCategory === 'all'
+        ? [...filteredPresets, ...customPresets]
+        : filteredPresets
 
   return (
     <div className={`space-y-4 ${className}`}>
@@ -193,10 +208,20 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
       </div>
 
       <div className="flex gap-1">
-        <button className="btn-secondary text-xs px-3 flex-1" onClick={onExportPreset} title="导出当前预设为 JSON" aria-label="导出当前预设为 JSON">
+        <button
+          className="btn-secondary text-xs px-3 flex-1"
+          onClick={onExportPreset}
+          title="导出当前预设为 JSON"
+          aria-label="导出当前预设为 JSON"
+        >
           导出 JSON
         </button>
-        <button className="btn-secondary text-xs px-3 flex-1" onClick={onImportPreset} title="从 JSON 文件导入预设" aria-label="从 JSON 文件导入预设">
+        <button
+          className="btn-secondary text-xs px-3 flex-1"
+          onClick={onImportPreset}
+          title="从 JSON 文件导入预设"
+          aria-label="从 JSON 文件导入预设"
+        >
           导入 JSON
         </button>
       </div>
@@ -244,7 +269,8 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               className="aspect-square rounded-xl flex flex-col items-center justify-center gap-2 transition-all hover:scale-105 relative overflow-hidden"
               style={{
                 background: 'var(--bg-tertiary)',
-                border: filter?.id === preset.id ? '2px solid var(--accent)' : '2px solid transparent'
+                border:
+                  filter?.id === preset.id ? '2px solid var(--accent)' : '2px solid transparent'
               }}
               onClick={() => onApplyPreset(preset)}
               title={preset.name}
@@ -258,11 +284,17 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                   draggable={false}
                 />
               ) : (
-                <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: 'var(--bg-secondary)', color: 'var(--text-tertiary)' }}>
+                <div
+                  className="w-12 h-12 rounded-lg flex items-center justify-center"
+                  style={{ background: 'var(--bg-secondary)', color: 'var(--text-tertiary)' }}
+                >
                   <IconFilterPreset size={20} />
                 </div>
               )}
-              <span className={`text-xs font-medium z-10 px-2 py-0.5 rounded-md ${thumb ? 'bg-black/50 text-white' : ''}`} style={thumb ? undefined : { color: 'var(--text-secondary)' }}>
+              <span
+                className={`text-xs font-medium z-10 px-2 py-0.5 rounded-md ${thumb ? 'bg-black/50 text-white' : ''}`}
+                style={thumb ? undefined : { color: 'var(--text-secondary)' }}
+              >
                 {preset.name}
               </span>
               {isCustom && (

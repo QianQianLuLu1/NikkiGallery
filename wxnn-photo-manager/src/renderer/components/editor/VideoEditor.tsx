@@ -63,7 +63,9 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({ media, onExit }) => {
   // P1-K：格式转换目标格式
   const [exportFormat, setExportFormat] = useState('mp4')
   // 导出目录确认（P1-05：新增 'livephoto' 模式）
-  const [exportConfirm, setExportConfirm] = useState<null | { mode: 'trim' | 'speed' | 'export' | 'livephoto' }>(null)
+  const [exportConfirm, setExportConfirm] = useState<null | {
+    mode: 'trim' | 'speed' | 'export' | 'livephoto'
+  }>(null)
   const { messages, showMessage, dismiss } = useToast()
   const refreshMedia = useRefreshMedia()
   const { t } = useTranslation()
@@ -172,23 +174,26 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({ media, onExit }) => {
   }, [trimStart, showMessage, t])
 
   // 触发导出（先选目录，再调用对应 IPC）
-  const handleExportClick = useCallback((mode: 'trim' | 'speed' | 'export' | 'livephoto') => {
-    if (mode === 'trim') {
-      if (trimEnd - trimStart < 0.1) {
-        showMessage(t('dialog.trimTooShort'), 'error')
-        return
+  const handleExportClick = useCallback(
+    (mode: 'trim' | 'speed' | 'export' | 'livephoto') => {
+      if (mode === 'trim') {
+        if (trimEnd - trimStart < 0.1) {
+          showMessage(t('dialog.trimTooShort'), 'error')
+          return
+        }
       }
-    }
-    if (mode === 'export') {
-      // P1-K：格式转换无需特殊校验，exportFormat 始终有合法值
-      const currentExt = media.file_name.split('.').pop()?.toLowerCase()
-      if (currentExt === exportFormat) {
-        showMessage(t('dialog.sameFormat'), 'error')
-        return
+      if (mode === 'export') {
+        // P1-K：格式转换无需特殊校验，exportFormat 始终有合法值
+        const currentExt = media.file_name.split('.').pop()?.toLowerCase()
+        if (currentExt === exportFormat) {
+          showMessage(t('dialog.sameFormat'), 'error')
+          return
+        }
       }
-    }
-    setExportConfirm({ mode })
-  }, [trimEnd, trimStart, showMessage, media.file_name, exportFormat, t])
+      setExportConfirm({ mode })
+    },
+    [trimEnd, trimStart, showMessage, media.file_name, exportFormat, t]
+  )
 
   // 确认导出
   const performExport = useCallback(async () => {
@@ -211,7 +216,11 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({ media, onExit }) => {
       } else if (exportConfirm.mode === 'livephoto') {
         // P1-05：导出 Apple Live Photo（JPG + MOV 配对文件）
         const lpResult = await window.electronAPI.video.exportLivePhoto(media.file_path, targetDir)
-        result = { success: lpResult.success, message: lpResult.message, filePath: lpResult.jpgPath }
+        result = {
+          success: lpResult.success,
+          message: lpResult.message,
+          filePath: lpResult.jpgPath
+        }
       } else {
         result = await window.electronAPI.video.changeSpeed(media.file_path, speed, targetDir)
       }
@@ -225,7 +234,17 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({ media, onExit }) => {
       setProcessing(false)
       setExportConfirm(null)
     }
-  }, [exportConfirm, media.file_path, trimStart, trimEnd, speed, exportFormat, showMessage, refreshMedia, t])
+  }, [
+    exportConfirm,
+    media.file_path,
+    trimStart,
+    trimEnd,
+    speed,
+    exportFormat,
+    showMessage,
+    refreshMedia,
+    t
+  ])
 
   // 当前预览速度应用
   const handlePreviewSpeedChange = useCallback((newSpeed: number) => {
@@ -264,11 +283,12 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({ media, onExit }) => {
 
   const trimDuration = Math.max(0, trimEnd - trimStart)
   // P1-K：export 模式不改变时长，保持原视频时长
-  const estimatedDuration = activeMode === 'speed' && metadata
-    ? metadata.duration / speed
-    : activeMode === 'export' && metadata
-      ? metadata.duration
-      : trimDuration
+  const estimatedDuration =
+    activeMode === 'speed' && metadata
+      ? metadata.duration / speed
+      : activeMode === 'export' && metadata
+        ? metadata.duration
+        : trimDuration
 
   return (
     <div className="h-full flex flex-col gap-4 p-4" style={{ background: 'var(--bg-primary)' }}>
@@ -283,10 +303,17 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({ media, onExit }) => {
             ← {t('common.back')}
           </button>
           <div className="min-w-0">
-            <h2 className="text-base font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{media.file_name}</h2>
+            <h2
+              className="text-base font-semibold truncate"
+              style={{ color: 'var(--text-primary)' }}
+            >
+              {media.file_name}
+            </h2>
             {metadata && (
               <p className="text-xs mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
-                {metadata.width}×{metadata.height} · {formatTime(metadata.duration)} · {metadata.codec || t('video.unknownCodec')} · {metadata.frameRate ? `${metadata.frameRate.toFixed(1)}fps` : ''}
+                {metadata.width}×{metadata.height} · {formatTime(metadata.duration)} ·{' '}
+                {metadata.codec || t('video.unknownCodec')} ·{' '}
+                {metadata.frameRate ? `${metadata.frameRate.toFixed(1)}fps` : ''}
               </p>
             )}
           </div>
@@ -311,8 +338,14 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({ media, onExit }) => {
             style={{ background: 'var(--bg-tertiary)' }}
           >
             {loadingMeta && (
-              <div className="absolute inset-0 flex items-center justify-center z-10" style={{ background: 'var(--bg-tertiary)' }}>
-                <div className="w-8 h-8 border-2 border-current border-t-transparent rounded-full animate-spin" style={{ color: 'var(--accent)' }} />
+              <div
+                className="absolute inset-0 flex items-center justify-center z-10"
+                style={{ background: 'var(--bg-tertiary)' }}
+              >
+                <div
+                  className="w-8 h-8 border-2 border-current border-t-transparent rounded-full animate-spin"
+                  style={{ color: 'var(--accent)' }}
+                />
               </div>
             )}
             <video
@@ -328,7 +361,10 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({ media, onExit }) => {
           </div>
 
           {/* 播放控制条 */}
-          <div className="flex items-center gap-3 px-3 py-2 rounded-xl" style={{ background: 'var(--bg-secondary)' }}>
+          <div
+            className="flex items-center gap-3 px-3 py-2 rounded-xl"
+            style={{ background: 'var(--bg-secondary)' }}
+          >
             <button
               className="w-9 h-9 rounded-full flex items-center justify-center transition-colors hover:opacity-80"
               style={{ background: 'var(--accent)', color: 'white' }}
@@ -337,18 +373,23 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({ media, onExit }) => {
             >
               <IconPlay size={14} />
             </button>
-            <span className="text-xs font-mono tabular-nums" style={{ color: 'var(--text-secondary)' }}>
+            <span
+              className="text-xs font-mono tabular-nums"
+              style={{ color: 'var(--text-secondary)' }}
+            >
               {formatTime(currentTime)} / {formatTime(metadata?.duration || 0)}
             </span>
             <div className="flex-1" />
             {activeMode === 'trim' && (
               <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
-                {t('video.selectedRange')}：{formatTime(trimStart)} → {formatTime(trimEnd)}（{formatTime(trimDuration)}）
+                {t('video.selectedRange')}：{formatTime(trimStart)} → {formatTime(trimEnd)}（
+                {formatTime(trimDuration)}）
               </span>
             )}
             {activeMode === 'speed' && (
               <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
-                {t('video.previewSpeed')}：{speed}x · {t('video.estimatedDuration')}：{formatTime(estimatedDuration)}
+                {t('video.previewSpeed')}：{speed}x · {t('video.estimatedDuration')}：
+                {formatTime(estimatedDuration)}
               </span>
             )}
           </div>
@@ -363,21 +404,33 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({ media, onExit }) => {
           <div className="flex gap-1 p-1 rounded-xl" style={{ background: 'var(--bg-tertiary)' }}>
             <button
               className={`flex-1 px-2 py-1.5 text-sm rounded-lg transition-all ${activeMode === 'trim' ? 'shadow-sm' : 'opacity-60'}`}
-              style={activeMode === 'trim' ? { background: 'var(--bg-primary)', color: 'var(--accent)' } : { color: 'var(--text-secondary)' }}
+              style={
+                activeMode === 'trim'
+                  ? { background: 'var(--bg-primary)', color: 'var(--accent)' }
+                  : { color: 'var(--text-secondary)' }
+              }
               onClick={() => setActiveMode('trim')}
             >
               {t('video.trim')}
             </button>
             <button
               className={`flex-1 px-2 py-1.5 text-sm rounded-lg transition-all ${activeMode === 'speed' ? 'shadow-sm' : 'opacity-60'}`}
-              style={activeMode === 'speed' ? { background: 'var(--bg-primary)', color: 'var(--accent)' } : { color: 'var(--text-secondary)' }}
+              style={
+                activeMode === 'speed'
+                  ? { background: 'var(--bg-primary)', color: 'var(--accent)' }
+                  : { color: 'var(--text-secondary)' }
+              }
               onClick={() => setActiveMode('speed')}
             >
               {t('video.speed')}
             </button>
             <button
               className={`flex-1 px-2 py-1.5 text-sm rounded-lg transition-all ${activeMode === 'export' ? 'shadow-sm' : 'opacity-60'}`}
-              style={activeMode === 'export' ? { background: 'var(--bg-primary)', color: 'var(--accent)' } : { color: 'var(--text-secondary)' }}
+              style={
+                activeMode === 'export'
+                  ? { background: 'var(--bg-primary)', color: 'var(--accent)' }
+                  : { color: 'var(--text-secondary)' }
+              }
               onClick={() => setActiveMode('export')}
               title={t('video.formatConvert')}
             >
@@ -395,8 +448,15 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({ media, onExit }) => {
               {/* 起点 */}
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>{t('video.startLabel')}</label>
-                  <span className="text-xs font-mono tabular-nums" style={{ color: 'var(--accent)' }}>{formatTime(trimStart)}</span>
+                  <label className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
+                    {t('video.startLabel')}
+                  </label>
+                  <span
+                    className="text-xs font-mono tabular-nums"
+                    style={{ color: 'var(--accent)' }}
+                  >
+                    {formatTime(trimStart)}
+                  </span>
                 </div>
                 <input
                   type="range"
@@ -433,8 +493,15 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({ media, onExit }) => {
               {/* 终点 */}
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>{t('video.endLabel')}</label>
-                  <span className="text-xs font-mono tabular-nums" style={{ color: 'var(--accent)' }}>{formatTime(trimEnd)}</span>
+                  <label className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
+                    {t('video.endLabel')}
+                  </label>
+                  <span
+                    className="text-xs font-mono tabular-nums"
+                    style={{ color: 'var(--accent)' }}
+                  >
+                    {formatTime(trimEnd)}
+                  </span>
                 </div>
                 <input
                   type="range"
@@ -469,17 +536,22 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({ media, onExit }) => {
               </div>
 
               {/* 区间预览 */}
-              <div
-                className="mt-2 p-3 rounded-lg"
-                style={{ background: 'var(--bg-tertiary)' }}
-              >
+              <div className="mt-2 p-3 rounded-lg" style={{ background: 'var(--bg-tertiary)' }}>
                 <div className="flex items-center justify-between text-xs">
-                  <span style={{ color: 'var(--text-tertiary)' }}>{t('video.trimmedDuration')}</span>
-                  <span className="font-mono font-semibold tabular-nums" style={{ color: 'var(--accent)' }}>
+                  <span style={{ color: 'var(--text-tertiary)' }}>
+                    {t('video.trimmedDuration')}
+                  </span>
+                  <span
+                    className="font-mono font-semibold tabular-nums"
+                    style={{ color: 'var(--accent)' }}
+                  >
                     {formatTime(trimDuration)}
                   </span>
                 </div>
-                <div className="mt-2 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--bg-primary)' }}>
+                <div
+                  className="mt-2 h-1.5 rounded-full overflow-hidden"
+                  style={{ background: 'var(--bg-primary)' }}
+                >
                   <div
                     className="h-full rounded-full transition-all"
                     style={{
@@ -505,9 +577,11 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({ media, onExit }) => {
                   <button
                     key={s}
                     className={`px-2 py-2 text-sm rounded-lg transition-all ${speed === s ? 'shadow-sm font-semibold' : 'opacity-70'}`}
-                    style={speed === s
-                      ? { background: 'var(--accent)', color: 'white' }
-                      : { background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}
+                    style={
+                      speed === s
+                        ? { background: 'var(--accent)', color: 'white' }
+                        : { background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }
+                    }
                     onClick={() => handlePreviewSpeedChange(s)}
                   >
                     {s}x
@@ -518,8 +592,15 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({ media, onExit }) => {
               {/* 自定义速度滑块 */}
               <div className="flex flex-col gap-1.5 mt-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>{t('video.customSpeed')}</label>
-                  <span className="text-xs font-mono tabular-nums" style={{ color: 'var(--accent)' }}>{speed.toFixed(2)}x</span>
+                  <label className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
+                    {t('video.customSpeed')}
+                  </label>
+                  <span
+                    className="text-xs font-mono tabular-nums"
+                    style={{ color: 'var(--accent)' }}
+                  >
+                    {speed.toFixed(2)}x
+                  </span>
                 </div>
                 <input
                   type="range"
@@ -531,7 +612,10 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({ media, onExit }) => {
                   className="w-full"
                   style={{ accentColor: 'var(--accent)' }}
                 />
-                <div className="flex justify-between text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                <div
+                  className="flex justify-between text-xs"
+                  style={{ color: 'var(--text-tertiary)' }}
+                >
                   <span>{t('video.slowMotionLabel')}</span>
                   <span>{t('video.originalSpeedLabel')}</span>
                   <span>{t('video.fastMotionLabel')}</span>
@@ -539,20 +623,34 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({ media, onExit }) => {
               </div>
 
               {/* 输出预估 */}
-              <div
-                className="mt-2 p-3 rounded-lg"
-                style={{ background: 'var(--bg-tertiary)' }}
-              >
+              <div className="mt-2 p-3 rounded-lg" style={{ background: 'var(--bg-tertiary)' }}>
                 <div className="flex items-center justify-between text-xs">
                   <span style={{ color: 'var(--text-tertiary)' }}>{t('video.outputDuration')}</span>
-                  <span className="font-mono font-semibold tabular-nums" style={{ color: 'var(--accent)' }}>
+                  <span
+                    className="font-mono font-semibold tabular-nums"
+                    style={{ color: 'var(--accent)' }}
+                  >
                     {formatTime(estimatedDuration)}
                   </span>
                 </div>
                 <div className="mt-1 flex items-center justify-between text-xs">
                   <span style={{ color: 'var(--text-tertiary)' }}>{t('video.speedChange')}</span>
-                  <span className="font-mono" style={{ color: speed > 1 ? 'var(--danger)' : speed < 1 ? 'var(--success)' : 'var(--text-secondary)' }}>
-                    {speed > 1 ? t('video.speedFast', { n: speed }) : speed < 1 ? t('video.speedSlow', { n: (1 / speed).toFixed(2) }) : t('video.speedOriginal')}
+                  <span
+                    className="font-mono"
+                    style={{
+                      color:
+                        speed > 1
+                          ? 'var(--danger)'
+                          : speed < 1
+                            ? 'var(--success)'
+                            : 'var(--text-secondary)'
+                    }}
+                  >
+                    {speed > 1
+                      ? t('video.speedFast', { n: speed })
+                      : speed < 1
+                        ? t('video.speedSlow', { n: (1 / speed).toFixed(2) })
+                        : t('video.speedOriginal')}
                   </span>
                 </div>
               </div>
@@ -572,28 +670,40 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({ media, onExit }) => {
                 style={{ background: 'var(--bg-tertiary)' }}
               >
                 <span style={{ color: 'var(--text-tertiary)' }}>{t('video.originalFormat')}</span>
-                <span className="font-mono font-semibold uppercase" style={{ color: 'var(--text-secondary)' }}>
+                <span
+                  className="font-mono font-semibold uppercase"
+                  style={{ color: 'var(--text-secondary)' }}
+                >
                   {media.file_name.split('.').pop() || t('video.unknown')}
                 </span>
               </div>
 
               {/* 目标格式网格 */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>{t('video.targetFormat')}</label>
+                <label className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
+                  {t('video.targetFormat')}
+                </label>
                 <div className="grid grid-cols-1 gap-1.5">
                   {EXPORT_FORMATS.map((fmt) => (
                     <button
                       key={fmt.value}
                       className={`px-3 py-2 rounded-lg transition-all text-left flex items-center justify-between ${exportFormat === fmt.value ? 'shadow-sm' : 'opacity-80'}`}
-                      style={exportFormat === fmt.value
-                        ? { background: 'var(--accent)', color: 'white' }
-                        : { background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}
+                      style={
+                        exportFormat === fmt.value
+                          ? { background: 'var(--accent)', color: 'white' }
+                          : { background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }
+                      }
                       onClick={() => setExportFormat(fmt.value)}
                     >
                       <div className="flex items-center gap-2">
                         <span className="font-mono font-semibold text-sm">{fmt.label}</span>
                       </div>
-                      <span className={`text-xs ${exportFormat === fmt.value ? 'text-white/80' : ''}`} style={exportFormat === fmt.value ? undefined : { color: 'var(--text-tertiary)' }}>
+                      <span
+                        className={`text-xs ${exportFormat === fmt.value ? 'text-white/80' : ''}`}
+                        style={
+                          exportFormat === fmt.value ? undefined : { color: 'var(--text-tertiary)' }
+                        }
+                      >
                         {t(`video.exportFormats.${fmt.value}`)}
                       </span>
                     </button>
@@ -615,7 +725,9 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({ media, onExit }) => {
               <div className="border-t pt-3" style={{ borderColor: 'var(--divider)' }}>
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{t('video.livePhoto.title')}</p>
+                    <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+                      {t('video.livePhoto.title')}
+                    </p>
                     <p className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>
                       {t('video.livePhoto.desc')}
                     </p>
@@ -644,7 +756,9 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({ media, onExit }) => {
             className="mt-auto p-3 rounded-lg text-xs leading-relaxed"
             style={{ background: 'var(--bg-tertiary)', color: 'var(--text-tertiary)' }}
           >
-            <p className="font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>{t('video.notesTitle')}</p>
+            <p className="font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
+              {t('video.notesTitle')}
+            </p>
             <ul className="space-y-1 list-disc pl-4">
               <li>{t('video.notes.noModifyOriginal')}</li>
               <li>{t('video.notes.streamCopy')}</li>
@@ -662,14 +776,21 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({ media, onExit }) => {
       <ConfirmDialog
         open={exportConfirm !== null}
         title={
-          exportConfirm?.mode === 'trim' ? t('dialog.exportTrim')
-            : exportConfirm?.mode === 'export' ? t('dialog.exportFormat')
-              : exportConfirm?.mode === 'livephoto' ? t('dialog.exportLivePhoto')
+          exportConfirm?.mode === 'trim'
+            ? t('dialog.exportTrim')
+            : exportConfirm?.mode === 'export'
+              ? t('dialog.exportFormat')
+              : exportConfirm?.mode === 'livephoto'
+                ? t('dialog.exportLivePhoto')
                 : t('dialog.exportSpeed')
         }
         message={
           exportConfirm?.mode === 'trim'
-            ? t('video.confirmTrim', { start: formatTime(trimStart), end: formatTime(trimEnd), duration: formatTime(trimDuration) })
+            ? t('video.confirmTrim', {
+                start: formatTime(trimStart),
+                end: formatTime(trimEnd),
+                duration: formatTime(trimDuration)
+              })
             : exportConfirm?.mode === 'export'
               ? t('video.confirmExport', { format: exportFormat.toUpperCase() })
               : exportConfirm?.mode === 'livephoto'

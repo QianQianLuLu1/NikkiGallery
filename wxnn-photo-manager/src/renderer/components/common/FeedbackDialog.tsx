@@ -19,7 +19,9 @@ export const FeedbackDialog: React.FC<FeedbackDialogProps> = ({ open, onClose })
   const [attachLogs, setAttachLogs] = useState(true)
   const [attachSystemInfo, setAttachSystemInfo] = useState(true)
   const [exporting, setExporting] = useState(false)
-  const [exportResult, setExportResult] = useState<{ success: boolean; message: string } | null>(null)
+  const [exportResult, setExportResult] = useState<{ success: boolean; message: string } | null>(
+    null
+  )
 
   // 导出诊断包
   const handleExportDiagnostic = async () => {
@@ -35,7 +37,10 @@ export const FeedbackDialog: React.FC<FeedbackDialogProps> = ({ open, onClose })
         // 用户取消保存对话框，不显示错误
         setExportResult(null)
       } else {
-        setExportResult({ success: false, message: result?.message || t('common.feedbackDialog.exportFailed') })
+        setExportResult({
+          success: false,
+          message: result?.message || t('common.feedbackDialog.exportFailed')
+        })
       }
     } catch (err) {
       setExportResult({ success: false, message: err instanceof Error ? err.message : String(err) })
@@ -63,7 +68,11 @@ export const FeedbackDialog: React.FC<FeedbackDialogProps> = ({ open, onClose })
       cardClassName="max-h-[85vh] overflow-y-auto"
     >
       <div className="flex items-center justify-between">
-        <h3 id="feedback-title" className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
+        <h3
+          id="feedback-title"
+          className="text-lg font-semibold"
+          style={{ color: 'var(--text-primary)' }}
+        >
           {t('common.feedbackDialog.title')}
         </h3>
         <button
@@ -104,7 +113,10 @@ export const FeedbackDialog: React.FC<FeedbackDialogProps> = ({ open, onClose })
         <label className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
           {t('common.feedbackDialog.attachmentsLabel')}
         </label>
-        <label className="flex items-center gap-2 text-sm cursor-pointer" style={{ color: 'var(--text-secondary)' }}>
+        <label
+          className="flex items-center gap-2 text-sm cursor-pointer"
+          style={{ color: 'var(--text-secondary)' }}
+        >
           <input
             type="checkbox"
             checked={attachLogs}
@@ -113,7 +125,10 @@ export const FeedbackDialog: React.FC<FeedbackDialogProps> = ({ open, onClose })
           />
           {t('common.feedbackDialog.attachLogsLabel')}
         </label>
-        <label className="flex items-center gap-2 text-sm cursor-pointer" style={{ color: 'var(--text-secondary)' }}>
+        <label
+          className="flex items-center gap-2 text-sm cursor-pointer"
+          style={{ color: 'var(--text-secondary)' }}
+        >
           <input
             type="checkbox"
             checked={attachSystemInfo}
@@ -137,7 +152,9 @@ export const FeedbackDialog: React.FC<FeedbackDialogProps> = ({ open, onClose })
           onClick={handleExportDiagnostic}
           disabled={exporting}
         >
-          {exporting ? t('common.feedbackDialog.exporting') : t('common.feedbackDialog.exportButton')}
+          {exporting
+            ? t('common.feedbackDialog.exporting')
+            : t('common.feedbackDialog.exportButton')}
         </button>
         <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
           {t('common.feedbackDialog.exportHint')}
@@ -167,10 +184,19 @@ export const FeedbackDialog: React.FC<FeedbackDialogProps> = ({ open, onClose })
               background: 'var(--bg-tertiary)',
               border: '1px solid var(--divider)'
             }}
-            onClick={() => handleCopyContact(t('common.feedbackDialog.qqGroupValue'), t('common.feedbackDialog.qqGroupName'))}
+            onClick={() =>
+              handleCopyContact(
+                t('common.feedbackDialog.qqGroupValue'),
+                t('common.feedbackDialog.qqGroupName')
+              )
+            }
           >
-            <div className="font-medium" style={{ color: 'var(--text-primary)' }}>{t('common.feedbackDialog.qqGroupLabel')}</div>
-            <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{t('common.feedbackDialog.qqGroupCopyHint')}</div>
+            <div className="font-medium" style={{ color: 'var(--text-primary)' }}>
+              {t('common.feedbackDialog.qqGroupLabel')}
+            </div>
+            <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+              {t('common.feedbackDialog.qqGroupCopyHint')}
+            </div>
           </button>
           <button
             className="p-3 rounded-lg text-left text-sm transition-all hover:scale-[1.02]"
@@ -178,10 +204,19 @@ export const FeedbackDialog: React.FC<FeedbackDialogProps> = ({ open, onClose })
               background: 'var(--bg-tertiary)',
               border: '1px solid var(--divider)'
             }}
-            onClick={() => handleCopyContact(t('common.feedbackDialog.githubValue'), t('common.feedbackDialog.githubName'))}
+            onClick={() =>
+              handleCopyContact(
+                t('common.feedbackDialog.githubValue'),
+                t('common.feedbackDialog.githubName')
+              )
+            }
           >
-            <div className="font-medium" style={{ color: 'var(--text-primary)' }}>{t('common.feedbackDialog.githubLabel')}</div>
-            <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{t('common.feedbackDialog.githubCopyHint')}</div>
+            <div className="font-medium" style={{ color: 'var(--text-primary)' }}>
+              {t('common.feedbackDialog.githubLabel')}
+            </div>
+            <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+              {t('common.feedbackDialog.githubCopyHint')}
+            </div>
           </button>
         </div>
       </div>

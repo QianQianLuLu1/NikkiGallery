@@ -19,7 +19,9 @@ export function mergeFilterParams(
   for (const [key, value] of Object.entries(presetParams)) {
     if (key === 'hsl' && typeof value === 'object' && value) {
       for (const [colorKey, adj] of Object.entries(
-        value as Partial<Record<HSLColorKey, { hue?: number; saturation?: number; lightness?: number }>>
+        value as Partial<
+          Record<HSLColorKey, { hue?: number; saturation?: number; lightness?: number }>
+        >
       )) {
         const ck = colorKey as HSLColorKey
         if (!merged.hsl[ck]) continue

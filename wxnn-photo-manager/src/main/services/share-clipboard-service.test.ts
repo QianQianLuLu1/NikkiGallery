@@ -63,18 +63,17 @@ vi.mock('child_process', () => ({
 // ============================================================
 // Import after mock
 // ============================================================
-import {
-  copyFilesToClipboard,
-  filterValidPaths,
-  findExeInDir
-} from './share-clipboard-service'
+import { copyFilesToClipboard, filterValidPaths, findExeInDir } from './share-clipboard-service'
 
 // ============================================================
 // Helpers
 // ============================================================
 
 /** 模拟 fs.Stats 的 isFile/isDirectory 返回 */
-function mockStats(isFile: boolean, isDirectory: boolean): { isFile: () => boolean; isDirectory: () => boolean } {
+function mockStats(
+  isFile: boolean,
+  isDirectory: boolean
+): { isFile: () => boolean; isDirectory: () => boolean } {
   return { isFile: () => isFile, isDirectory: () => isDirectory }
 }
 
@@ -119,9 +118,9 @@ describe('filterValidPaths', () => {
 
   it('混合：存在 / 不存在 / 目录 → 仅保留文件', async () => {
     vi.mocked(fs.promises.stat)
-      .mockResolvedValueOnce(mockStats(true, false) as never)   // C:\a.jpg 文件
-      .mockRejectedValueOnce(new Error('ENOENT') as never)      // C:\missing.jpg 不存在
-      .mockResolvedValueOnce(mockStats(false, true) as never)   // C:\dir 目录
+      .mockResolvedValueOnce(mockStats(true, false) as never) // C:\a.jpg 文件
+      .mockRejectedValueOnce(new Error('ENOENT') as never) // C:\missing.jpg 不存在
+      .mockResolvedValueOnce(mockStats(false, true) as never) // C:\dir 目录
     const r = await filterValidPaths(['C:\\a.jpg', 'C:\\missing.jpg', 'C:\\dir'])
     expect(r.valid).toEqual(['C:\\a.jpg'])
     expect(r.skipped).toBe(2)
@@ -177,8 +176,8 @@ describe('findExeInDir', () => {
   it('目录存在但第一个 exe 不存在，第二个存在 → 返回第二个路径', async () => {
     vi.mocked(fs.promises.stat).mockResolvedValueOnce(mockStats(false, true) as never)
     vi.mocked(fs.promises.access)
-      .mockRejectedValueOnce(new Error('ENOENT') as never)  // app.exe 不存在
-      .mockResolvedValueOnce(undefined as never)             // other.exe 存在
+      .mockRejectedValueOnce(new Error('ENOENT') as never) // app.exe 不存在
+      .mockResolvedValueOnce(undefined as never) // other.exe 存在
     const r = await findExeInDir('C:\\app', ['app.exe', 'other.exe'])
     expect(r).toBe(path.join('C:\\app', 'other.exe'))
   })

@@ -139,12 +139,17 @@ export const MasonryView: React.FC<MasonryViewProps> = ({
                 height: itemHeight,
                 background: 'var(--bg-tertiary)',
                 opacity: isMissing ? 0.45 : 1,
-                ...(isSelected ? { '--tw-ring-color': 'var(--accent)' } as React.CSSProperties : {})
+                ...(isSelected
+                  ? ({ '--tw-ring-color': 'var(--accent)' } as React.CSSProperties)
+                  : {})
               }}
               onClick={(e) => onSelect(file.id, index, e)}
               onContextMenu={(e) => onContextMenu(e, file)}
             >
-              <div className="relative w-full h-full overflow-hidden rounded-xl" style={{ background: 'var(--bg-tertiary)' }}>
+              <div
+                className="relative w-full h-full overflow-hidden rounded-xl"
+                style={{ background: 'var(--bg-tertiary)' }}
+              >
                 {/* T02：丢失文件角标（P1-H：抽取为 MissingBadge 组件） */}
                 {isMissing && <MissingBadge />}
                 {showThumb ? (
@@ -163,7 +168,13 @@ export const MasonryView: React.FC<MasonryViewProps> = ({
                   visible={!showThumb}
                 />
               </div>
-              <div className="absolute bottom-0 left-0 right-0 p-2 text-xs truncate" style={{ color: 'var(--text-secondary)', background: 'var(--overlay-gradient-bottom)' }}>
+              <div
+                className="absolute bottom-0 left-0 right-0 p-2 text-xs truncate"
+                style={{
+                  color: 'var(--text-secondary)',
+                  background: 'var(--overlay-gradient-bottom)'
+                }}
+              >
                 {file.file_name}
               </div>
             </div>

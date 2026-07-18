@@ -19,43 +19,46 @@ export function useGlobalUndo(): void {
   const currentView = useUIStore((s) => s.currentView)
   const { showMessage } = useToast()
 
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    // 仅处理 Ctrl+Z / Cmd+Z（无 Shift 为撤销）
-    const isUndoShortcut = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !e.shiftKey
-    if (!isUndoShortcut) return
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      // 仅处理 Ctrl+Z / Cmd+Z（无 Shift 为撤销）
+      const isUndoShortcut = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !e.shiftKey
+      if (!isUndoShortcut) return
 
-    // 编辑器视图跳过（由 useEditorShortcuts 接管）
-    if (currentView === 'editor') return
+      // 编辑器视图跳过（由 useEditorShortcuts 接管）
+      if (currentView === 'editor') return
 
-    // 输入框聚焦时跳过
-    const target = e.target as HTMLElement
-    if (target) {
-      const tag = target.tagName.toLowerCase()
-      if (tag === 'input' || tag === 'textarea' || target.isContentEditable) return
-    }
-
-    // 阻止浏览器默认撤销行为
-    e.preventDefault()
-    e.stopPropagation()
-
-    // 建议改#5：在回调内通过 getState() 读取最新栈，避免订阅 stack 导致
-    // 每次 push/undo 都重建 handleKeyDown 并重挂 keydown 监听
-    const { stack, canUndo, undo } = useOperationHistoryStore.getState()
-    if (!canUndo()) {
-      showMessage('没有可撤销的操作', 'info')
-      return
-    }
-
-    // 取栈顶操作的描述用于 Toast 提示
-    const top = stack[stack.length - 1]
-    void undo().then((result) => {
-      if (result.success) {
-        showMessage(`已撤销：${top.description}`, 'success')
-      } else {
-        showMessage(result.message || '撤销失败', 'error')
+      // 输入框聚焦时跳过
+      const target = e.target as HTMLElement
+      if (target) {
+        const tag = target.tagName.toLowerCase()
+        if (tag === 'input' || tag === 'textarea' || target.isContentEditable) return
       }
-    })
-  }, [currentView, showMessage])
+
+      // 阻止浏览器默认撤销行为
+      e.preventDefault()
+      e.stopPropagation()
+
+      // 建议改#5：在回调内通过 getState() 读取最新栈，避免订阅 stack 导致
+      // 每次 push/undo 都重建 handleKeyDown 并重挂 keydown 监听
+      const { stack, canUndo, undo } = useOperationHistoryStore.getState()
+      if (!canUndo()) {
+        showMessage('没有可撤销的操作', 'info')
+        return
+      }
+
+      // 取栈顶操作的描述用于 Toast 提示
+      const top = stack[stack.length - 1]
+      void undo().then((result) => {
+        if (result.success) {
+          showMessage(`已撤销：${top.description}`, 'success')
+        } else {
+          showMessage(result.message || '撤销失败', 'error')
+        }
+      })
+    },
+    [currentView, showMessage]
+  )
 
   useEffect(() => {
     // 捕获阶段注册，优先于组件级快捷键

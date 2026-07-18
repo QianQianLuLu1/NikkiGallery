@@ -8,12 +8,7 @@
  */
 
 export type SceneCategory =
-  | 'thumbnail'
-  | 'screenshot'
-  | 'travel_journal'
-  | 'world_tour'
-  | 'collage'
-  | 'other'
+  'thumbnail' | 'screenshot' | 'travel_journal' | 'world_tour' | 'collage' | 'other'
 
 /**
  * F-O1：基于图像亮度直方图的场景时段分类

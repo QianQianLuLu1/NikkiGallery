@@ -11,13 +11,14 @@ import type { MediaFile } from '../../stores/mediaStore'
 interface TimelineViewProps {
   files: MediaFile[]
   onOpen: (file: MediaFile) => void
+  onContextMenu: (event: React.MouseEvent, file: MediaFile) => void
 }
 
 const GROUP_HEADER_HEIGHT = 48
 const GAP_Y = 16
 const ITEM_HEIGHT = 180
 
-export const TimelineView: React.FC<TimelineViewProps> = ({ files, onOpen }) => {
+export const TimelineView: React.FC<TimelineViewProps> = ({ files, onOpen, onContextMenu }) => {
   const wrapperRef = useRef<HTMLDivElement>(null)
   const { width, height: containerHeight } = useContainerSize(wrapperRef)
   const [scrollTop, setScrollTop] = useState(0)
@@ -58,7 +59,9 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ files, onOpen }) => 
   }, [layout])
 
   const visibleGroups = useMemo(() => {
-    return layout.filter((g) => g.start + g.height > scrollTop && g.start < scrollTop + containerHeight)
+    return layout.filter(
+      (g) => g.start + g.height > scrollTop && g.start < scrollTop + containerHeight
+    )
   }, [layout, scrollTop, containerHeight])
 
   return (
@@ -104,13 +107,26 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ files, onOpen }) => 
                   <div
                     key={file.id}
                     className="media-card aspect-square"
-                    style={{ background: 'var(--bg-tertiary)', height: ITEM_HEIGHT, opacity: isMissing ? 0.45 : 1 }}
+                    style={{
+                      background: 'var(--bg-tertiary)',
+                      height: ITEM_HEIGHT,
+                      opacity: isMissing ? 0.45 : 1
+                    }}
                     onClick={() => onOpen(file)}
+                    onContextMenu={(e) => onContextMenu(e, file)}
                     role="article"
                     tabIndex={0}
-                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(file) } }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        onOpen(file)
+                      }
+                    }}
                   >
-                    <div className="w-full h-full flex items-center justify-center relative overflow-hidden rounded-xl" style={{ background: 'var(--bg-tertiary)' }}>
+                    <div
+                      className="w-full h-full flex items-center justify-center relative overflow-hidden rounded-xl"
+                      style={{ background: 'var(--bg-tertiary)' }}
+                    >
                       {/* T02：丢失文件角标（P1-H：抽取为 MissingBadge 组件） */}
                       {isMissing && <MissingBadge />}
                       {showThumb ? (

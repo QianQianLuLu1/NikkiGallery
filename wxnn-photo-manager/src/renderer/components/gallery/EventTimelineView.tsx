@@ -7,11 +7,16 @@ import { useContainerSize } from '../../hooks/useContainerSize'
 import { useFailedImages } from '../../hooks/useFailedImages'
 import { getResponsiveColumns } from '../../utils/responsive'
 import type { MediaFile } from '../../stores/mediaStore'
-import { getTimelineNodes, findVersionByDate, type TimelineNode } from '../../../main/utils/game-events'
+import {
+  getTimelineNodes,
+  findVersionByDate,
+  type TimelineNode
+} from '../../../main/utils/game-events'
 
 interface EventTimelineViewProps {
   files: MediaFile[]
   onOpen: (file: MediaFile) => void
+  onContextMenu: (event: React.MouseEvent, file: MediaFile) => void
 }
 
 const NODE_HEADER_HEIGHT = 80 // 节点标题区高度（含版本号 / 日期 / 描述）
@@ -34,7 +39,9 @@ function groupFilesByNode(files: MediaFile[]): Array<{ node: TimelineNode; files
 
   // 按时间倒序排列节点（最新版本在顶部）
   const result: Array<{ node: TimelineNode; files: MediaFile[] }> = []
-  const sortedNodes = [...nodes].sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime())
+  const sortedNodes = [...nodes].sort(
+    (a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+  )
   for (const node of sortedNodes) {
     const nodeFiles = fileVersionMap.get(node.key) || []
     if (nodeFiles.length > 0) {
@@ -60,7 +67,11 @@ function groupFilesByNode(files: MediaFile[]): Array<{ node: TimelineNode; files
   return result
 }
 
-export const EventTimelineView: React.FC<EventTimelineViewProps> = ({ files, onOpen }) => {
+export const EventTimelineView: React.FC<EventTimelineViewProps> = ({
+  files,
+  onOpen,
+  onContextMenu
+}) => {
   const wrapperRef = useRef<HTMLDivElement>(null)
   const { width, height: containerHeight } = useContainerSize(wrapperRef)
   const [scrollTop, setScrollTop] = useState(0)
@@ -88,12 +99,17 @@ export const EventTimelineView: React.FC<EventTimelineViewProps> = ({ files, onO
   const totalHeight = useMemo(() => layout.reduce((sum, g) => sum + g.height, 0), [layout])
 
   const visibleGroups = useMemo(() => {
-    return layout.filter((g) => g.start + g.height > scrollTop && g.start < scrollTop + containerHeight)
+    return layout.filter(
+      (g) => g.start + g.height > scrollTop && g.start < scrollTop + containerHeight
+    )
   }, [layout, scrollTop, containerHeight])
 
   if (grouped.length === 0) {
     return (
-      <div className="flex-1 flex items-center justify-center" style={{ color: 'var(--text-tertiary)' }}>
+      <div
+        className="flex-1 flex items-center justify-center"
+        style={{ color: 'var(--text-tertiary)' }}
+      >
         <div className="flex flex-col items-center gap-2">
           <IconEvent size={36} strokeWidth="1.5" />
           <p className="text-sm">暂无照片可按版本分组</p>
@@ -125,7 +141,8 @@ export const EventTimelineView: React.FC<EventTimelineViewProps> = ({ files, onO
                   height: 48,
                   borderRadius: 12,
                   background: group.node.type === 'version' ? 'var(--accent)' : 'var(--warning-bg)',
-                  color: group.node.type === 'version' ? 'var(--text-on-accent)' : 'var(--warning-text)',
+                  color:
+                    group.node.type === 'version' ? 'var(--text-on-accent)' : 'var(--warning-text)',
                   flexShrink: 0
                 }}
               >
@@ -137,7 +154,10 @@ export const EventTimelineView: React.FC<EventTimelineViewProps> = ({ files, onO
               </div>
               <div className="flex flex-col gap-0.5 flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-base font-semibold truncate" style={{ color: 'var(--text-primary)' }}>
+                  <h3
+                    className="text-base font-semibold truncate"
+                    style={{ color: 'var(--text-primary)' }}
+                  >
                     {group.node.name}
                   </h3>
                   {group.node.type === 'version' && (
@@ -149,7 +169,10 @@ export const EventTimelineView: React.FC<EventTimelineViewProps> = ({ files, onO
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                <div
+                  className="flex items-center gap-2 text-xs"
+                  style={{ color: 'var(--text-tertiary)' }}
+                >
                   <span>{group.node.startDate || '—'}</span>
                   {group.node.description && (
                     <>
@@ -160,7 +183,10 @@ export const EventTimelineView: React.FC<EventTimelineViewProps> = ({ files, onO
                 </div>
               </div>
               <div className="flex-1 h-px" style={{ background: 'var(--divider)' }} />
-              <span className="text-sm whitespace-nowrap" style={{ color: 'var(--text-secondary)' }}>
+              <span
+                className="text-sm whitespace-nowrap"
+                style={{ color: 'var(--text-secondary)' }}
+              >
                 {group.files.length} 项
               </span>
             </div>
@@ -177,13 +203,26 @@ export const EventTimelineView: React.FC<EventTimelineViewProps> = ({ files, onO
                   <div
                     key={file.id}
                     className="media-card aspect-square"
-                    style={{ background: 'var(--bg-tertiary)', height: ITEM_HEIGHT, opacity: isMissing ? 0.45 : 1 }}
+                    style={{
+                      background: 'var(--bg-tertiary)',
+                      height: ITEM_HEIGHT,
+                      opacity: isMissing ? 0.45 : 1
+                    }}
                     onClick={() => onOpen(file)}
+                    onContextMenu={(e) => onContextMenu(e, file)}
                     role="article"
                     tabIndex={0}
-                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(file) } }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        onOpen(file)
+                      }
+                    }}
                   >
-                    <div className="w-full h-full flex items-center justify-center relative overflow-hidden rounded-xl" style={{ background: 'var(--bg-tertiary)' }}>
+                    <div
+                      className="w-full h-full flex items-center justify-center relative overflow-hidden rounded-xl"
+                      style={{ background: 'var(--bg-tertiary)' }}
+                    >
                       {/* T02：丢失文件角标（P1-H：抽取为 MissingBadge 组件） */}
                       {isMissing && <MissingBadge />}
                       {showThumb ? (

@@ -32,15 +32,18 @@ export const MediaThumbPlaceholder: React.FC<MediaThumbPlaceholderProps> = ({
 }) => {
   if (!visible) return null
 
-  const icon = hasError
-    ? <IconWarning size={size} strokeWidth={strokeWidth} />
-    : fileType === 'video'
-      ? <IconVideo size={size} strokeWidth={strokeWidth} />
-      : <IconImage size={size} strokeWidth={strokeWidth} />
+  const icon = hasError ? (
+    <IconWarning size={size} strokeWidth={strokeWidth} />
+  ) : fileType === 'video' ? (
+    <IconVideo size={size} strokeWidth={strokeWidth} />
+  ) : (
+    <IconImage size={size} strokeWidth={strokeWidth} />
+  )
 
-  const className = variant === 'overlay'
-    ? 'absolute inset-0 flex items-center justify-center'
-    : 'flex items-center justify-center w-full h-full'
+  const className =
+    variant === 'overlay'
+      ? 'absolute inset-0 flex items-center justify-center'
+      : 'flex items-center justify-center w-full h-full'
 
   return (
     <div className={className} style={{ color: 'var(--text-tertiary)' }}>

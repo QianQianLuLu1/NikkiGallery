@@ -9,7 +9,8 @@ import {
 describe('scanner 路径分类纯函数', () => {
   describe('extractUidFromPath', () => {
     it('标准 Windows 路径提取 8 位 UID', () => {
-      const path = 'D:\\InfinityNikki\\X6Game\\Saved\\GamePlayPhotos\\12345678\\NikkiPhotos_HighQuality\\photo.jpg'
+      const path =
+        'D:\\InfinityNikki\\X6Game\\Saved\\GamePlayPhotos\\12345678\\NikkiPhotos_HighQuality\\photo.jpg'
       expect(extractUidFromPath(path)).toBe('12345678')
     })
 
@@ -74,7 +75,8 @@ describe('scanner 路径分类纯函数', () => {
 
   describe('extractAlbumTypeFromPath', () => {
     it('NikkiPhotos_HighQuality 目录返回对应相册类型', () => {
-      const path = 'D:\\game\\X6Game\\Saved\\GamePlayPhotos\\12345678\\NikkiPhotos_HighQuality\\photo.jpg'
+      const path =
+        'D:\\game\\X6Game\\Saved\\GamePlayPhotos\\12345678\\NikkiPhotos_HighQuality\\photo.jpg'
       const result = extractAlbumTypeFromPath(path)
       expect(typeof result).toBe('string')
       expect(result.length).toBeGreaterThan(0)
@@ -139,12 +141,14 @@ describe('scanner 路径分类纯函数', () => {
     })
 
     it('游戏内拍照路径返回 game（NikkiPhotos_HighQuality）', () => {
-      const path = 'D:\\game\\X6Game\\Saved\\GamePlayPhotos\\12345678\\NikkiPhotos_HighQuality\\photo.jpg'
+      const path =
+        'D:\\game\\X6Game\\Saved\\GamePlayPhotos\\12345678\\NikkiPhotos_HighQuality\\photo.jpg'
       expect(extractMediaSourceFromPath(path)).toBe('game')
     })
 
     it('游戏内拍照路径返回 game（NikkiPhotos_LowQuality）', () => {
-      const path = 'D:\\game\\X6Game\\Saved\\GamePlayPhotos\\12345678\\NikkiPhotos_LowQuality\\photo.jpg'
+      const path =
+        'D:\\game\\X6Game\\Saved\\GamePlayPhotos\\12345678\\NikkiPhotos_LowQuality\\photo.jpg'
       expect(extractMediaSourceFromPath(path)).toBe('game')
     })
 

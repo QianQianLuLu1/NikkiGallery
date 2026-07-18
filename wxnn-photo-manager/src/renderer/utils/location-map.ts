@@ -45,11 +45,7 @@ export function getLocationName(x: number, y: number, z: number): string | null 
   let bestDist = Infinity
 
   for (const entry of LOCATION_MAP) {
-    const dist = Math.sqrt(
-      (x - entry.pos.x) ** 2 +
-      (y - entry.pos.y) ** 2 +
-      (z - entry.pos.z) ** 2
-    )
+    const dist = Math.sqrt((x - entry.pos.x) ** 2 + (y - entry.pos.y) ** 2 + (z - entry.pos.z) ** 2)
     if (dist <= entry.radius && dist < bestDist) {
       bestDist = dist
       bestMatch = entry
@@ -89,7 +85,13 @@ export function getUnknownLocationCount(): number {
  * 手动添加已知地标坐标
  * 供未来通过社区数据或游戏内验证后填充
  */
-export function addKnownLocation(x: number, y: number, z: number, radius: number, name: string): void {
+export function addKnownLocation(
+  x: number,
+  y: number,
+  z: number,
+  radius: number,
+  name: string
+): void {
   LOCATION_MAP.push({ pos: { x, y, z }, radius, name })
 }
 

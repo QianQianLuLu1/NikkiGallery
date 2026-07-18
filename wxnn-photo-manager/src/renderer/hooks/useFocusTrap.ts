@@ -16,9 +16,7 @@ interface FocusTrapOptions {
  * - 关闭后恢复原焦点
  * - 容器需添加 ref={containerRef}
  */
-export function useFocusTrap<T extends HTMLElement = HTMLDivElement>(
-  options: FocusTrapOptions
-) {
+export function useFocusTrap<T extends HTMLElement = HTMLDivElement>(options: FocusTrapOptions) {
   const containerRef = useRef<T>(null)
   const previousActiveRef = useRef<Element | null>(null)
   const { active, initialFocusRef } = options
@@ -39,9 +37,11 @@ export function useFocusTrap<T extends HTMLElement = HTMLDivElement>(
     previousActiveRef.current = document.activeElement
 
     // 初始聚焦
-    const focusTarget = initialFocusRef?.current || container.querySelector<HTMLElement>(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    )
+    const focusTarget =
+      initialFocusRef?.current ||
+      container.querySelector<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      )
     focusTarget?.focus()
 
     const getFocusable = () =>

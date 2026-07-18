@@ -51,9 +51,24 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, onRetry, co
 
   // P1-U4：按钮配置数组，统一渲染逻辑，消除 60+ 行重复 inline style
   const buttons: ActionButton[] = [
-    { label: '重新加载', icon: <IconRefresh size={16} color="var(--text-on-accent)" />, onClick: onRetry, variant: 'primary' },
-    { label: '打开日志目录', icon: <IconFolderOpen size={16} />, onClick: handleOpenLogDir, variant: 'secondary' },
-    { label: copied ? '已复制' : '复制错误信息', icon: <IconCopy size={16} />, onClick: handleCopy, variant: 'secondary' }
+    {
+      label: '重新加载',
+      icon: <IconRefresh size={16} color="var(--text-on-accent)" />,
+      onClick: onRetry,
+      variant: 'primary'
+    },
+    {
+      label: '打开日志目录',
+      icon: <IconFolderOpen size={16} />,
+      onClick: handleOpenLogDir,
+      variant: 'secondary'
+    },
+    {
+      label: copied ? '已复制' : '复制错误信息',
+      icon: <IconCopy size={16} />,
+      onClick: handleCopy,
+      variant: 'secondary'
+    }
   ]
 
   const getButtonStyle = (variant: ActionButton['variant']): React.CSSProperties => {
@@ -70,9 +85,19 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, onRetry, co
       transition: 'background 0.2s'
     }
     if (variant === 'primary') {
-      return { ...base, background: 'var(--accent)', color: 'var(--text-on-accent)', borderColor: 'var(--accent)' }
+      return {
+        ...base,
+        background: 'var(--accent)',
+        color: 'var(--text-on-accent)',
+        borderColor: 'var(--accent)'
+      }
     }
-    return { ...base, background: 'var(--hover-bg)', color: 'var(--text-primary)', borderColor: 'var(--divider)' }
+    return {
+      ...base,
+      background: 'var(--hover-bg)',
+      color: 'var(--text-primary)',
+      borderColor: 'var(--divider)'
+    }
   }
 
   return (
@@ -117,7 +142,14 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, onRetry, co
             <IconWarning size={28} color="var(--danger-hover)" />
           </div>
           <div>
-            <h2 style={{ margin: 0, fontSize: '1.429rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+            <h2
+              style={{
+                margin: 0,
+                fontSize: '1.429rem',
+                fontWeight: 600,
+                color: 'var(--text-primary)'
+              }}
+            >
               页面加载失败
             </h2>
             <p style={{ margin: '4px 0 0', fontSize: '1rem', color: 'var(--text-secondary)' }}>
@@ -135,7 +167,15 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, onRetry, co
             border: '1px solid var(--danger-bg)'
           }}
         >
-          <p style={{ margin: 0, fontSize: '1rem', color: 'var(--danger-hover)', fontFamily: 'monospace', wordBreak: 'break-word' }}>
+          <p
+            style={{
+              margin: 0,
+              fontSize: '1rem',
+              color: 'var(--danger-hover)',
+              fontFamily: 'monospace',
+              wordBreak: 'break-word'
+            }}
+          >
             {error.message}
           </p>
         </div>

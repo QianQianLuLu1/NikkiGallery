@@ -60,8 +60,10 @@ export class FileService {
     return `${action}失败: ${error instanceof Error ? error.message : String(error)}`
   }
 
-
-  async copyFiles(sourcePaths: string[], targetDir: string): Promise<{ success: boolean; message: string; actualPaths?: string[] }> {
+  async copyFiles(
+    sourcePaths: string[],
+    targetDir: string
+  ): Promise<{ success: boolean; message: string; actualPaths?: string[] }> {
     try {
       await fsp.mkdir(targetDir, { recursive: true })
 
@@ -96,7 +98,10 @@ export class FileService {
     }
   }
 
-  async moveFiles(sourcePaths: string[], targetDir: string): Promise<{ success: boolean; message: string; actualPaths?: string[] }> {
+  async moveFiles(
+    sourcePaths: string[],
+    targetDir: string
+  ): Promise<{ success: boolean; message: string; actualPaths?: string[] }> {
     try {
       await fsp.mkdir(targetDir, { recursive: true })
 
@@ -131,7 +136,10 @@ export class FileService {
     }
   }
 
-  async renameFile(oldPath: string, newName: string): Promise<{ success: boolean; message: string }> {
+  async renameFile(
+    oldPath: string,
+    newName: string
+  ): Promise<{ success: boolean; message: string }> {
     try {
       // 防止路径遍历：文件名不得包含路径分隔符和上级目录引用
       const invalidChars = /[<>:"\\|?*\/]/
@@ -171,9 +179,7 @@ export class FileService {
    * T12：批量重命名——按操作列表依次重命名，冲突时自动追加 _1/_2
    * 返回每条操作的详细结果，供调用方更新数据库与 UI
    */
-  async batchRename(
-    operations: { oldPath: string; newName: string }[]
-  ): Promise<{
+  async batchRename(operations: { oldPath: string; newName: string }[]): Promise<{
     success: boolean
     renamed: { oldPath: string; newPath: string; newFileName: string }[]
     failed: { oldPath: string; message: string }[]
@@ -191,7 +197,12 @@ export class FileService {
           throw new Error('文件名包含非法字符')
         }
         const trimmedName = op.newName.trim()
-        if (!trimmedName || trimmedName === '.' || trimmedName === '..' || trimmedName.includes('..')) {
+        if (
+          !trimmedName ||
+          trimmedName === '.' ||
+          trimmedName === '..' ||
+          trimmedName.includes('..')
+        ) {
           throw new Error('文件名无效')
         }
         const safeName = path.basename(trimmedName)
@@ -227,9 +238,10 @@ export class FileService {
       success: failed.length === 0,
       renamed,
       failed,
-      message: failed.length === 0
-        ? `成功重命名 ${renamed.length} 个文件`
-        : `成功 ${renamed.length} 个，失败 ${failed.length} 个`
+      message:
+        failed.length === 0
+          ? `成功重命名 ${renamed.length} 个文件`
+          : `成功 ${renamed.length} 个，失败 ${failed.length} 个`
     }
   }
 
@@ -374,7 +386,10 @@ export class FileService {
           : undefined,
         iso: exif.ISO || exif.PhotographicSensitivity,
         focalLength: exif.FocalLength ? `${exif.FocalLength}mm` : undefined,
-        gps: exif.latitude && exif.longitude ? { latitude: exif.latitude, longitude: exif.longitude } : undefined,
+        gps:
+          exif.latitude && exif.longitude
+            ? { latitude: exif.latitude, longitude: exif.longitude }
+            : undefined,
         dateTaken: exif.DateTimeOriginal ? exif.DateTimeOriginal.toISOString() : undefined,
         width: exif.ExifImageWidth || exif.ImageWidth,
         height: exif.ExifImageHeight || exif.ImageLength
@@ -426,7 +441,14 @@ export class FileService {
   // 仅读取元信息不复制，用于向导第二步展示
   async previewImport(sourceDir: string): Promise<{
     success: boolean
-    files: Array<{ sourcePath: string; fileName: string; size: number; mtime: string; ext: string; isVideo: boolean }>
+    files: Array<{
+      sourcePath: string
+      fileName: string
+      size: number
+      mtime: string
+      ext: string
+      isVideo: boolean
+    }>
     message?: string
   }> {
     try {
@@ -438,7 +460,14 @@ export class FileService {
       return { success: false, files: [], message: '无法访问源目录' }
     }
 
-    const files: Array<{ sourcePath: string; fileName: string; size: number; mtime: string; ext: string; isVideo: boolean }> = []
+    const files: Array<{
+      sourcePath: string
+      fileName: string
+      size: number
+      mtime: string
+      ext: string
+      isVideo: boolean
+    }> = []
     // 递归收集媒体文件
     const walk = async (dir: string) => {
       const entries = await fsp.readdir(dir, { withFileTypes: true })
@@ -519,7 +548,10 @@ export class FileService {
         return {
           success: false,
           imported: [],
-          failed: stats.map(s => ({ sourcePath: s.sourcePath, message: err instanceof Error ? err.message : String(err) })),
+          failed: stats.map((s) => ({
+            sourcePath: s.sourcePath,
+            message: err instanceof Error ? err.message : String(err)
+          })),
           skipped: [],
           message: '磁盘空间不足'
         }

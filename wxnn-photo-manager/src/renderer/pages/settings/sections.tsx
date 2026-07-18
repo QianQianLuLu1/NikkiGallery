@@ -6,7 +6,11 @@
 export { GlobalToastProvider, useGlobalToast } from './shared'
 export type { FaultType, FaultRecord, BackupRecord, CrashRecord } from './shared'
 
-export { GeneralStartupSection, GeneralFileOpsSection, GeneralExportSection } from './general-sections'
+export {
+  GeneralStartupSection,
+  GeneralFileOpsSection,
+  GeneralExportSection
+} from './general-sections'
 export { AppearanceThemeSection, AppearanceDisplaySection } from './appearance-sections'
 export { ScanOptionsSection } from './scan-sections'
 export { ProfileManageSection } from './profile-sections'

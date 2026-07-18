@@ -7,10 +7,7 @@ async function generateIcon() {
   const svgPath = path.join(import.meta.dirname, '..', 'resources', 'icons', 'icon.svg')
   const icoPath = path.join(import.meta.dirname, '..', 'resources', 'icons', 'icon.ico')
 
-  const pngBuffer = await sharp(svgPath)
-    .resize(256, 256)
-    .png()
-    .toBuffer()
+  const pngBuffer = await sharp(svgPath).resize(256, 256).png().toBuffer()
 
   const icoBuffer = await pngToIco(pngBuffer)
   fs.writeFileSync(icoPath, icoBuffer)

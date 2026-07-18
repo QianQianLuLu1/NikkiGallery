@@ -39,7 +39,10 @@ export function registerBackupHandlers(ctx: HandlerContext): void {
   // 从备份恢复
   // P1-04：文件名正则支持可选的 _{uid} 后缀（按档案备份场景）
   ipcMain.handle('backup:restore', async (_, filename: string) => {
-    if (typeof filename !== 'string' || !/^wxnn_photo_manager_\d{8}_\d{6}(_[a-zA-Z0-9]+)?\.db$/.test(filename)) {
+    if (
+      typeof filename !== 'string' ||
+      !/^wxnn_photo_manager_\d{8}_\d{6}(_[a-zA-Z0-9]+)?\.db$/.test(filename)
+    ) {
       return { success: false, message: '备份文件名格式无效' }
     }
     try {
@@ -56,7 +59,10 @@ export function registerBackupHandlers(ctx: HandlerContext): void {
 
   // 删除指定备份（P1-04：正则同步支持 _{uid} 后缀）
   ipcMain.handle('backup:delete', async (_, filename: string) => {
-    if (typeof filename !== 'string' || !/^wxnn_photo_manager_\d{8}_\d{6}(_[a-zA-Z0-9]+)?\.db$/.test(filename)) {
+    if (
+      typeof filename !== 'string' ||
+      !/^wxnn_photo_manager_\d{8}_\d{6}(_[a-zA-Z0-9]+)?\.db$/.test(filename)
+    ) {
       return { success: false, message: '备份文件名格式无效' }
     }
     try {

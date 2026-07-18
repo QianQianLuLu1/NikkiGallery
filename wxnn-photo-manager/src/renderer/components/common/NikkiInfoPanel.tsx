@@ -23,17 +23,26 @@ function nikkiToRows(n: NikkiParams | undefined | null): InfoRow[] {
 
   // 位置
   if (n.loc) {
-    rows.push({ label: '位置', value: `(${n.loc.x.toFixed(1)}, ${n.loc.y.toFixed(1)}, ${n.loc.z.toFixed(1)})` })
+    rows.push({
+      label: '位置',
+      value: `(${n.loc.x.toFixed(1)}, ${n.loc.y.toFixed(1)}, ${n.loc.z.toFixed(1)})`
+    })
   }
 
   // 旋转
   if (n.rot) {
-    rows.push({ label: '旋转', value: `Yaw ${n.rot.yaw.toFixed(1)}°, Pitch ${n.rot.pitch.toFixed(1)}°, Roll ${n.rot.roll.toFixed(1)}°` })
+    rows.push({
+      label: '旋转',
+      value: `Yaw ${n.rot.yaw.toFixed(1)}°, Pitch ${n.rot.pitch.toFixed(1)}°, Roll ${n.rot.roll.toFixed(1)}°`
+    })
   }
 
   // 缩放
   if (n.scale) {
-    rows.push({ label: '缩放', value: `(${n.scale.x.toFixed(2)}, ${n.scale.y.toFixed(2)}, ${n.scale.z.toFixed(2)})` })
+    rows.push({
+      label: '缩放',
+      value: `(${n.scale.x.toFixed(2)}, ${n.scale.y.toFixed(2)}, ${n.scale.z.toFixed(2)})`
+    })
   }
 
   return rows
@@ -50,7 +59,11 @@ export function formatNikkiForCopy(n: NikkiParams | null | undefined): string {
   return lines.join('\n')
 }
 
-export const NikkiInfoPanel: React.FC<NikkiInfoPanelProps> = ({ file, variant = 'light', showTitle = true }) => {
+export const NikkiInfoPanel: React.FC<NikkiInfoPanelProps> = ({
+  file,
+  variant = 'light',
+  showTitle = true
+}) => {
   const enabled = file.file_type === 'image' && !!file.album_type
   const { data, loading, error } = useGameParams(
     file.file_path,
