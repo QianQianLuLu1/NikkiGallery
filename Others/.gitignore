@@ -1,0 +1,67 @@
+# ===== Dependencies =====
+node_modules/
+.npm-cache/
+
+# ===== Build output =====
+dist/
+release/
+out/
+build/
+
+# ===== Cache & temp =====
+.cache/
+.eslintcache
+.stylelintcache
+node_modules/.cache/
+.electron-cache/
+.electron-gyp/
+*.tmp
+*.bak
+*.swp
+*~
+
+# ===== Logs =====
+*.log
+logs/
+
+# ===== Runtime data =====
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# ===== Package/share output =====
+.trae-html-share-packages/
+*.zip
+
+# ===== Node runtime bundle =====
+node20/
+node20.zip
+
+# ===== Test & debug artifacts =====
+test_*.png
+test_*.py
+test-*.txt
+test-*.js
+poc-*.js
+test_screenshot.png
+test_preview.png
+test_preview.py
+test_run*.png
+test_debug.py
+preview.html
+
+# ===== IDE config =====
+.idea/
+.vscode/
+*.code-workspace
+
+# ===== OS =====
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# ===== Env vars =====
+.env
+.env.local
+.env.*.local

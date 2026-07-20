@@ -1,0 +1,23 @@
+# === 依赖（npm install 可重建）===
+node_modules/
+
+# === 构建产物 ===
+dist/
+release/
+.uploads/
+
+# === 缓存 ===
+.electron-cache/
+.electron-gyp/
+
+# === 日志 ===
+*.log
+logs/
+
+# === 系统文件 ===
+.DS_Store
+Thumbs.db
+
+# === 编辑器配置 ===
+.vscode/
+.idea/
